@@ -6,8 +6,6 @@ import {
   Truck,
   MapPin,
   Users,
-  Package,
-  Building2,
   Database,
   LogOut,
   ChevronLeft,
@@ -21,8 +19,6 @@ import api from '../api/client'
 
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/produtos', icon: Package, label: 'Produtos' },
-  { to: '/departamentos', icon: Building2, label: 'Departamentos' },
   { to: '/cadastros', icon: Database, label: 'Cadastros' },
   { to: '/chat', icon: MessageCircle, label: 'WhatsApp' },
   { to: '/entregas', icon: Truck, label: 'Entregas' },

@@ -128,6 +128,52 @@ def _garantir(cnpj: str) -> None:
             cur.close()
 
 
+def _cliente_coords(cur, c: str, entrega: dict) -> tuple:
+    """Retorna (lat, lng) do cliente vinculado à entrega, ou (None, None)."""
+    def tem_colunas(table: str) -> bool:
+        try:
+            cur.execute(f"SELECT lat, lng FROM `{table}` LIMIT 1")
+            cur.fetchall()
+            return True
+        except Exception:
+            return False
+
+    if not tem_colunas(f"tb_clientes_{c}"):
+        return None, None
+
+    whatsapp = None
+    pedido_id = entrega.get("pedido_id")
+    if pedido_id:
+        try:
+            cur.execute(f"SELECT whatsapp FROM `tb_pedidos_{c}` WHERE id=%s", (pedido_id,))
+            row = cur.fetchone()
+            if row:
+                whatsapp = row.get("whatsapp")
+        except Exception:
+            whatsapp = None
+
+    if whatsapp:
+        try:
+            cur.execute(f"SELECT lat, lng FROM `tb_clientes_{c}` WHERE whatsapp=%s", (whatsapp,))
+            row = cur.fetchone()
+            if row and row.get("lat") is not None and row.get("lng") is not None:
+                return float(row["lat"]), float(row["lng"])
+        except Exception:
+            pass
+    else:
+        try:
+            cur.execute(
+                f"SELECT lat, lng FROM `tb_clientes_{c}` WHERE nome=%s ORDER BY id DESC LIMIT 1",
+                (entrega.get("cliente_nome") or "",),
+            )
+            row = cur.fetchone()
+            if row and row.get("lat") is not None and row.get("lng") is not None:
+                return float(row["lat"]), float(row["lng"])
+        except Exception:
+            pass
+    return None, None
+
+
 @router.get("/tarefas", status_code=200)
 def minhas_tarefas(creds: HTTPAuthorizationCredentials = Depends(_bearer)):
     ctx = _get_driver_ctx(creds)
@@ -154,6 +200,9 @@ def minhas_tarefas(creds: HTTPAuthorizationCredentials = Depends(_bearer)):
                             r[campo] = r[campo].isoformat()
                         except Exception:
                             pass
+                lat, lng = _cliente_coords(cur, c, r)
+                r["cliente_lat"] = lat
+                r["cliente_lng"] = lng
                 result.append(r)
             return {"sucesso": True, "entregador": ctx["name"], "tarefas": result}
         finally:
@@ -179,6 +228,7 @@ def historico_tarefas(creds: HTTPAuthorizationCredentials = Depends(_bearer)):
                 (ctx["entregador_id"],),
             )
             rows = cur.fetchall() or []
+            result = []
             for r in rows:
                 for campo in ("criado_em", "aceito_em", "coletado_em", "entregue_em", "cancelado_em"):
                     if r.get(campo):
@@ -186,7 +236,11 @@ def historico_tarefas(creds: HTTPAuthorizationCredentials = Depends(_bearer)):
                             r[campo] = r[campo].isoformat()
                         except Exception:
                             pass
-            return {"sucesso": True, "tarefas": rows}
+                lat, lng = _cliente_coords(cur, c, r)
+                r["cliente_lat"] = lat
+                r["cliente_lng"] = lng
+                result.append(r)
+            return {"sucesso": True, "tarefas": result}
         finally:
             cur.close()
 

@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import api from '../api/client'
 import { Topbar } from '../components/Topbar'
 import { Loader, formatDate } from '../components/utils'
-import { Plus, Pencil, Trash2, Search, Database, RefreshCw } from 'lucide-react'
+import { Plus, Pencil, Trash2, Search, Database, RefreshCw, Package, Building2 } from 'lucide-react'
 
 function rotuloCampo(field) {
   return (field || '')
@@ -19,6 +20,7 @@ function valorExibicao(v) {
 }
 
 export function Cadastros() {
+  const navigate = useNavigate()
   const [meta, setMeta] = useState([])
   const [rota, setRota] = useState(null)
   const [linhas, setLinhas] = useState([])
@@ -234,6 +236,26 @@ export function Cadastros() {
       )}
 
       <div className="content animate-in" style={{ paddingTop: 0 }}>
+        {/* Atalhos para cadastros de produtos e departamentos */}
+        <div className="row" style={{ gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
+          <button
+            className="btn btn-ghost"
+            onClick={() => navigate('/produtos')}
+            style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+          >
+            <Package size={16} />
+            Produtos
+          </button>
+          <button
+            className="btn btn-ghost"
+            onClick={() => navigate('/departamentos')}
+            style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+          >
+            <Building2 size={16} />
+            Departamentos
+          </button>
+        </div>
+
         <div className="row" style={{ gap: 16, alignItems: 'flex-start' }}>
           {/* Menu de tabelas */}
           <div className="card" style={{ padding: 12, width: 230, flexShrink: 0 }}>
