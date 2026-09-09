@@ -110,9 +110,9 @@ def _garantir(cnpj: str) -> None:
                 )
                 """
             )
-            cur.execute("SHOW COLUMNS FROM `tb_entregas_%s` LIKE 'motivo_cancelamento'", (c,))
+            cur.execute(f"SHOW COLUMNS FROM `tb_entregas_{c}` LIKE 'motivo_cancelamento'")
             if not cur.fetchone():
-                cur.execute("ALTER TABLE `tb_entregas_%s` ADD COLUMN motivo_cancelamento VARCHAR(500) DEFAULT ''", (c,))
+                cur.execute(f"ALTER TABLE `tb_entregas_{c}` ADD COLUMN motivo_cancelamento VARCHAR(500) DEFAULT ''")
             cur.execute(
                 f"""
                 CREATE TABLE IF NOT EXISTS `tb_localizacao_{c}` (
