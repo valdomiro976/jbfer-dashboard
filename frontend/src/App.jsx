@@ -9,7 +9,6 @@ import { Chat } from './pages/Chat'
 import { Entregas } from './pages/Entregas'
 import { Rastreamento } from './pages/Rastreamento'
 import { Entregadores } from './pages/Entregadores'
-import { Departamentos } from './pages/Departamentos'
 import { Cadastros } from './pages/Cadastros'
 
 function ProtectedLayout() {
@@ -27,7 +26,8 @@ function ProtectedLayout() {
           <Route path="/entregas" element={<Entregas />} />
           <Route path="/rastreamento" element={<Rastreamento />} />
           <Route path="/entregadores" element={<Entregadores />} />
-          <Route path="/departamentos" element={<Departamentos />} />
+          <Route path="/departamentos" element={<Cadastros padrao="departamentos" />} />
+          <Route path="/produtos" element={<Cadastros padrao="produtos" />} />
           <Route path="/cadastros" element={<Cadastros />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
