@@ -5,7 +5,7 @@
 - **Subdomínio**: `https://whats.jbfer.com.br/`
 - **Painel**: EazyPanel — projeto `portal` em `/etc/easypanel/projects/portal/`
 - **Code**: repositório próprio do dashboard (back + front + Dockerfile + easypanel.yaml)
-- **Banco**: MySQL remoto `104.237.9.229` (projeto `portal_mysql_vendas`), schema `jbfer_chat_bot` — o dashboard apenas consome esse banco.
+- **Banco**: container MySQL do próprio EazyPanel (`portal_mysql_vendas`), acessado pelo **nome do serviço** (rede interna) — o dashboard apenas consome esse banco.
 
 ## Arquitetura de produção
 
@@ -44,7 +44,7 @@ Um único container:
    - O EazyPanel lê o `easypanel.yaml` automaticamente.
 
 3. **Configurar variáveis** (Valores padrão já definidos no `easypanel.yaml`):
-   - `DB_HOST=104.237.9.229`, `DB_USER=mysql_root`, `DB_PASSWORD`, `DB_NAME=jbfer_chat_bot`
+   - `DB_SERVERNAME=portal_mysql_vendas`, `DB_USERNAME=mysql_root`, `DB_PASSWORD`, `DB_NAME=jbfer_chat_bot`
    - `CORS_ORIGINS=https://whats.jbfer.com.br`
 
 4. **Domínio + SSL**
@@ -62,5 +62,6 @@ curl https://whats.jbfer.com.br/api/health   # -> {"status":"ok",...}
 ## Observações
 
 - O `.env` (credenciais) **não** é versionado. Em produção use as variáveis do EazyPanel.
+- O nome do serviço MySQL (`portal_mysql_vendas`) é resolvido pela rede Docker do projeto `portal`; o backend aceita `DB_SERVERNAME` (EazyPanel) ou `DB_HOST` (IP/host local).
 - Se um dia o MySQL for um container do próprio projeto, descomente o bloco `mysql:` no `easypanel.yaml` e aponte `DB_HOST` para o nome do serviço (ex.: `mysql`).
 - O app Android (`mobile/`) é publicado/acompanhado à parte.

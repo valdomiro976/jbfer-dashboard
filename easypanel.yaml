@@ -20,9 +20,9 @@ services:
       - 8500
     environment:
       - PORT=8500
-      - DB_HOST=${DB_HOST:-104.237.9.229}
+      - DB_SERVERNAME=${DB_SERVERNAME:-portal_mysql_vendas}
       - DB_PORT=${DB_PORT:-3306}
-      - DB_USER=${DB_USER:-mysql_root}
+      - DB_USER=${DB_USERNAME:-mysql_root}
       - DB_PASSWORD=${DB_PASSWORD:-Bravos2025&}
       - DB_NAME=${DB_NAME:-jbfer_chat_bot}
       - SECRET_KEY=${SECRET_KEY:-dashboard-jbfer-secret-key-2026-multitenant}

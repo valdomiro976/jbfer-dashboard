@@ -28,7 +28,7 @@ COPY --from=frontend-build /app/frontend/dist /app/frontend/dist
 WORKDIR /app/backend
 
 # Variáveis padrão (sobrescrevidas via EazyPanel se necessário)
-ENV DB_HOST=104.237.9.229 \
+ENV DB_SERVERNAME=portal_mysql_vendas \
     DB_PORT=3306 \
     DB_USER=mysql_root \
     DB_PASSWORD=Bravos2025& \

@@ -13,7 +13,8 @@ class Settings(BaseSettings):
     debug: bool = True
 
     # Banco de dados MySQL (mesmo do chatbot - multi-tenant por CNPJ)
-    db_host: str = os.getenv("DB_HOST", "127.0.0.1")
+    # Suporta DB_HOST (IP/host) ou DB_SERVERNAME (nome do serviço EazyPanel)
+    db_host: str = os.getenv("DB_HOST", os.getenv("DB_SERVERNAME", "127.0.0.1"))
     db_port: int = int(os.getenv("DB_PORT", "3306"))
     db_user: str = os.getenv("DB_USER", "root")
     db_password: str = os.getenv("DB_PASSWORD", "")
