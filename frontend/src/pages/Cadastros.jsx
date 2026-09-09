@@ -453,12 +453,12 @@ export function Cadastros({ padrao }) {
               })}
               <div className="crud-menu-sep" />
               <button className={viewProdutos ? 'crud-menu-btn active' : 'crud-menu-btn'} onClick={() => selecionar('produtos')}>
+                <Package size={15} />
                 <span style={{ flex: 1, textAlign: 'left' }}>Produtos</span>
-                <Package size={14} />
               </button>
               <button className={viewDptos ? 'crud-menu-btn active' : 'crud-menu-btn'} onClick={() => selecionar('departamentos')}>
+                <Building2 size={15} />
                 <span style={{ flex: 1, textAlign: 'left' }}>Departamentos</span>
-                <Building2 size={14} />
               </button>
             </div>
           </div>
