@@ -105,10 +105,14 @@ def _garantir(cnpj: str) -> None:
                     coletado_em DATETIME NULL,
                     entregue_em DATETIME NULL,
                     cancelado_em DATETIME NULL,
+                    motivo_cancelamento VARCHAR(500) DEFAULT '',
                     entregador_nome VARCHAR(255) DEFAULT ''
                 )
                 """
             )
+            cur.execute("SHOW COLUMNS FROM `tb_entregas_%s` LIKE 'motivo_cancelamento'", (c,))
+            if not cur.fetchone():
+                cur.execute("ALTER TABLE `tb_entregas_%s` ADD COLUMN motivo_cancelamento VARCHAR(500) DEFAULT ''", (c,))
             cur.execute(
                 f"""
                 CREATE TABLE IF NOT EXISTS `tb_localizacao_{c}` (
@@ -260,6 +264,13 @@ def atualizar_tarefa(
     if status not in valid_status:
         raise HTTPException(status_code=400, detail="Status inválido")
 
+    if status == "cancelada":
+        motivo = (payload.get("motivo") or "").strip()
+        if not motivo:
+            raise HTTPException(status_code=400, detail="Motivo do cancelamento é obrigatório")
+        if len(motivo) > 500:
+            raise HTTPException(status_code=400, detail="Motivo muito longo (máx. 500 caracteres)")
+
     campo_data = {
         "aceita": "aceito_em",
         "em_transito": "coletado_em",
@@ -270,7 +281,12 @@ def atualizar_tarefa(
     with connection() as conn:
         cur = conn.cursor()
         try:
-            if campo_data:
+            if status == "cancelada":
+                cur.execute(
+                    f"UPDATE `tb_entregas_{c}` SET status=%s, cancelado_em=NOW(), motivo_cancelamento=%s WHERE id=%s AND entregador_id=%s",
+                    (status, motivo, entrega_id, ctx["entregador_id"]),
+                )
+            elif campo_data:
                 cur.execute(
                     f"UPDATE `tb_entregas_{c}` SET status=%s, {campo_data}=NOW() WHERE id=%s AND entregador_id=%s",
                     (status, entrega_id, ctx["entregador_id"]),
