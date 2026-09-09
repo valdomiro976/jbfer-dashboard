@@ -283,11 +283,21 @@ export function Cadastros({ padrao }) {
     )
   })
 
-  // Resumo das colunas exibidas na grade (todas editáveis no modal)
-  const colunasResumidas = colunasVisiveis().slice(0, 6)
+  // Resumo das colunas exibidas na grade: id + status (se existe) + até mais 5
   function colunasVisiveis() {
-    return colunas.filter((c) => !c.textarea)
+    return colunas.filter((c) => !c.textarea && !c.timestamp)
   }
+  const colunasResumidas = (() => {
+    const all = colunasVisiveis()
+    const temStatus = all.some((c) => c.field === 'status')
+    if (temStatus) {
+      const id = all.filter((c) => c.field === 'id')
+      const st = all.filter((c) => c.field === 'status')
+      const resto = all.filter((c) => c.field !== 'id' && c.field !== 'status')
+      return [...id, ...st, ...resto].slice(0, 7)
+    }
+    return all.slice(0, 6)
+  })()
 
   const renderCampo = (c) => {
     const campo = c.field
