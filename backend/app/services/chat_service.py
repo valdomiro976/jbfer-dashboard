@@ -130,6 +130,24 @@ def obter_mensagens(cnpj: str, numero: str, limite: int = 200) -> list[dict]:
             cursor.close()
 
 
+def remover_mensagens(cnpj: str, numero: str) -> int:
+    """Remove todas as mensagens de uma conversa (número). Retorna qtde apagada."""
+    tabela = _tabela(cnpj)
+    if not _tabela_existe(tabela):
+        return 0
+    with connection() as conn:
+        cursor = conn.cursor()
+        try:
+            cursor.execute(
+                f"DELETE FROM `{tabela}` WHERE numero=%s",
+                (numero,),
+            )
+            conn.commit()
+            return cursor.rowcount
+        finally:
+            cursor.close()
+
+
 def buscar_conversas(cnpj: str, termo: str, limite: int = 50) -> list[dict]:
     """Busca mensagens que contenham um termo."""
     tabela = _tabela(cnpj)

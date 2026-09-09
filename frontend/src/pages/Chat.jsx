@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import api from '../api/client'
 import { Topbar } from '../components/Topbar'
 import { Loader, formatDate } from '../components/utils'
-import { MessageCircle, Search } from 'lucide-react'
+import { MessageCircle, Search, Trash2 } from 'lucide-react'
 
 export function Chat() {
   const [conversas, setConversas] = useState([])
@@ -58,6 +58,22 @@ export function Chat() {
 
   const convAtiva = conversas.find((c) => c.numero === ativo)
 
+  const excluirConversa = async () => {
+    if (!ativo) return
+    const qtd = convAtiva?.total_mensagens || mensagens.length || 0
+    if (!confirm(`Excluir TODAS as mensagens deste número (${qtd} msg)?\n\nEssa ação não pode ser desfeita.`)) return
+    try {
+      await api.delete(`/chat/conversas/${encodeURIComponent(ativo)}`)
+      setMensagens([])
+      setConversas((cs) => cs.filter((c) => c.numero !== ativo))
+      setAtivo(null)
+      alert('Mensagens excluídas')
+    } catch (e) {
+      console.error(e)
+      alert('Erro ao excluir mensagens')
+    }
+  }
+
   return (
     <>
       <Topbar title="Conversas WhatsApp" subtitle="Histórico completo de atendimentos" />
@@ -106,10 +122,21 @@ export function Chat() {
               <div className="chat-avatar" style={{ width: 36, height: 36, fontSize: 14 }}>
                 {convAtiva ? convAtiva.nome.charAt(0).toUpperCase() : '?'}
               </div>
-              <div>
+              <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 700, fontSize: 14 }}>{convAtiva ? convAtiva.nome : 'Selecione uma conversa'}</div>
                 <div className="text-muted text-sm">{convAtiva?.numero}</div>
               </div>
+              {convAtiva && (
+                <button
+                  className="btn btn-danger"
+                  style={{ padding: '8px 12px' }}
+                  onClick={excluirConversa}
+                  title="Excluir todas as mensagens deste número"
+                >
+                  <Trash2 size={15} />
+                  Excluir msgs
+                </button>
+              )}
             </div>
 
             <div className="chat-messages" ref={msgsRef}>

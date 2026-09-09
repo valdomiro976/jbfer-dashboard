@@ -36,3 +36,13 @@ def buscar_mensagens(termo: str = Query(..., min_length=1), user: dict = Depends
         return {"sucesso": True, "cnpj": cnpj, "total": len(resultados), "dados": resultados}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao buscar mensagens: {str(e)}")
+
+
+@router.delete("/conversas/{numero}", status_code=status.HTTP_200_OK)
+def excluir_mensagens(numero: str, user: dict = Depends(get_current_cnpj)):
+    cnpj = user["cnpj"]
+    try:
+        apagadas = chat_service.remover_mensagens(cnpj, numero)
+        return {"sucesso": True, "cnpj": cnpj, "numero": numero, "removidas": apagadas}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao excluir mensagens: {str(e)}")
