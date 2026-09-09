@@ -3,7 +3,16 @@ import { useNavigate } from 'react-router-dom'
 import api from '../api/client'
 import { Topbar } from '../components/Topbar'
 import { Loader, formatDate, formatBRL } from '../components/utils'
-import { Plus, Pencil, Trash2, Search, Database, RefreshCw, Package, Building2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, Search, Database, RefreshCw, Package, Building2, KeyRound, Users, Settings, CreditCard, ShoppingCart, CornerDownRight } from 'lucide-react'
+
+const iconeTabela = {
+  chaves_pix: KeyRound,
+  clientes: Users,
+  config: Settings,
+  formas_pgtos: CreditCard,
+  pedidos: ShoppingCart,
+  redir: CornerDownRight,
+}
 
 function rotuloCampo(field) {
   return (field || '')
@@ -426,18 +435,22 @@ export function Cadastros({ padrao }) {
               Cadastro
             </div>
             <div className="crud-menu">
-              {meta.map((t) => (
-                <button
-                  key={t.rota}
-                  className={rotaTabela === t.rota && !viewProdutos && !viewDptos ? 'crud-menu-btn active' : 'crud-menu-btn'}
-                  onClick={() => selecionar(`tabela:${t.rota}`)}
-                  disabled={!t.existe}
-                  title={t.existe ? t.rotulo : `${t.rotulo} (não existe)`}
-                >
-                  <span style={{ flex: 1, textAlign: 'left' }}>{t.rotulo}</span>
-                  {!t.existe && <span className="text-muted" style={{ fontSize: 11 }}>×</span>}
-                </button>
-              ))}
+              {meta.map((t) => {
+                const Icone = iconeTabela[t.rota] || Database
+                return (
+                  <button
+                    key={t.rota}
+                    className={rotaTabela === t.rota && !viewProdutos && !viewDptos ? 'crud-menu-btn active' : 'crud-menu-btn'}
+                    onClick={() => selecionar(`tabela:${t.rota}`)}
+                    disabled={!t.existe}
+                    title={t.existe ? t.rotulo : `${t.rotulo} (não existe)`}
+                  >
+                    <Icone size={15} />
+                    <span style={{ flex: 1, textAlign: 'left' }}>{t.rotulo}</span>
+                    {!t.existe && <span className="text-muted" style={{ fontSize: 11 }}>×</span>}
+                  </button>
+                )
+              })}
               <div className="crud-menu-sep" />
               <button className={viewProdutos ? 'crud-menu-btn active' : 'crud-menu-btn'} onClick={() => selecionar('produtos')}>
                 <span style={{ flex: 1, textAlign: 'left' }}>Produtos</span>
