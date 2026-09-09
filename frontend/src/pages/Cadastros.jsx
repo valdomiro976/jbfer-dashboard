@@ -14,6 +14,11 @@ const iconeTabela = {
   redir: CornerDownRight,
 }
 
+const statusCor = {
+  PENDENTE: 'badge badge-danger',
+  ATENDIDO: 'badge badge-success',
+}
+
 function rotuloCampo(field) {
   return (field || '')
     .replace(/_/g, ' ')
@@ -587,9 +592,13 @@ export function Cadastros({ padrao }) {
                       <tr key={l.id}>
                         {colunasResumidas.map((c) => (
                           <td key={c.field}>
-                            {c.type === 'datetime' || c.type === 'date'
-                              ? formatDate(l[c.field])
-                              : valorExibicao(l[c.field])}
+                            {c.field === 'status'
+                              ? (statusCor[String(l[c.field]).toUpperCase()] || null)
+                                ? <span className={statusCor[String(l[c.field]).toUpperCase()]}>{valorExibicao(l[c.field])}</span>
+                                : valorExibicao(l[c.field])
+                              : c.type === 'datetime' || c.type === 'date'
+                                ? formatDate(l[c.field])
+                                : valorExibicao(l[c.field])}
                           </td>
                         ))}
                         <td>
