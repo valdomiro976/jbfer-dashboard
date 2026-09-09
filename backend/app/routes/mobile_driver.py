@@ -32,6 +32,55 @@ def _get_driver_ctx(creds: HTTPAuthorizationCredentials):
     }
 
 
+def _garantir_clientes(cnpj: str) -> None:
+    """Garante a tabela de clientes com colunas de coordenadas (lat/lng)."""
+    c = _cnpj_limpo(cnpj)
+    with connection() as conn:
+        cur = conn.cursor()
+        try:
+            cur.execute(
+                f"""
+                CREATE TABLE IF NOT EXISTS `tb_clientes_{c}` (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    whatsapp VARCHAR(50) NOT NULL,
+                    nome VARCHAR(255) DEFAULT NULL,
+                    tipo_cliente VARCHAR(20) DEFAULT NULL,
+                    bot_ativo TINYINT(1) DEFAULT 1,
+                    cep VARCHAR(20) DEFAULT NULL,
+                    cidade VARCHAR(255) DEFAULT NULL,
+                    uf VARCHAR(2) DEFAULT NULL,
+                    bairro VARCHAR(255) DEFAULT NULL,
+                    endereco VARCHAR(500) DEFAULT NULL,
+                    referencia VARCHAR(500) DEFAULT NULL,
+                    numero VARCHAR(50) DEFAULT NULL,
+                    ddd1 VARCHAR(10) DEFAULT NULL,
+                    ddd2 VARCHAR(10) DEFAULT NULL,
+                    ddd3 VARCHAR(10) DEFAULT NULL,
+                    ddd4 VARCHAR(10) DEFAULT NULL,
+                    ddd5 VARCHAR(10) DEFAULT NULL,
+                    fone1 VARCHAR(50) DEFAULT NULL,
+                    fone2 VARCHAR(50) DEFAULT NULL,
+                    fone3 VARCHAR(50) DEFAULT NULL,
+                    fone4 VARCHAR(50) DEFAULT NULL,
+                    fone5 VARCHAR(50) DEFAULT NULL,
+                    obs TEXT DEFAULT NULL,
+                    lat DECIMAL(10,7) DEFAULT NULL,
+                    lng DECIMAL(10,7) DEFAULT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    UNIQUE KEY uk_whatsapp (whatsapp)
+                )
+                """
+            )
+            for col, tipo in [("lat", "DECIMAL(10,7) DEFAULT NULL"), ("lng", "DECIMAL(10,7) DEFAULT NULL")]:
+                cur.execute(f"SHOW COLUMNS FROM `tb_clientes_{c}` LIKE '{col}'")
+                if not cur.fetchone():
+                    cur.execute(f"ALTER TABLE `tb_clientes_{c}` ADD COLUMN `{col}` {tipo}")
+            conn.commit()
+        finally:
+            cur.close()
+
+
 def _garantir(cnpj: str) -> None:
     c = _cnpj_limpo(cnpj)
     with connection() as conn:
@@ -181,6 +230,85 @@ def atualizar_tarefa(
             if cur.rowcount == 0:
                 raise HTTPException(status_code=404, detail="Tarefa não encontrada para este entregador")
             return {"sucesso": True, "mensagem": f"Status atualizado para {status}"}
+        finally:
+            cur.close()
+
+
+@router.post("/tarefas/{entrega_id}/coordenadas-cliente", status_code=200)
+def coordenadas_cliente(
+    entrega_id: int,
+    payload: dict,
+    creds: HTTPAuthorizationCredentials = Depends(_bearer),
+):
+    """Atualiza as coordenadas (lat/lng) do cliente da entrega no endereço do cliente.
+
+    O entregador, estando no local, envia a localização exata do dispositivo;
+    o endereço do cliente (tb_clientes_<cnpj>) é sobrescrito com essas coordenadas.
+    """
+    ctx = _get_driver_ctx(creds)
+    c = _cnpj_limpo(ctx["cnpj"])
+    _garantir(ctx["cnpj"])
+    _garantir_clientes(ctx["cnpj"])
+
+    lat = payload.get("lat")
+    lng = payload.get("lng")
+    if lat is None or lng is None:
+        raise HTTPException(status_code=400, detail="lat e lng são obrigatórios")
+    try:
+        lat = float(lat)
+        lng = float(lng)
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail="lat e lng devem ser números")
+
+    if not (-90 <= lat <= 90) or not (-180 <= lng <= 180):
+        raise HTTPException(status_code=400, detail="Coordenadas fora do intervalo válido")
+
+    with connection() as conn:
+        cur = conn.cursor(dictionary=True)
+        try:
+            cur.execute(
+                f"SELECT pedido_id, cliente_nome FROM `tb_entregas_{c}` WHERE id=%s AND entregador_id=%s",
+                (entrega_id, ctx["entregador_id"]),
+            )
+            entrega = cur.fetchone()
+            if not entrega:
+                raise HTTPException(status_code=404, detail="Tarefa não encontrada para este entregador")
+
+            cliente_whatsapp = None
+            pedido_id = entrega.get("pedido_id")
+            if pedido_id:
+                cur.execute(
+                    f"SELECT whatsapp FROM `tb_pedidos_{c}` WHERE id=%s",
+                    (pedido_id,),
+                )
+                pedido_row = cur.fetchone()
+                if pedido_row:
+                    cliente_whatsapp = pedido_row.get("whatsapp")
+
+            if not cliente_whatsapp:
+                # Sem pedido vinculado: tenta pelo nome do cliente
+                cur.execute(
+                    f"SELECT whatsapp FROM `tb_clientes_{c}` WHERE nome=%s ORDER BY id DESC LIMIT 1",
+                    (entrega.get("cliente_nome") or "",),
+                )
+                cliente_row = cur.fetchone()
+                if cliente_row:
+                    cliente_whatsapp = cliente_row.get("whatsapp")
+
+            if not cliente_whatsapp:
+                raise HTTPException(status_code=404, detail="Cliente da entrega não encontrado")
+
+            cur.execute(
+                f"UPDATE `tb_clientes_{c}` SET lat=%s, lng=%s WHERE whatsapp=%s",
+                (lat, lng, cliente_whatsapp),
+            )
+            conn.commit()
+            if cur.rowcount == 0:
+                raise HTTPException(status_code=404, detail="Cliente não localizado no cadastro")
+            return {
+                "sucesso": True,
+                "mensagem": f"Endereço do cliente atualizado: {lat:.6f}, {lng:.6f}",
+            }
         finally:
             cur.close()
 
