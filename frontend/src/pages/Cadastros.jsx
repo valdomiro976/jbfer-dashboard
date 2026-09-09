@@ -236,26 +236,6 @@ export function Cadastros() {
       )}
 
       <div className="content animate-in" style={{ paddingTop: 0 }}>
-        {/* Atalhos para cadastros de produtos e departamentos */}
-        <div className="row" style={{ gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
-          <button
-            className="btn btn-ghost"
-            onClick={() => navigate('/produtos')}
-            style={{ display: 'flex', alignItems: 'center', gap: 8 }}
-          >
-            <Package size={16} />
-            Produtos
-          </button>
-          <button
-            className="btn btn-ghost"
-            onClick={() => navigate('/departamentos')}
-            style={{ display: 'flex', alignItems: 'center', gap: 8 }}
-          >
-            <Building2 size={16} />
-            Departamentos
-          </button>
-        </div>
-
         <div className="row" style={{ gap: 16, alignItems: 'flex-start' }}>
           {/* Menu de tabelas */}
           <div className="card" style={{ padding: 12, width: 230, flexShrink: 0 }}>
@@ -276,6 +256,15 @@ export function Cadastros() {
                   {!t.existe && <span className="text-muted" style={{ fontSize: 11 }}>×</span>}
                 </button>
               ))}
+              <div className="crud-menu-sep" />
+              <button className="crud-menu-btn" onClick={() => navigate('/produtos')}>
+                <span style={{ flex: 1, textAlign: 'left' }}>Produtos</span>
+                <Package size={14} />
+              </button>
+              <button className="crud-menu-btn" onClick={() => navigate('/departamentos')}>
+                <span style={{ flex: 1, textAlign: 'left' }}>Departamentos</span>
+                <Building2 size={14} />
+              </button>
             </div>
           </div>
 

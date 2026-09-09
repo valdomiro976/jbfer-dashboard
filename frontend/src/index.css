@@ -671,6 +671,12 @@ body {
   cursor: not-allowed;
 }
 
+.crud-menu-sep {
+  height: 1px;
+  margin: 6px 8px;
+  background: var(--border);
+}
+
 /* ---------- Inputs ---------- */
 .input {
   width: 100%;
