@@ -10,6 +10,7 @@ import { Entregas } from './pages/Entregas'
 import { Rastreamento } from './pages/Rastreamento'
 import { Entregadores } from './pages/Entregadores'
 import { Departamentos } from './pages/Departamentos'
+import { Cadastros } from './pages/Cadastros'
 
 function ProtectedLayout() {
   const { user } = useAuth()
@@ -27,6 +28,7 @@ function ProtectedLayout() {
           <Route path="/rastreamento" element={<Rastreamento />} />
           <Route path="/entregadores" element={<Entregadores />} />
           <Route path="/departamentos" element={<Departamentos />} />
+          <Route path="/cadastros" element={<Cadastros />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>

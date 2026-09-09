@@ -15,7 +15,7 @@ DIST_DIR = BASE_DIR.parent / "frontend" / "dist"
 load_dotenv(BASE_DIR / ".env", override=True)
 
 from app.config import settings
-from app.routes import auth, vendas, chat, entregas, mobile_auth, mobile_driver, produtos, dptos
+from app.routes import auth, vendas, chat, entregas, mobile_auth, mobile_driver, produtos, dptos, notificacoes, cruds
 
 app = FastAPI(
     title="Dashboard JBFER API",
@@ -39,6 +39,8 @@ app.include_router(chat.router)
 app.include_router(entregas.router)
 app.include_router(produtos.router)
 app.include_router(dptos.router)
+app.include_router(notificacoes.router)
+app.include_router(cruds.router)
 app.include_router(mobile_auth.router)
 app.include_router(mobile_driver.router)
 

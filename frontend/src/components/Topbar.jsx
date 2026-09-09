@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Bell } from 'lucide-react'
+import { NotificacoesBell } from './NotificacoesBell'
 
 export function Topbar({ title, subtitle }) {
   const [date, setDate] = useState(new Date())
@@ -22,10 +22,7 @@ export function Topbar({ title, subtitle }) {
         <p>{subtitle || dataStr}</p>
       </div>
       <div className="row">
-        <button className="btn btn-ghost">
-          <Bell size={16} />
-          Notificações
-        </button>
+        <NotificacoesBell />
       </div>
     </header>
   )
