@@ -19,6 +19,13 @@ const statusCor = {
   ATENDIDO: 'badge badge-success',
 }
 
+// ComboBoxes por tabela/campo (rota -> campo -> opções)
+const selectsPorTabela = {
+  redir: {
+    status: ['PENDENTE', 'ATENDIDO'],
+  },
+}
+
 function rotuloCampo(field) {
   return (field || '')
     .replace(/_/g, ' ')
@@ -165,7 +172,10 @@ export function Cadastros({ padrao }) {
     const f = {}
     camposEditaveis.forEach((c) => {
       if (c.type === 'bool') f[c.field] = c.default !== 0
-      else f[c.field] = ''
+      else {
+        const opcoes = selectsPorTabela[rotaTabela]?.[c.field]
+        f[c.field] = opcoes ? opcoes[0] : ''
+      }
     })
     return f
   }
@@ -308,6 +318,24 @@ export function Cadastros({ padrao }) {
     const campo = c.field
     const rotulo = rotuloCampo(campo)
     const val = form[campo] ?? ''
+    const opcoes = selectsPorTabela[rotaTabela]?.[campo]
+
+    if (opcoes) {
+      return (
+        <div key={campo} style={{ marginBottom: 12 }}>
+          <label>{rotulo}</label>
+          <select
+            className="input"
+            value={val}
+            onChange={(e) => setForm({ ...form, [campo]: e.target.value })}
+          >
+            {opcoes.map((o) => (
+              <option key={o} value={o}>{o}</option>
+            ))}
+          </select>
+        </div>
+      )
+    }
 
     if (c.type === 'bool') {
       return (
