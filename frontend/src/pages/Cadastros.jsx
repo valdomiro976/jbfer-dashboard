@@ -221,6 +221,7 @@ export function Cadastros() {
         <div className="modal-overlay" onClick={() => setModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>{editing ? `Editar registro #${editing.id}` : `Novo registro em ${metaAtual?.rotulo || rota}`}</h3>
+            <button className="modal-close" onClick={() => setModal(false)} title="Fechar">✕</button>
             <div className="modal-scroll">
               {camposEditaveis.length === 0 && <p className="text-muted text-sm">Nenhum campo editável</p>}
               {camposEditaveis.map(renderCampo)}
@@ -240,19 +241,20 @@ export function Cadastros() {
               <Database size={13} style={{ verticalAlign: '-2px', marginRight: 6 }} />
               Tabelas
             </div>
-            {meta.map((t) => (
-              <button
-                key={t.rota}
-                className={rota === t.rota ? 'nav-item active' : 'nav-item'}
-                style={{ display: 'flex', width: '100%', padding: '9px 12px', marginBottom: 3 }}
-                onClick={() => selecionar(t.rota)}
-                disabled={!t.existe}
-                title={t.existe ? t.rotulo : `${t.rotulo} (não existe)`}
-              >
-                <span style={{ flex: 1, textAlign: 'left', fontSize: 13 }}>{t.rotulo}</span>
-                {!t.existe && <span className="text-muted" style={{ fontSize: 11 }}>×</span>}
-              </button>
-            ))}
+            <div className="crud-menu">
+              {meta.map((t) => (
+                <button
+                  key={t.rota}
+                  className={rota === t.rota ? 'crud-menu-btn active' : 'crud-menu-btn'}
+                  onClick={() => selecionar(t.rota)}
+                  disabled={!t.existe}
+                  title={t.existe ? t.rotulo : `${t.rotulo} (não existe)`}
+                >
+                  <span style={{ flex: 1, textAlign: 'left' }}>{t.rotulo}</span>
+                  {!t.existe && <span className="text-muted" style={{ fontSize: 11 }}>×</span>}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Conteúdo da tabela */}
@@ -269,7 +271,7 @@ export function Cadastros() {
                 />
               </div>
               <div className="row" style={{ gap: 8 }}>
-                <button className="btn btn-ghost" onClick={() => loadLinhas(rota)} title="Recarregar">
+                <button className="btn btn-ghost btn-icon" onClick={() => loadLinhas(rota)} title="Recarregar">
                   <RefreshCw size={15} />
                 </button>
                 <button className="btn btn-primary" onClick={abrirNovo} disabled={camposEditaveis.length === 0}>
@@ -311,10 +313,10 @@ export function Cadastros() {
                         ))}
                         <td>
                           <div className="row" style={{ gap: 6 }}>
-                            <button className="btn btn-ghost" style={{ padding: 8 }} onClick={() => abrirEdicao(l)} title="Editar">
+                            <button className="btn btn-ghost btn-icon" style={{ padding: 0 }} onClick={() => abrirEdicao(l)} title="Editar">
                               <Pencil size={15} />
                             </button>
-                            <button className="btn btn-danger" style={{ padding: 8 }} onClick={() => excluir(l)} title="Excluir">
+                            <button className="btn btn-danger btn-icon" style={{ padding: 0 }} onClick={() => excluir(l)} title="Excluir">
                               <Trash2 size={15} />
                             </button>
                           </div>

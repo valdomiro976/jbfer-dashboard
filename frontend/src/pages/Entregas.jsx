@@ -116,6 +116,7 @@ export function Entregas() {
         <div className="modal-overlay" onClick={() => setModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>Nova entrega</h3>
+            <button className="modal-close" onClick={() => setModal(false)} title="Fechar">✕</button>
 
             <label>Entregador</label>
             <select className="input" value={form.entregador_id} onChange={(e) => setForm({ ...form, entregador_id: e.target.value })} style={{ marginBottom: 14 }}>

@@ -132,6 +132,7 @@ export function VendaModal({ pedido, onClose, onSalvo }) {
     return (
       <div className="modal-overlay" onClick={onClose}>
         <div className="modal modal-lg">
+          <button className="modal-close" onClick={onClose} title="Fechar">✕</button>
           <div className="loading">Carregando venda...</div>
         </div>
       </div>

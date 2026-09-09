@@ -105,6 +105,7 @@ export function Departamentos() {
         <div className="modal-overlay" onClick={() => setModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>{editing ? 'Editar departamento' : 'Novo departamento'}</h3>
+            <button className="modal-close" onClick={() => setModal(false)} title="Fechar">✕</button>
 
             <label>Nome do departamento</label>
             <input className="input" value={form.departamento} onChange={(e) => setForm({ ...form, departamento: e.target.value })} style={{ marginBottom: 14 }} />

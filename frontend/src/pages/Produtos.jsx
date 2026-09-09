@@ -90,6 +90,7 @@ export function Produtos() {
         <div className="modal-overlay" onClick={() => setModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>{editing ? 'Editar produto' : 'Novo produto'}</h3>
+            <button className="modal-close" onClick={() => setModal(false)} title="Fechar">✕</button>
 
             <label>Nome</label>
             <input className="input" value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} style={{ marginBottom: 14 }} />
