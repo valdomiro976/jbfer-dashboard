@@ -1,0 +1,28 @@
+# Node
+node_modules/
+frontend/dist/
+
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Runtime data (cache de geocodificação com endereços de clientes)
+backend/app/data/geo_cache*.json
+backend/app/data/
+
+# Env (nunca versionar credenciais)
+.env
+.env.*
+!.env.example
+
+# IDE / SO
+.vscode/
+.idea/
+.DS_Store
+
+# Logs
+*.log
+
+# Mobile (app Android separado)
+mobile/

@@ -1,0 +1,49 @@
+# ============================================================
+# Projeto EazyPanel - Dashboard JBFER
+# Publique em: https://whats.jbfer.com.br/
+#
+# Como usar:
+#   1) Suba este código para um repositório Git (sugerido: valdomiro976/jbfer-dashboard)
+#   2) No EazyPanel crie um "New Project" apontando para o repo (branch main)
+#   3) Configure o domínio whats.jbfer.com.br e o SSL (Let's Encrypt)
+#   4) Edite as "Variables" se o banco/credenciais mudarem em produção
+# ============================================================
+
+name: jbfer-dashboard
+
+services:
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8500
+    environment:
+      - PORT=8500
+      - DB_HOST=${DB_HOST:-104.237.9.229}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_USER=${DB_USER:-mysql_root}
+      - DB_PASSWORD=${DB_PASSWORD:-Bravos2025&}
+      - DB_NAME=${DB_NAME:-jbfer_chat_bot}
+      - SECRET_KEY=${SECRET_KEY:-dashboard-jbfer-secret-key-2026-multitenant}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=480
+      - CORS_ORIGINS=${CORS_ORIGINS:-https://whats.jbfer.com.br}
+    domains:
+      - whats.jbfer.com.br
+    deploy:
+      replicas: 1
+
+# Observações:
+# - O banco MySQL (jbfer_chat_bot) já roda no host 104.237.9.229 (portal_mysql_vendas).
+#   Se precisar de um container MySQL no próprio projeto, descomente o bloco abaixo.
+#
+#  mysql:
+#    image: mysql:8.0
+#    environment:
+#      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+#      - MYSQL_DATABASE=jbfer_chat_bot
+#    volumes:
+#      - mysql-data:/var/lib/mysql
+#
+# volumes:
+#   mysql-data:
