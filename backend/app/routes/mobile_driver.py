@@ -1,5 +1,6 @@
 # Endpoints do app Android do entregador: tarefas de entrega e localização GPS
 
+import json
 import re
 from typing import Optional
 
@@ -178,6 +179,71 @@ def _cliente_coords(cur, c: str, entrega: dict) -> tuple:
     return None, None
 
 
+def _pedido_detalhes(cur, c: str, pedido_id) -> dict:
+    """Retorna forma de pagamento e itens (produto x quantidade) do pedido vinculado.
+
+    A entrega armazena apenas pedido_descricao/valor_total. Os detalhes reais
+    (produtos, quantidades e forma de pagamento) ficam em tb_pedidos_<cnpj>.
+    """
+    if not pedido_id:
+        return {"pagamento": None, "itens": None, "quantidade": None}
+    try:
+        cur.execute(f"SELECT produto, pagamento, dados FROM `tb_pedidos_{c}` WHERE id=%s", (pedido_id,))
+        row = cur.fetchone()
+    except Exception:
+        return {"pagamento": None, "itens": None, "quantidade": None}
+    if not row:
+        return {"pagamento": None, "itens": None, "quantidade": None}
+
+    pagamento = (row.get("pagamento") or "").strip() or None
+
+    itens = None
+    quantidade = None
+    dados = row.get("dados")
+    try:
+        dados = json.loads(dados) if isinstance(dados, str) else dados
+        if isinstance(dados, list):
+            itens = []
+            qtds = []
+            for d in dados:
+                if not isinstance(d, dict):
+                    continue
+                campo = d.get("campo")
+                if campo == "item":
+                    itens.append(
+                        f"{d.get('produto') or d.get('descricao') or ''} x{d.get('quantidade') or 1}"
+                    )
+                    try:
+                        qtds.append(int(d.get("quantidade") or 1))
+                    except (TypeError, ValueError):
+                        qtds.append(1)
+                elif campo == "quantidade":
+                    try:
+                        qtds.append(int(d.get("valor") or 1))
+                    except (TypeError, ValueError):
+                        pass
+            quantidade = sum(qtds) if qtds else None
+            if itens:
+                itens = "; ".join(itens)
+            elif quantidade is not None:
+                itens = f"{row.get('produto') or ''} x{quantidade}"
+    except Exception:
+        pass
+
+    if not itens:
+        produto = (row.get("produto") or "").strip()
+        if produto:
+            itens = produto
+            # tenta extrair a quantidade total de um padrão "PROD x2 + PROD x1"
+            try:
+                quantidades = [int(m) for m in re.findall(r"x(\d+)", produto)]
+                quantidade = sum(quantidades) if quantidades else 1
+            except Exception:
+                quantidade = 1
+
+    return {"pagamento": pagamento, "itens": itens, "quantidade": quantidade}
+
+
 @router.get("/tarefas", status_code=200)
 def minhas_tarefas(creds: HTTPAuthorizationCredentials = Depends(_bearer)):
     ctx = _get_driver_ctx(creds)
@@ -207,6 +273,8 @@ def minhas_tarefas(creds: HTTPAuthorizationCredentials = Depends(_bearer)):
                 lat, lng = _cliente_coords(cur, c, r)
                 r["cliente_lat"] = lat
                 r["cliente_lng"] = lng
+                for k, v in _pedido_detalhes(cur, c, r.get("pedido_id")).items():
+                    r[k] = v
                 result.append(r)
             return {"sucesso": True, "entregador": ctx["name"], "tarefas": result}
         finally:
@@ -243,6 +311,8 @@ def historico_tarefas(creds: HTTPAuthorizationCredentials = Depends(_bearer)):
                 lat, lng = _cliente_coords(cur, c, r)
                 r["cliente_lat"] = lat
                 r["cliente_lng"] = lng
+                for k, v in _pedido_detalhes(cur, c, r.get("pedido_id")).items():
+                    r[k] = v
                 result.append(r)
             return {"sucesso": True, "tarefas": result}
         finally:
