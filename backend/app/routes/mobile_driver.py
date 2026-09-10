@@ -180,11 +180,7 @@ def _cliente_coords(cur, c: str, entrega: dict) -> tuple:
 
 
 def _pedido_detalhes(cur, c: str, pedido_id) -> dict:
-    """Retorna forma de pagamento e itens (produto x quantidade) do pedido vinculado.
-
-    A entrega armazena apenas pedido_descricao/valor_total. Os detalhes reais
-    (produtos, quantidades e forma de pagamento) ficam em tb_pedidos_<cnpj>.
-    """
+    """Retorna forma de pagamento, descrição dos itens e quantidade total do pedido."""
     if not pedido_id:
         return {"pagamento": None, "itens": None, "quantidade": None}
     try:
@@ -196,52 +192,45 @@ def _pedido_detalhes(cur, c: str, pedido_id) -> dict:
         return {"pagamento": None, "itens": None, "quantidade": None}
 
     pagamento = (row.get("pagamento") or "").strip() or None
-
-    itens = None
+    produto = (row.get("produto") or "").strip() or None
     quantidade = None
+
     dados = row.get("dados")
     try:
-        dados = json.loads(dados) if isinstance(dados, str) else dados
-        if isinstance(dados, list):
-            itens = []
-            qtds = []
-            for d in dados:
-                if not isinstance(d, dict):
-                    continue
-                campo = d.get("campo")
-                if campo == "item":
-                    itens.append(
-                        f"{d.get('produto') or d.get('descricao') or ''} x{d.get('quantidade') or 1}"
-                    )
-                    try:
-                        qtds.append(int(d.get("quantidade") or 1))
-                    except (TypeError, ValueError):
-                        qtds.append(1)
-                elif campo == "quantidade":
-                    try:
-                        qtds.append(int(d.get("valor") or 1))
-                    except (TypeError, ValueError):
-                        pass
-            quantidade = sum(qtds) if qtds else None
-            if itens:
-                itens = "; ".join(itens)
-            elif quantidade is not None:
-                itens = f"{row.get('produto') or ''} x{quantidade}"
+        if isinstance(dados, str):
+            dados = json.loads(dados)
     except Exception:
-        pass
+        dados = None
 
-    if not itens:
-        produto = (row.get("produto") or "").strip()
-        if produto:
-            itens = produto
-            # tenta extrair a quantidade total de um padrão "PROD x2 + PROD x1"
-            try:
-                quantidades = [int(m) for m in re.findall(r"x(\d+)", produto)]
-                quantidade = sum(quantidades) if quantidades else 1
-            except Exception:
-                quantidade = 1
+    if isinstance(dados, list):
+        qtds = []
+        itens = []
+        for d in dados:
+            if not isinstance(d, dict):
+                continue
+            campo = d.get("campo", "")
+            if campo == "item":
+                nome = d.get("produto") or d.get("descricao") or ""
+                qtd = int(d.get("quantidade") or 1)
+                itens.append(f"{nome} x{qtd}")
+                qtds.append(qtd)
+            elif campo == "quantidade":
+                try:
+                    qtds.append(int(d.get("valor") or 1))
+                except (TypeError, ValueError):
+                    pass
+        if qtds:
+            quantidade = sum(qtds)
+        if itens:
+            produto = "; ".join(itens)
+        elif produto and quantidade:
+            produto = f"{produto} x{quantidade}"
 
-    return {"pagamento": pagamento, "itens": itens, "quantidade": quantidade}
+    if produto and quantidade is None:
+        quantidades = [int(m) for m in re.findall(r"x(\d+)", produto)]
+        quantidade = sum(quantidades) if quantidades else 1
+
+    return {"pagamento": pagamento, "itens": produto, "quantidade": quantidade or 1}
 
 
 @router.get("/tarefas", status_code=200)
