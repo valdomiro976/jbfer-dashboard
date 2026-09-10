@@ -107,13 +107,19 @@ def _garantir(cnpj: str) -> None:
                     entregue_em DATETIME NULL,
                     cancelado_em DATETIME NULL,
                     motivo_cancelamento VARCHAR(500) DEFAULT '',
-                    entregador_nome VARCHAR(255) DEFAULT ''
+                    entregador_nome VARCHAR(255) DEFAULT '',
+                    cliente_lat DECIMAL(10,7) DEFAULT NULL,
+                    cliente_lng DECIMAL(10,7) DEFAULT NULL
                 )
                 """
             )
             cur.execute(f"SHOW COLUMNS FROM `tb_entregas_{c}` LIKE 'motivo_cancelamento'")
             if not cur.fetchone():
                 cur.execute(f"ALTER TABLE `tb_entregas_{c}` ADD COLUMN motivo_cancelamento VARCHAR(500) DEFAULT ''")
+            for col, tipo in [("cliente_lat", "DECIMAL(10,7) DEFAULT NULL"), ("cliente_lng", "DECIMAL(10,7) DEFAULT NULL")]:
+                cur.execute(f"SHOW COLUMNS FROM `tb_entregas_{c}` LIKE '{col}'")
+                if not cur.fetchone():
+                    cur.execute(f"ALTER TABLE `tb_entregas_{c}` ADD COLUMN `{col}` {tipo}")
             cur.execute(
                 f"""
                 CREATE TABLE IF NOT EXISTS `tb_localizacao_{c}` (
@@ -134,7 +140,16 @@ def _garantir(cnpj: str) -> None:
 
 
 def _cliente_coords(cur, c: str, entrega: dict) -> tuple:
-    """Retorna (lat, lng) do cliente vinculado à entrega, ou (None, None)."""
+    """Retorna (lat, lng) do cliente vinculado à entrega, ou (None, None).
+
+    Prioriza coordenadas salvas na própria entrega (cliente_lat/cliente_lng).
+    Fallback: busca no cadastro de clientes (tb_clientes_<cnpj>).
+    """
+    lat = entrega.get("cliente_lat")
+    lng = entrega.get("cliente_lng")
+    if lat is not None and lng is not None:
+        return float(lat), float(lng)
+
     def tem_colunas(table: str) -> bool:
         try:
             cur.execute(f"SELECT lat, lng FROM `{table}` LIMIT 1")
@@ -369,11 +384,7 @@ def coordenadas_cliente(
     payload: dict,
     creds: HTTPAuthorizationCredentials = Depends(_bearer),
 ):
-    """Atualiza as coordenadas (lat/lng) do cliente da entrega no endereço do cliente.
-
-    O entregador, estando no local, envia a localização exata do dispositivo;
-    o endereço do cliente (tb_clientes_<cnpj>) é sobrescrito com essas coordenadas.
-    """
+    """Salva as coordenadas reais do local da entrega (gravadas pelo entregador no local)."""
     ctx = _get_driver_ctx(creds)
     c = _cnpj_limpo(ctx["cnpj"])
     _garantir(ctx["cnpj"])
@@ -396,47 +407,57 @@ def coordenadas_cliente(
         cur = conn.cursor(dictionary=True)
         try:
             cur.execute(
-                f"SELECT pedido_id, cliente_nome FROM `tb_entregas_{c}` WHERE id=%s AND entregador_id=%s",
+                f"SELECT id, pedido_id, cliente_nome FROM `tb_entregas_{c}` WHERE id=%s AND entregador_id=%s",
                 (entrega_id, ctx["entregador_id"]),
             )
             entrega = cur.fetchone()
             if not entrega:
-                raise HTTPException(status_code=404, detail="Tarefa não encontrada para este entregador")
+                raise HTTPException(status_code=404, detail="Entrega não encontrada para este entregador")
+
+            cur.execute(
+                f"UPDATE `tb_entregas_{c}` SET cliente_lat=%s, cliente_lng=%s WHERE id=%s",
+                (lat, lng, entrega_id),
+            )
 
             cliente_whatsapp = None
             pedido_id = entrega.get("pedido_id")
             if pedido_id:
-                cur.execute(
-                    f"SELECT whatsapp FROM `tb_pedidos_{c}` WHERE id=%s",
-                    (pedido_id,),
-                )
-                pedido_row = cur.fetchone()
-                if pedido_row:
-                    cliente_whatsapp = pedido_row.get("whatsapp")
+                try:
+                    cur.execute(
+                        f"SELECT whatsapp FROM `tb_pedidos_{c}` WHERE id=%s",
+                        (pedido_id,),
+                    )
+                    pedido_row = cur.fetchone()
+                    if pedido_row:
+                        cliente_whatsapp = pedido_row.get("whatsapp")
+                except Exception:
+                    pass
 
             if not cliente_whatsapp:
-                # Sem pedido vinculado: tenta pelo nome do cliente
-                cur.execute(
-                    f"SELECT whatsapp FROM `tb_clientes_{c}` WHERE nome=%s ORDER BY id DESC LIMIT 1",
-                    (entrega.get("cliente_nome") or "",),
-                )
-                cliente_row = cur.fetchone()
-                if cliente_row:
-                    cliente_whatsapp = cliente_row.get("whatsapp")
+                try:
+                    cur.execute(
+                        f"SELECT whatsapp FROM `tb_clientes_{c}` WHERE nome=%s ORDER BY id DESC LIMIT 1",
+                        (entrega.get("cliente_nome") or "",),
+                    )
+                    cliente_row = cur.fetchone()
+                    if cliente_row:
+                        cliente_whatsapp = cliente_row.get("whatsapp")
+                except Exception:
+                    pass
 
-            if not cliente_whatsapp:
-                raise HTTPException(status_code=404, detail="Cliente da entrega não encontrado")
+            if cliente_whatsapp:
+                try:
+                    cur.execute(
+                        f"UPDATE `tb_clientes_{c}` SET lat=%s, lng=%s WHERE whatsapp=%s",
+                        (lat, lng, cliente_whatsapp),
+                    )
+                except Exception:
+                    pass
 
-            cur.execute(
-                f"UPDATE `tb_clientes_{c}` SET lat=%s, lng=%s WHERE whatsapp=%s",
-                (lat, lng, cliente_whatsapp),
-            )
             conn.commit()
-            if cur.rowcount == 0:
-                raise HTTPException(status_code=404, detail="Cliente não localizado no cadastro")
             return {
                 "sucesso": True,
-                "mensagem": f"Endereço do cliente atualizado: {lat:.6f}, {lng:.6f}",
+                "mensagem": f"Coordenadas salvas: {lat:.6f}, {lng:.6f}",
             }
         finally:
             cur.close()
