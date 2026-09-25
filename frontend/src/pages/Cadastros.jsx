@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import api from '../api/client'
 import { Topbar } from '../components/Topbar'
 import { Loader, formatDate, formatBRL } from '../components/utils'
-import { Plus, Pencil, Trash2, Search, Database, RefreshCw, Package, Building2, KeyRound, Users, Settings, CreditCard, ShoppingCart, CornerDownRight } from 'lucide-react'
+import { Plus, Pencil, Trash2, Search, Database, RefreshCw, Package, Building2, KeyRound, Users, Settings, CreditCard, ShoppingCart, CornerDownRight, HelpCircle } from 'lucide-react'
 
 const iconeTabela = {
   chaves_pix: KeyRound,
@@ -54,8 +54,14 @@ const formDptVazio = {
 export function Cadastros({ padrao }) {
   const navigate = useNavigate()
 
-  // view: 'tabela:<rota>' | 'produtos' | 'departamentos'
-  const [view, setView] = useState(padrao || null)
+  // view: 'tabela:<rota>' | 'produtos' | 'departamentos' | 'ajuda'
+  // ALTERADO EM: 25/09/2026 - ?ajuda=1 abre direto na Ajuda (botao do lateral)
+  const [view, setView] = useState(() => {
+    try {
+      if (new URLSearchParams(window.location.search).get('ajuda') === '1') return 'ajuda'
+    } catch { /* noop */ }
+    return padrao || null
+  })
   const [meta, setMeta] = useState([])
   const [loadingMeta, setLoadingMeta] = useState(true)
 
@@ -97,6 +103,8 @@ export function Cadastros({ padrao }) {
   const rotaTabela = view && view.startsWith('tabela:') ? view.slice('tabela:'.length) : null
   const viewProdutos = view === 'produtos'
   const viewDptos = view === 'departamentos'
+  // ALTERADO EM: 25/09/2026 - visao Ajuda (manual do painel WhatsApp)
+  const viewAjuda = view === 'ajuda'
 
   const selecionar = (v) => {
     setView(v)
@@ -385,8 +393,8 @@ export function Cadastros({ padrao }) {
     )
   }
 
-  const titulo = viewProdutos ? 'Produtos' : viewDptos ? 'Departamentos' : (metaAtual?.rotulo || 'Cadastros')
-  const subtitulo = viewProdutos ? 'Catálogo de produtos' : viewDptos ? 'Setores e expediente' : 'Gerencie tabelas e configurações do sistema'
+  const titulo = viewProdutos ? 'Produtos' : viewDptos ? 'Departamentos' : viewAjuda ? 'Ajuda' : (metaAtual?.rotulo || 'Cadastros')
+  const subtitulo = viewProdutos ? 'Catálogo de produtos' : viewDptos ? 'Setores e expediente' : viewAjuda ? 'Como usar o Dashboard' : 'Gerencie tabelas e configurações do sistema'
 
   if (loadingMeta) return <Loader />
 
@@ -503,11 +511,78 @@ export function Cadastros({ padrao }) {
                 <Building2 size={15} />
                 <span style={{ flex: 1, textAlign: 'left' }}>Departamentos</span>
               </button>
+              <div className="crud-menu-sep" />
+              <button className={viewAjuda ? 'crud-menu-btn active' : 'crud-menu-btn'} onClick={() => selecionar('ajuda')}>
+                <HelpCircle size={15} />
+                <span style={{ flex: 1, textAlign: 'left' }}>Ajuda</span>
+              </button>
             </div>
           </div>
 
           {/* Conteúdo ao lado */}
           <div style={{ flex: 1, minWidth: 0 }}>
+            {viewAjuda ? (
+              <div className="card" style={{ padding: 20, maxWidth: 900 }}>
+                <h3>Ajuda — como operar o sistema</h3>
+                <p className="text-muted text-sm">Guia completo das telas. Use o menu lateral para navegar; o botão de seta no rodapé recolhe/expande o menu.</p>
+
+                <h3>Entrando no sistema</h3>
+                <ul>
+                  <li>Acesse com seu usuário e senha. Sem conta? Use <b>Criar conta</b> na tela de login.</li>
+                  <li>Seu <b>nome e CNPJ</b> aparecem no rodapé do menu lateral. <b>Sair</b> encerra a sessão.</li>
+                </ul>
+
+                <h3>Visão Geral (Dashboard)</h3>
+                <p>Tela inicial com as <b>métricas do negócio</b> (pedidos, valores, ticket). Use o filtro de <b>período</b> para ver hoje, semana ou mês.</p>
+
+                <h3>Vendas e Pedidos</h3>
+                <ul>
+                  <li><b>Histórico completo</b> dos pedidos, do mais recente ao mais antigo.</li>
+                  <li>No menu lateral, cada venda tem uma <b>bolinha de cor</b>: <b>vermelha</b> = aguardando aceite/atribuição, <b>amarela</b> = em rota ou aceita, <b>verde</b> = entregue.</li>
+                  <li>Clique na venda para <b>ver detalhes, editar dados, atribuir entregador e acompanhar o status e o pagamento</b>.</li>
+                  <li><b>Ver todas as vendas</b> abre a lista completa.</li>
+                </ul>
+
+                <h3>WhatsApp (Conversas)</h3>
+                <ul>
+                  <li><b>Histórico dos atendimentos</b> do robô com cada cliente, por número.</li>
+                  <li>Use <b>Buscar conversa...</b> para achar um atendimento.</li>
+                  <li><b>Excluir todas as mensagens deste número</b> apaga o histórico daquela conversa.</li>
+                </ul>
+
+                <h3>Entregas</h3>
+                <ul>
+                  <li><b>Gestão das entregas e status</b>. O ciclo é: <b>pendente → aceita → em trânsito → entregue</b> (ou <b>cancelada</b>).</li>
+                  <li><b>Nova entrega</b> lança uma entrega manual (rota, entregador, pedido).</li>
+                </ul>
+
+                <h3>Rastreamento</h3>
+                <ul>
+                  <li><b>Mapa em tempo real</b> com entregadores e vendas.</li>
+                  <li>No menu lateral cada entregador mostra <b>On</b> (posição dos últimos 5 min) ou <b>Off</b>; <b>clique para localizar no mapa</b>.</li>
+                </ul>
+
+                <h3>Entregadores</h3>
+                <p><b>Cadastro dos profissionais de entrega</b>: <b>Novo</b> para incluir, <b>lápis</b> para editar, <b>lixeira</b> para excluir. O submenu lateral mostra quem está online e o link <b>Cadastro</b>.</p>
+
+                <h3>Departamentos</h3>
+                <p>Setores de atendimento: nome, <b>WhatsApp do setor</b>, contato e <b>expediente</b> (horário de início/fim e dias, ex.: SEGUNDA A SEXTA).</p>
+
+                <h3>Cadastros (esta tela)</h3>
+                <ul>
+                  <li><b>Produtos</b>: catálogo — <b>nome, preço, estoque</b> e chave <b>Ativo/Inativo</b> (inativo não é oferecido na venda).</li>
+                  <li><b>Tabelas</b> (menu ao lado: clientes, pedidos, formas de pagamento, chaves PIX, redirecionamentos): use a <b>busca</b>, <b>Novo registro</b> para incluir e <b>lápis/lixeira</b> para editar/excluir.</li>
+                </ul>
+
+                <h3>Dicas rápidas</h3>
+                <ul>
+                  <li>Quase toda lista tem <b>busca</b> no topo — use para achar registros.</li>
+                  <li>Olhe as <b>cores</b> (bolinhas e selos): elas resumem a situação sem abrir nada.</li>
+                  <li>Terminou? Clique em <b>Sair</b> no rodapé do menu.</li>
+                </ul>
+              </div>
+            ) : (
+            <>
             <div className="row space-between wrap" style={{ marginBottom: 16, gap: 10 }}>
               <div style={{ position: 'relative', flex: 1, maxWidth: 380 }}>
                 <Search size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
@@ -668,6 +743,8 @@ export function Cadastros({ padrao }) {
                     : `${metaAtual?.rotulo}: ${filtradasTabela.length} de ${linhas.length} registros`}
                 </span>
             </div>
+            </>
+            )}
           </div>
         </div>
       </div>

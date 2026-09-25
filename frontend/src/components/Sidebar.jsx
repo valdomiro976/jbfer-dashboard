@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -7,6 +7,7 @@ import {
   MapPin,
   Users,
   Database,
+  HelpCircle,
   LogOut,
   ChevronLeft,
   ChevronRight,
@@ -38,6 +39,9 @@ const statusOnline = (loc) => {
 export function Sidebar() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const { pathname, search } = useLocation()
+  // ALTERADO EM: 25/09/2026 - Ajuda abre a aba Ajuda do Cadastros
+  const ajudaAtiva = pathname === '/cadastros' && search.includes('ajuda=1')
   const [collapsed, setCollapsed] = useState(false)
   const [entregAberto, setEntregAberto] = useState(false)
   const [entregadores, setEntregadores] = useState([])
@@ -139,6 +143,15 @@ export function Sidebar() {
             {!collapsed && item.label}
           </NavLink>
         ))}
+        <button
+          className={ajudaAtiva ? 'nav-item active' : 'nav-item'}
+          onClick={() => navigate('/cadastros?ajuda=1')}
+          title="Ajuda"
+          style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer' }}
+        >
+          <HelpCircle size={18} />
+          {!collapsed && 'Ajuda'}
+        </button>
 
         {/* Vendas: submenu sanfona */}
         <div className={`nav-item ${vendasAberto ? 'active' : ''}`} style={{ flexDirection: 'column', alignItems: 'stretch' }}>
