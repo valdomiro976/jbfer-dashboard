@@ -523,48 +523,62 @@ export function Cadastros({ padrao }) {
           <div style={{ flex: 1, minWidth: 0 }}>
             {viewAjuda ? (
               <div className="card" style={{ padding: 20, maxWidth: 900 }}>
-                <h3>Ajuda — como operar o Dashboard</h3>
-                <p className="text-muted text-sm">Guia rápido das telas do sistema. Use o menu lateral para navegar.</p>
+                <h3>Ajuda — como operar o sistema</h3>
+                <p className="text-muted text-sm">Guia completo das telas. Use o menu lateral para navegar; o botão de seta no rodapé recolhe/expande o menu.</p>
+
+                <h3>Entrando no sistema</h3>
+                <ul>
+                  <li>Acesse com seu usuário e senha. Sem conta? Use <b>Criar conta</b> na tela de login.</li>
+                  <li>Seu <b>nome e CNPJ</b> aparecem no rodapé do menu lateral. <b>Sair</b> encerra a sessão.</li>
+                </ul>
 
                 <h3>Visão Geral (Dashboard)</h3>
-                <p>Tela inicial com as <b>métricas principais do seu negócio</b> (vendas, pedidos, valores). É o ponto de partida do dia.</p>
+                <p>Tela inicial com as <b>métricas do negócio</b> (pedidos, valores, ticket). Use o filtro de <b>período</b> para ver hoje, semana ou mês.</p>
 
                 <h3>Vendas e Pedidos</h3>
                 <ul>
-                  <li><b>Histórico completo</b> de todos os pedidos, do mais recente ao mais antigo.</li>
-                  <li>No menu lateral, as vendas aparecem com <b>bolinhas de cor</b>: <b>vermelha</b> = aguardando aceite/atribuição, <b>amarela</b> = em rota/aceita, <b>verde</b> = entregue.</li>
-                  <li>Clique numa venda para <b>ver detalhes e editar</b>; <b>Ver todas as vendas</b> abre a lista completa.</li>
+                  <li><b>Histórico completo</b> dos pedidos, do mais recente ao mais antigo.</li>
+                  <li>No menu lateral, cada venda tem uma <b>bolinha de cor</b>: <b>vermelha</b> = aguardando aceite/atribuição, <b>amarela</b> = em rota ou aceita, <b>verde</b> = entregue.</li>
+                  <li>Clique na venda para <b>ver detalhes, editar dados, atribuir entregador e acompanhar o status e o pagamento</b>.</li>
+                  <li><b>Ver todas as vendas</b> abre a lista completa.</li>
                 </ul>
 
                 <h3>WhatsApp (Conversas)</h3>
-                <p><b>Histórico completo dos atendimentos</b> do robô com os clientes. Dá para acompanhar o que foi conversado em cada número.</p>
+                <ul>
+                  <li><b>Histórico dos atendimentos</b> do robô com cada cliente, por número.</li>
+                  <li>Use <b>Buscar conversa...</b> para achar um atendimento.</li>
+                  <li><b>Excluir todas as mensagens deste número</b> apaga o histórico daquela conversa.</li>
+                </ul>
 
                 <h3>Entregas</h3>
                 <ul>
-                  <li><b>Gestão das entregas e status</b>: acompanhe cada entrega (pendente, em trânsito, entregue, cancelada).</li>
-                  <li>Botão <b>Nova entrega</b> para lançar uma entrega manual.</li>
+                  <li><b>Gestão das entregas e status</b>. O ciclo é: <b>pendente → aceita → em trânsito → entregue</b> (ou <b>cancelada</b>).</li>
+                  <li><b>Nova entrega</b> lança uma entrega manual (rota, entregador, pedido).</li>
                 </ul>
 
                 <h3>Rastreamento</h3>
-                <p><b>Mapa em tempo real</b> (OpenStreetMap) com a posição dos <b>entregadores</b> e das <b>vendas</b>. No menu lateral, cada entregador mostra <b>On</b> (online, posição recente) ou <b>Off</b>; clique para localizar no mapa.</p>
-
-                <h3>Entregadores e Departamentos</h3>
                 <ul>
-                  <li><b>Entregadores</b>: cadastro dos profissionais de entrega (nome, contato). O submenu lateral mostra quem está online.</li>
-                  <li><b>Departamentos</b>: setores de atendimento com WhatsApp, contato e <b>expediente</b> (horário e dias da semana).</li>
+                  <li><b>Mapa em tempo real</b> com entregadores e vendas.</li>
+                  <li>No menu lateral cada entregador mostra <b>On</b> (posição dos últimos 5 min) ou <b>Off</b>; <b>clique para localizar no mapa</b>.</li>
                 </ul>
+
+                <h3>Entregadores</h3>
+                <p><b>Cadastro dos profissionais de entrega</b>: <b>Novo</b> para incluir, <b>lápis</b> para editar, <b>lixeira</b> para excluir. O submenu lateral mostra quem está online e o link <b>Cadastro</b>.</p>
+
+                <h3>Departamentos</h3>
+                <p>Setores de atendimento: nome, <b>WhatsApp do setor</b>, contato e <b>expediente</b> (horário de início/fim e dias, ex.: SEGUNDA A SEXTA).</p>
 
                 <h3>Cadastros (esta tela)</h3>
                 <ul>
-                  <li><b>Produtos</b>: catálogo — nome, <b>preço</b>, <b>estoque</b> e chave <b>Ativo/Inativo</b> (inativo não é oferecido).</li>
-                  <li><b>Tabelas</b> (menu ao lado): clientes, pedidos, formas de pagamento, chaves PIX e redirecionamentos — use a <b>busca</b>, <b>Novo registro</b> para incluir e os ícones de <b>lápis/lixeira</b> para editar/excluir.</li>
+                  <li><b>Produtos</b>: catálogo — <b>nome, preço, estoque</b> e chave <b>Ativo/Inativo</b> (inativo não é oferecido na venda).</li>
+                  <li><b>Tabelas</b> (menu ao lado: clientes, pedidos, formas de pagamento, chaves PIX, redirecionamentos): use a <b>busca</b>, <b>Novo registro</b> para incluir e <b>lápis/lixeira</b> para editar/excluir.</li>
                 </ul>
 
-                <h3>Dicas</h3>
+                <h3>Dicas rápidas</h3>
                 <ul>
-                  <li>Use a <b>busca</b> no topo das listas para achar registros rápido.</li>
-                  <li>O botão de <b>seta</b> no rodapé do menu lateral <b>recolhe/expande</b> o menu.</li>
-                  <li><b>Sair</b> (rodapé do menu) encerra sua sessão com segurança.</li>
+                  <li>Quase toda lista tem <b>busca</b> no topo — use para achar registros.</li>
+                  <li>Olhe as <b>cores</b> (bolinhas e selos): elas resumem a situação sem abrir nada.</li>
+                  <li>Terminou? Clique em <b>Sair</b> no rodapé do menu.</li>
                 </ul>
               </div>
             ) : (
