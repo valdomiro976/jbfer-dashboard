@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -24,8 +24,6 @@ const navItems = [
   { to: '/chat', icon: MessageCircle, label: 'WhatsApp' },
   { to: '/entregas', icon: Truck, label: 'Entregas' },
   { to: '/rastreamento', icon: MapPin, label: 'Rastreamento' },
-  // ALTERADO EM: 25/09/2026 - Ajuda do painel WhatsApp (pagina externa do chatbot)
-  { href: 'https://whats.jbfer.com.br/cadastros/ajuda', icon: HelpCircle, label: 'Ajuda', externa: true },
 ]
 
 const statusOnline = (loc) => {
@@ -41,6 +39,9 @@ const statusOnline = (loc) => {
 export function Sidebar() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const { pathname, search } = useLocation()
+  // ALTERADO EM: 25/09/2026 - Ajuda abre a aba Ajuda do Cadastros
+  const ajudaAtiva = pathname === '/cadastros' && search.includes('ajuda=1')
   const [collapsed, setCollapsed] = useState(false)
   const [entregAberto, setEntregAberto] = useState(false)
   const [entregadores, setEntregadores] = useState([])
@@ -130,30 +131,27 @@ export function Sidebar() {
       </div>
 
       <nav>
-        {navItems.map((item) =>
-          item.externa ? (
-            <a
-              key={item.href}
-              href={item.href}
-              className="nav-item"
-              title={item.label}
-            >
-              <item.icon size={18} />
-              {!collapsed && item.label}
-            </a>
-          ) : (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === '/'}
-              className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}
-              title={item.label}
-            >
-              <item.icon size={18} />
-              {!collapsed && item.label}
-            </NavLink>
-          )
-        )}
+        {navItems.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.to === '/'}
+            className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}
+            title={item.label}
+          >
+            <item.icon size={18} />
+            {!collapsed && item.label}
+          </NavLink>
+        ))}
+        <button
+          className={ajudaAtiva ? 'nav-item active' : 'nav-item'}
+          onClick={() => navigate('/cadastros?ajuda=1')}
+          title="Ajuda"
+          style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer' }}
+        >
+          <HelpCircle size={18} />
+          {!collapsed && 'Ajuda'}
+        </button>
 
         {/* Vendas: submenu sanfona */}
         <div className={`nav-item ${vendasAberto ? 'active' : ''}`} style={{ flexDirection: 'column', alignItems: 'stretch' }}>

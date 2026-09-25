@@ -54,8 +54,14 @@ const formDptVazio = {
 export function Cadastros({ padrao }) {
   const navigate = useNavigate()
 
-  // view: 'tabela:<rota>' | 'produtos' | 'departamentos'
-  const [view, setView] = useState(padrao || null)
+  // view: 'tabela:<rota>' | 'produtos' | 'departamentos' | 'ajuda'
+  // ALTERADO EM: 25/09/2026 - ?ajuda=1 abre direto na Ajuda (botao do lateral)
+  const [view, setView] = useState(() => {
+    try {
+      if (new URLSearchParams(window.location.search).get('ajuda') === '1') return 'ajuda'
+    } catch { /* noop */ }
+    return padrao || null
+  })
   const [meta, setMeta] = useState([])
   const [loadingMeta, setLoadingMeta] = useState(true)
 
@@ -388,7 +394,7 @@ export function Cadastros({ padrao }) {
   }
 
   const titulo = viewProdutos ? 'Produtos' : viewDptos ? 'Departamentos' : viewAjuda ? 'Ajuda' : (metaAtual?.rotulo || 'Cadastros')
-  const subtitulo = viewProdutos ? 'Catálogo de produtos' : viewDptos ? 'Setores e expediente' : viewAjuda ? 'Manual do painel WhatsApp' : 'Gerencie tabelas e configurações do sistema'
+  const subtitulo = viewProdutos ? 'Catálogo de produtos' : viewDptos ? 'Setores e expediente' : viewAjuda ? 'Como usar o Dashboard' : 'Gerencie tabelas e configurações do sistema'
 
   if (loadingMeta) return <Loader />
 
@@ -517,41 +523,49 @@ export function Cadastros({ padrao }) {
           <div style={{ flex: 1, minWidth: 0 }}>
             {viewAjuda ? (
               <div className="card" style={{ padding: 20, maxWidth: 900 }}>
-                <h3>Ajuda — painel WhatsApp</h3>
-                <p className="text-muted text-sm">Manual de funcionamento do atendimento automático (robô Nicoly, da Gas Lar).</p>
+                <h3>Ajuda — como operar o Dashboard</h3>
+                <p className="text-muted text-sm">Guia rápido das telas do sistema. Use o menu lateral para navegar.</p>
 
-                <h3>1. Páginas do painel WhatsApp</h3>
+                <h3>Visão Geral (Dashboard)</h3>
+                <p>Tela inicial com as <b>métricas principais do seu negócio</b> (vendas, pedidos, valores). É o ponto de partida do dia.</p>
+
+                <h3>Vendas e Pedidos</h3>
                 <ul>
-                  <li><b>Clientes</b> (<a href="https://whats.jbfer.com.br/cadastros/clientes">/cadastros/clientes</a>) — cadastro de quem conversa e chave <b>Bot ON/OFF</b> por número. Com OFF, a empresa assume o atendimento.</li>
-                  <li><b>Pedidos</b> (<a href="https://whats.jbfer.com.br/cadastros/pedidos">/cadastros/pedidos</a>) — pedidos confirmados: ver detalhe, <b>Processar/Reabrir</b>, excluir.</li>
+                  <li><b>Histórico completo</b> de todos os pedidos, do mais recente ao mais antigo.</li>
+                  <li>No menu lateral, as vendas aparecem com <b>bolinhas de cor</b>: <b>vermelha</b> = aguardando aceite/atribuição, <b>amarela</b> = em rota/aceita, <b>verde</b> = entregue.</li>
+                  <li>Clique numa venda para <b>ver detalhes e editar</b>; <b>Ver todas as vendas</b> abre a lista completa.</li>
                 </ul>
 
-                <h3>2. Ciclo do pedido</h3>
-                <p>Conversa → cliente escolhe produto e quantidade → confirma endereço/pagamento → diz <b>SIM</b> → pedido <b>Pendente</b> → atendente <b>Processa</b> no painel.</p>
+                <h3>WhatsApp (Conversas)</h3>
+                <p><b>Histórico completo dos atendimentos</b> do robô com os clientes. Dá para acompanhar o que foi conversado em cada número.</p>
 
-                <h3>3. Tabelas</h3>
+                <h3>Entregas</h3>
                 <ul>
-                  <li><b>tb_prod_*</b> — catálogo. <b>ATIVO</b>: 1 aparece na busca; 0 responde "sem estoque". Popular grava ATIVO=1.</li>
-                  <li><b>tb_clientes_*</b> — cadastro + <b>bot_ativo</b> por número.</li>
-                  <li><b>tb_pedidos_*</b> — pedidos + <b>processado</b> (0/1).</li>
-                  <li><b>tb_hist_msg_*</b> — últimas 10 mensagens (expira em 60 min); dá contexto ao robô.</li>
-                  <li><b>tb_config_*</b> — system_prompt e chaves de IA por empresa.</li>
+                  <li><b>Gestão das entregas e status</b>: acompanhe cada entrega (pendente, em trânsito, entregue, cancelada).</li>
+                  <li>Botão <b>Nova entrega</b> para lançar uma entrega manual.</li>
                 </ul>
 
-                <h3>4. Como o robô responde</h3>
-                <p>Ordem: <b>Gemini (chave do cliente) → Groq → Gemini geral → Ollama → modo determinístico</b> (busca direta, sem IA). Com chave do cliente, nunca usa outra IA. Após 429 persistente há cooldown de 5 min. Erros e despedidas (SAIR) não poluem o histórico.</p>
+                <h3>Rastreamento</h3>
+                <p><b>Mapa em tempo real</b> (OpenStreetMap) com a posição dos <b>entregadores</b> e das <b>vendas</b>. No menu lateral, cada entregador mostra <b>On</b> (online, posição recente) ou <b>Off</b>; clique para localizar no mapa.</p>
 
-                <h3>5. Áudio</h3>
-                <p>Voz é transcrita e tratada igual a texto. A resposta volta em voz, <b>exceto</b> lista de produtos, resposta longa ou mensagem de erro (vão só como texto).</p>
-
-                <h3>6. Problemas comuns</h3>
+                <h3>Entregadores e Departamentos</h3>
                 <ul>
-                  <li><b>"Não encontrei" com produto existente</b>: confira o <b>ATIVO</b>. Ative tudo com <code>UPDATE `tb_prod_XXX` SET `ATIVO` = 1;</code></li>
-                  <li><b>"Tive dificuldade"</b>: IA fora do ar/cota — ver log do servidor (linhas <code>[ORQ]</code>).</li>
-                  <li><b>Robô não responde um número</b>: Bot OFF para ele na página Clientes.</li>
-                  <li><b>SAIR</b>: encerra e limpa o contexto; próxima mensagem recomeça do zero.</li>
+                  <li><b>Entregadores</b>: cadastro dos profissionais de entrega (nome, contato). O submenu lateral mostra quem está online.</li>
+                  <li><b>Departamentos</b>: setores de atendimento com WhatsApp, contato e <b>expediente</b> (horário e dias da semana).</li>
                 </ul>
-                <p className="text-muted text-sm"><b>Deploy:</b> após commit + push, reinicie o serviço no EasyPanel.</p>
+
+                <h3>Cadastros (esta tela)</h3>
+                <ul>
+                  <li><b>Produtos</b>: catálogo — nome, <b>preço</b>, <b>estoque</b> e chave <b>Ativo/Inativo</b> (inativo não é oferecido).</li>
+                  <li><b>Tabelas</b> (menu ao lado): clientes, pedidos, formas de pagamento, chaves PIX e redirecionamentos — use a <b>busca</b>, <b>Novo registro</b> para incluir e os ícones de <b>lápis/lixeira</b> para editar/excluir.</li>
+                </ul>
+
+                <h3>Dicas</h3>
+                <ul>
+                  <li>Use a <b>busca</b> no topo das listas para achar registros rápido.</li>
+                  <li>O botão de <b>seta</b> no rodapé do menu lateral <b>recolhe/expande</b> o menu.</li>
+                  <li><b>Sair</b> (rodapé do menu) encerra sua sessão com segurança.</li>
+                </ul>
               </div>
             ) : (
             <>
