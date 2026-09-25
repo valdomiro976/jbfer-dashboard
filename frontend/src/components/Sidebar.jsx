@@ -7,6 +7,7 @@ import {
   MapPin,
   Users,
   Database,
+  HelpCircle,
   LogOut,
   ChevronLeft,
   ChevronRight,
@@ -23,6 +24,8 @@ const navItems = [
   { to: '/chat', icon: MessageCircle, label: 'WhatsApp' },
   { to: '/entregas', icon: Truck, label: 'Entregas' },
   { to: '/rastreamento', icon: MapPin, label: 'Rastreamento' },
+  // ALTERADO EM: 25/09/2026 - Ajuda do painel WhatsApp (pagina externa do chatbot)
+  { href: 'https://whats.jbfer.com.br/cadastros/ajuda', icon: HelpCircle, label: 'Ajuda', externa: true },
 ]
 
 const statusOnline = (loc) => {
@@ -127,18 +130,30 @@ export function Sidebar() {
       </div>
 
       <nav>
-        {navItems.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.to === '/'}
-            className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}
-            title={item.label}
-          >
-            <item.icon size={18} />
-            {!collapsed && item.label}
-          </NavLink>
-        ))}
+        {navItems.map((item) =>
+          item.externa ? (
+            <a
+              key={item.href}
+              href={item.href}
+              className="nav-item"
+              title={item.label}
+            >
+              <item.icon size={18} />
+              {!collapsed && item.label}
+            </a>
+          ) : (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.to === '/'}
+              className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}
+              title={item.label}
+            >
+              <item.icon size={18} />
+              {!collapsed && item.label}
+            </NavLink>
+          )
+        )}
 
         {/* Vendas: submenu sanfona */}
         <div className={`nav-item ${vendasAberto ? 'active' : ''}`} style={{ flexDirection: 'column', alignItems: 'stretch' }}>
