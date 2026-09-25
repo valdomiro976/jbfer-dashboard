@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import api from '../api/client'
 import { Topbar } from '../components/Topbar'
 import { Loader, formatDate, formatBRL } from '../components/utils'
-import { Plus, Pencil, Trash2, Search, Database, RefreshCw, Package, Building2, KeyRound, Users, Settings, CreditCard, ShoppingCart, CornerDownRight } from 'lucide-react'
+import { Plus, Pencil, Trash2, Search, Database, RefreshCw, Package, Building2, KeyRound, Users, Settings, CreditCard, ShoppingCart, CornerDownRight, HelpCircle } from 'lucide-react'
 
 const iconeTabela = {
   chaves_pix: KeyRound,
@@ -97,6 +97,8 @@ export function Cadastros({ padrao }) {
   const rotaTabela = view && view.startsWith('tabela:') ? view.slice('tabela:'.length) : null
   const viewProdutos = view === 'produtos'
   const viewDptos = view === 'departamentos'
+  // ALTERADO EM: 25/09/2026 - visao Ajuda (manual do painel WhatsApp)
+  const viewAjuda = view === 'ajuda'
 
   const selecionar = (v) => {
     setView(v)
@@ -385,8 +387,8 @@ export function Cadastros({ padrao }) {
     )
   }
 
-  const titulo = viewProdutos ? 'Produtos' : viewDptos ? 'Departamentos' : (metaAtual?.rotulo || 'Cadastros')
-  const subtitulo = viewProdutos ? 'Catálogo de produtos' : viewDptos ? 'Setores e expediente' : 'Gerencie tabelas e configurações do sistema'
+  const titulo = viewProdutos ? 'Produtos' : viewDptos ? 'Departamentos' : viewAjuda ? 'Ajuda' : (metaAtual?.rotulo || 'Cadastros')
+  const subtitulo = viewProdutos ? 'Catálogo de produtos' : viewDptos ? 'Setores e expediente' : viewAjuda ? 'Manual do painel WhatsApp' : 'Gerencie tabelas e configurações do sistema'
 
   if (loadingMeta) return <Loader />
 
@@ -503,11 +505,56 @@ export function Cadastros({ padrao }) {
                 <Building2 size={15} />
                 <span style={{ flex: 1, textAlign: 'left' }}>Departamentos</span>
               </button>
+              <div className="crud-menu-sep" />
+              <button className={viewAjuda ? 'crud-menu-btn active' : 'crud-menu-btn'} onClick={() => selecionar('ajuda')}>
+                <HelpCircle size={15} />
+                <span style={{ flex: 1, textAlign: 'left' }}>Ajuda</span>
+              </button>
             </div>
           </div>
 
           {/* Conteúdo ao lado */}
           <div style={{ flex: 1, minWidth: 0 }}>
+            {viewAjuda ? (
+              <div className="card" style={{ padding: 20, maxWidth: 900 }}>
+                <h3>Ajuda — painel WhatsApp</h3>
+                <p className="text-muted text-sm">Manual de funcionamento do atendimento automático (robô Nicoly, da Gas Lar).</p>
+
+                <h3>1. Páginas do painel WhatsApp</h3>
+                <ul>
+                  <li><b>Clientes</b> (<a href="https://whats.jbfer.com.br/cadastros/clientes">/cadastros/clientes</a>) — cadastro de quem conversa e chave <b>Bot ON/OFF</b> por número. Com OFF, a empresa assume o atendimento.</li>
+                  <li><b>Pedidos</b> (<a href="https://whats.jbfer.com.br/cadastros/pedidos">/cadastros/pedidos</a>) — pedidos confirmados: ver detalhe, <b>Processar/Reabrir</b>, excluir.</li>
+                </ul>
+
+                <h3>2. Ciclo do pedido</h3>
+                <p>Conversa → cliente escolhe produto e quantidade → confirma endereço/pagamento → diz <b>SIM</b> → pedido <b>Pendente</b> → atendente <b>Processa</b> no painel.</p>
+
+                <h3>3. Tabelas</h3>
+                <ul>
+                  <li><b>tb_prod_*</b> — catálogo. <b>ATIVO</b>: 1 aparece na busca; 0 responde "sem estoque". Popular grava ATIVO=1.</li>
+                  <li><b>tb_clientes_*</b> — cadastro + <b>bot_ativo</b> por número.</li>
+                  <li><b>tb_pedidos_*</b> — pedidos + <b>processado</b> (0/1).</li>
+                  <li><b>tb_hist_msg_*</b> — últimas 10 mensagens (expira em 60 min); dá contexto ao robô.</li>
+                  <li><b>tb_config_*</b> — system_prompt e chaves de IA por empresa.</li>
+                </ul>
+
+                <h3>4. Como o robô responde</h3>
+                <p>Ordem: <b>Gemini (chave do cliente) → Groq → Gemini geral → Ollama → modo determinístico</b> (busca direta, sem IA). Com chave do cliente, nunca usa outra IA. Após 429 persistente há cooldown de 5 min. Erros e despedidas (SAIR) não poluem o histórico.</p>
+
+                <h3>5. Áudio</h3>
+                <p>Voz é transcrita e tratada igual a texto. A resposta volta em voz, <b>exceto</b> lista de produtos, resposta longa ou mensagem de erro (vão só como texto).</p>
+
+                <h3>6. Problemas comuns</h3>
+                <ul>
+                  <li><b>"Não encontrei" com produto existente</b>: confira o <b>ATIVO</b>. Ative tudo com <code>UPDATE `tb_prod_XXX` SET `ATIVO` = 1;</code></li>
+                  <li><b>"Tive dificuldade"</b>: IA fora do ar/cota — ver log do servidor (linhas <code>[ORQ]</code>).</li>
+                  <li><b>Robô não responde um número</b>: Bot OFF para ele na página Clientes.</li>
+                  <li><b>SAIR</b>: encerra e limpa o contexto; próxima mensagem recomeça do zero.</li>
+                </ul>
+                <p className="text-muted text-sm"><b>Deploy:</b> após commit + push, reinicie o serviço no EasyPanel.</p>
+              </div>
+            ) : (
+            <>
             <div className="row space-between wrap" style={{ marginBottom: 16, gap: 10 }}>
               <div style={{ position: 'relative', flex: 1, maxWidth: 380 }}>
                 <Search size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
@@ -666,8 +713,10 @@ export function Cadastros({ padrao }) {
                   : viewDptos
                     ? `Departamentos: ${filtradosDptos.length} de ${dptos.length}`
                     : `${metaAtual?.rotulo}: ${filtradasTabela.length} de ${linhas.length} registros`}
-              </span>
+                </span>
             </div>
+            </>
+            )}
           </div>
         </div>
       </div>
