@@ -13,6 +13,7 @@ import {
   ChevronRight,
   ChevronDown,
   Plus,
+  CalendarClock,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
@@ -20,10 +21,11 @@ import api from '../api/client'
 
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/cadastros', icon: Database, label: 'Cadastros' },
-  { to: '/chat', icon: MessageCircle, label: 'WhatsApp' },
   { to: '/entregas', icon: Truck, label: 'Entregas' },
+  { to: '/agendamentos', icon: CalendarClock, label: 'Agendamentos' },
   { to: '/rastreamento', icon: MapPin, label: 'Rastreamento' },
+  { to: '/chat', icon: MessageCircle, label: 'WhatsApp' },
+  { to: '/cadastros', icon: Database, label: 'Cadastros' },
 ]
 
 const statusOnline = (loc) => {
