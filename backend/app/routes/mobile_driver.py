@@ -20,6 +20,38 @@ def _cnpj_limpo(cnpj: str) -> str:
     return re.sub(r"[^0-9A-Za-z_-]", "", cnpj)
 
 
+def _marcar_agendamento_entregue(cnpj: str, entrega_id: int) -> None:
+    """ALTERADO EM: 29/09/2026 - quando o entregador marca a tarefa como
+    ENTREGUE no app, o agendamento do MESMO pedido (tb_agendamentos_entregas_*)
+    tambem passa a 'entregue', para acompanhar no Dashboard."""
+    c = _cnpj_limpo(cnpj)
+    try:
+        from app.services import agendamento_service
+
+        agendamento_service._garantir_tabela(cnpj)
+        with connection() as conn:
+            cur = conn.cursor()
+            try:
+                cur.execute(
+                    f"SELECT pedido_id FROM `tb_entregas_{c}` WHERE id=%s",
+                    (entrega_id,),
+                )
+                row = cur.fetchone()
+                if not row or not row[0]:
+                    return
+                cur.execute(
+                    f"UPDATE `tb_agendamentos_entregas_{c}` "
+                    f"SET status='entregue', atualizado_em=NOW() "
+                    f"WHERE pedido_id=%s AND status NOT IN ('cancelado','entregue')",
+                    (row[0],),
+                )
+                conn.commit()
+            finally:
+                cur.close()
+    except Exception:
+        pass
+
+
 def _get_driver_ctx(creds: HTTPAuthorizationCredentials):
     if creds is None:
         raise HTTPException(status_code=401, detail="Não autenticado")
@@ -373,6 +405,8 @@ def atualizar_tarefa(
             conn.commit()
             if cur.rowcount == 0:
                 raise HTTPException(status_code=404, detail="Tarefa não encontrada para este entregador")
+            if status == "entregue":
+                _marcar_agendamento_entregue(ctx["cnpj"], entrega_id)
             return {"sucesso": True, "mensagem": f"Status atualizado para {status}"}
         finally:
             cur.close()

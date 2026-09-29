@@ -13,6 +13,7 @@ const STATUS_COLORS = {
   agendado: { color: '#a5b4fc', bg: 'rgba(99,102,241,0.15)' },
   imediata: { color: 'var(--success)', bg: 'rgba(52,211,153,0.15)' },
   cancelado: { color: 'var(--danger)', bg: 'rgba(248,113,113,0.15)' },
+  entregue: { color: '#34d399', bg: 'rgba(16,185,129,0.18)' },
 }
 
 const STATUS_LABELS = {
@@ -21,6 +22,7 @@ const STATUS_LABELS = {
   agendado: 'Agendado',
   imediata: 'Imediata',
   cancelado: 'Cancelado',
+  entregue: 'Entregue',
 }
 
 const formVazio = {
