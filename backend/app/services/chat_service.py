@@ -1,4 +1,8 @@
-# Serviço de histórico de conversas WhatsApp - lê tb_hist_msg_<cnpj>
+# Serviço de histórico de conversas WhatsApp - lê tb_hist_msg_arq_<cnpj>
+# ALTERADO EM: 29/09/2026 - passou a ler o ARQUIVO PERMANENTE (append-only).
+# O bot apaga o histórico de trabalho (tb_hist_msg_<cnpj>) a cada ociosidade/
+# confirmação/SAIR para limpar o contexto da IA; o arquivo nunca é apagado,
+# preservando o chat completo no Dashboard.
 
 import re
 from typing import Any, Optional
@@ -8,7 +12,7 @@ from app.db.database import connection, execute_query
 
 def _tabela(cnpj: str) -> str:
     cnpj_limpo = re.sub(r"[^0-9A-Za-z_-]", "", cnpj)
-    return f"tb_hist_msg_{cnpj_limpo}"
+    return f"tb_hist_msg_arq_{cnpj_limpo}"
 
 
 def _tabela_clientes(cnpj: str) -> str:
