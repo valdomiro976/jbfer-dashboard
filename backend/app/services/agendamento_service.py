@@ -356,7 +356,7 @@ def mudar_status(cnpj: str, agend_id: int, status: str) -> bool:
         _limpar_lembretes_agendamento(cnpj, agend_id)
         # 30/09/2026 - avisos ao cliente por alteracao de status (fila
         # tb_avisos_pendentes, Delphi envia): informa o status do pedido.
-        if status in ('saiu_para_entrega', 'agendado'):
+        if status in ('saiu_para_entrega', 'agendado', 'entregue'):
             _enfileirar_aviso_cliente(cnpj, agend_id, status)
     return atualizou
 

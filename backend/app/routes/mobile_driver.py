@@ -129,6 +129,16 @@ def _marcar_agendamento_entregue(cnpj: str, entrega_id: int) -> None:
                     (row[0],),
                 )
                 conn.commit()
+                # CRIADO EM: 30/09/2026 - entrega concluida: avisa o cliente
+                # (fila tb_avisos_pendentes, Delphi envia).
+                if cur.rowcount:
+                    cur.execute(
+                        f"SELECT id FROM `tb_agendamentos_entregas_{c}` "
+                        f"WHERE pedido_id=%s AND status='entregue'",
+                        (row[0],),
+                    )
+                    for (agend_id,) in cur.fetchall() or []:
+                        agendamento_service._enfileirar_aviso_cliente(cnpj, agend_id, 'entregue')
             finally:
                 cur.close()
     except Exception:
