@@ -16,7 +16,35 @@ const badgeEvento = {
   aceita: { text: 'Aceita', cls: 'badge badge-primary' },
   entregue: { text: 'Entregue', cls: 'badge badge-success' },
   cancelada: { text: 'Cancelada', cls: 'badge badge-danger' },
+  // CRIADO EM: 29/09/2026 - lembrete proativo de entregas agendadas (bot):
+  // entregas atrasadas ou prestes a vencer.
+  entrega_prox: { text: 'Próxima', cls: 'badge badge-warning' },
+  entrega_atrasada: { text: 'Atrasada', cls: 'badge badge-danger' },
 }
+
+const SOM_REMINDER = (() => {
+  let ctx = null
+  return function tocar() {
+    try {
+      if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)()
+      if (ctx.state === 'suspended') ctx.resume()
+      const o = ctx.createOscillator()
+      const g = ctx.createGain()
+      o.connect(g)
+      g.connect(ctx.destination)
+      // 'Ding-dong' curto (440 Hz -> 660 Hz)
+      o.frequency.setValueAtTime(440, ctx.currentTime)
+      o.frequency.setValueAtTime(660, ctx.currentTime + 0.12)
+      g.gain.setValueAtTime(0.0001, ctx.currentTime)
+      g.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + 0.02)
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.45)
+      o.start()
+      o.stop(ctx.currentTime + 0.5)
+    } catch (e) {
+      console.warn('AudioContext indisponível', e)
+    }
+  }
+})()
 
 export function NotificacoesBell() {
   const [aberto, setAberto] = useState(false)
@@ -24,7 +52,30 @@ export function NotificacoesBell() {
   const [dados, setDados] = useState([])
   const [carregando, setCarregando] = useState(false)
   const ref = useRef(null)
+  const refIds = useRef(new Set())
   const navigate = useNavigate()
+
+  // CRIADO EM: 29/09/2026 - quando chega notificacao NOVA (nao lida) de lembrete
+  // de entrega agendada (proxima/atrasada), toca um som no navegador chamando a
+  // atencao do operador. So toca 1x por notificacao (refIds).
+  const lembrarSom = (lista) => {
+    try {
+      const novas = (lista || []).filter(
+        (n) =>
+          !n.lida &&
+          (n.evento === 'entrega_prox' || n.evento === 'entrega_atrasada') &&
+          !refIds.current.has(n.id)
+      )
+      if (novas.length > 0) SOM_REMINDER()
+      novas.forEach((n) => refIds.current.add(n.id))
+      if (refIds.current.size > 500) {
+        const lista = [...refIds.current].sort((a, b) => a - b)
+        refIds.current = new Set(lista.slice(-250))
+      }
+    } catch (e) {
+      console.warn(e)
+    }
+  }
 
   const carregar = async (silencioso = false) => {
     if (!silencioso) setCarregando(true)
@@ -32,6 +83,7 @@ export function NotificacoesBell() {
       const { data } = await api.get('/notificacoes', { params: { limite: 30 } })
       setNItens(data.nao_lidas || 0)
       setDados(data.dados || [])
+      lembrarSom(data.dados)
     } catch (e) {
       console.error(e)
     } finally {
