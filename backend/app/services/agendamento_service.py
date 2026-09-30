@@ -2,7 +2,7 @@
 # CRIADO EM: 29/09/2026 - gerencia os agendamentos criados pelo chatbot WhatsApp.
 # Schema (mesmo do bot): id, whatsapp, nome, pedido_id, produto, endereco, cidade,
 # uf, cep, data_entrega (DATE), hora_entrega (VARCHAR), observacoes (TEXT),
-# status ('aguardando_entrega' | 'aguardando_data' | 'agendado' | 'imediata' | 'cancelado' | 'entregue'),
+# status ('aguardando_entrega' | 'aguardando_data' | 'agendado' | 'imediata' | 'saiu_para_entrega' | 'cancelado' | 'entregue'),
 # criado_em, atualizado_em
 
 import re
@@ -26,7 +26,8 @@ _CAMPOS_EDITAVEIS = {
     "status": "status",
 }
 
-_STATUS_VALIDOS = ("aguardando_entrega", "aguardando_data", "agendado", "imediata", "cancelado", "entregue")
+# 30/09/2026 - 'saiu_para_entrega' entra na lista: entregador saiu com a mercadoria.
+_STATUS_VALIDOS = ("aguardando_entrega", "aguardando_data", "agendado", "imediata", "saiu_para_entrega", "cancelado", "entregue")
 
 
 def _cnpj_limpo(cnpj: str) -> str:

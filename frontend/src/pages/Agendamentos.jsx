@@ -12,6 +12,7 @@ const STATUS_COLORS = {
   aguardando_data: { color: 'var(--warning)', bg: 'rgba(251,191,36,0.15)' },
   agendado: { color: '#a5b4fc', bg: 'rgba(99,102,241,0.15)' },
   imediata: { color: 'var(--success)', bg: 'rgba(52,211,153,0.15)' },
+  saiu_para_entrega: { color: '#38bdf8', bg: 'rgba(56,189,248,0.15)' },
   cancelado: { color: 'var(--danger)', bg: 'rgba(248,113,113,0.15)' },
   entregue: { color: '#34d399', bg: 'rgba(16,185,129,0.18)' },
 }
@@ -21,6 +22,7 @@ const STATUS_LABELS = {
   aguardando_data: 'Aguardando data',
   agendado: 'Agendado',
   imediata: 'Imediata',
+  saiu_para_entrega: 'Saiu para Entrega',
   cancelado: 'Cancelado',
   entregue: 'Entregue',
 }
