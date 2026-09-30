@@ -28,6 +28,7 @@ function ProtectedLayout() {
           <Route path="/rastreamento" element={<Rastreamento />} />
           <Route path="/entregadores" element={<Entregadores />} />
           <Route path="/agendamentos" element={<Agendamentos />} />
+          <Route path="/redirecionamentos" element={<Cadastros padrao="tabela:redir" />} />
           <Route path="/departamentos" element={<Cadastros padrao="departamentos" />} />
           <Route path="/produtos" element={<Cadastros padrao="produtos" />} />
           <Route path="/cadastros" element={<Cadastros />} />

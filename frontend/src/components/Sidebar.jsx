@@ -14,6 +14,7 @@ import {
   ChevronDown,
   Plus,
   CalendarClock,
+  CornerDownRight,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
@@ -23,6 +24,7 @@ const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/entregas', icon: Truck, label: 'Entregas' },
   { to: '/agendamentos', icon: CalendarClock, label: 'Agendamentos' },
+  { to: '/redirecionamentos', icon: CornerDownRight, label: 'Redirecionamentos' },
   { to: '/rastreamento', icon: MapPin, label: 'Rastreamento' },
   { to: '/chat', icon: MessageCircle, label: 'WhatsApp' },
   { to: '/cadastros', icon: Database, label: 'Cadastros' },

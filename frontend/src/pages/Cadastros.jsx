@@ -88,8 +88,10 @@ export function Cadastros({ padrao }) {
     try {
       const { data } = await api.get('/cruds/tabelas')
       const tabelas = data.dados
-      setMeta(tabelas)
-      const existentes = tabelas.filter((t) => t.existe)
+      // ALTERADO EM: 30/09/2026 - 'redir' ganhou pagina propria
+      // (/redirecionamentos): retirado do menu interno de Cadastros.
+      setMeta((tabelas || []).filter((t) => t.rota !== 'redir'))
+      const existentes = (tabelas || []).filter((t) => t.existe && t.rota !== 'redir')
       if (!view && existentes.length > 0) {
         setView(`tabela:${existentes[0].rota}`)
       }
