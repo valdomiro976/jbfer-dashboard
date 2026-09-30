@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { Bell, ShoppingBag, Truck, AlertTriangle, CheckCheck, Inbox, X } from 'lucide-react'
 import api from '../api/client'
@@ -248,32 +249,37 @@ export function NotificacoesBell() {
         </div>
       )}
 
-      {/* CRIADO EM: 29/09/2026 - janela central de entrega em atraso */}
-      {alerta && (
-        <div className="modal-overlay" onClick={fecharAlerta}>
-          <div className="modal modal-alerta" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={fecharAlerta} title="Fechar">
-              <X size={16} />
-            </button>
-            <div className="modal-alerta-head">
-              <div className="modal-alerta-ic">
-                <AlertTriangle size={24} />
+      {/* CRIADO EM: 29/09/2026 - janela central de entrega em atraso.
+          ALTERADO EM: 30/09/2026 - renderiza via portal no <body>: a topbar usa
+          backdrop-filter, que vira containing block de position:fixed e fazia a
+          janela abrir em posicao negativa fora da tela. */}
+      {alerta &&
+        createPortal(
+          <div className="modal-overlay" onClick={fecharAlerta}>
+            <div className="modal modal-alerta" onClick={(e) => e.stopPropagation()}>
+              <button className="modal-close" onClick={fecharAlerta} title="Fechar">
+                <X size={16} />
+              </button>
+              <div className="modal-alerta-head">
+                <div className="modal-alerta-ic">
+                  <AlertTriangle size={24} />
+                </div>
+                <span className="modal-alerta-titulo">Entrega em atraso</span>
               </div>
-              <span className="modal-alerta-titulo">Entrega em atraso</span>
+              <div className="modal-alerta-msg">{alerta.mensagem}</div>
+              <div className="modal-alerta-actions">
+                <button className="btn btn-ghost" onClick={fecharAlerta}>
+                  Fechar
+                </button>
+                <button className="btn btn-primary" onClick={() => irVer(alerta)}>
+                  <Truck size={15} style={{ marginRight: 6 }} />
+                  Ver agendamentos
+                </button>
+              </div>
             </div>
-            <div className="modal-alerta-msg">{alerta.mensagem}</div>
-            <div className="modal-alerta-actions">
-              <button className="btn btn-ghost" onClick={fecharAlerta}>
-                Fechar
-              </button>
-              <button className="btn btn-primary" onClick={() => irVer(alerta)}>
-                <Truck size={15} style={{ marginRight: 6 }} />
-                Ver agendamentos
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </div>
   )
 }
