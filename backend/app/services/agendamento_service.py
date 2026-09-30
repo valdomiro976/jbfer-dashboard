@@ -29,6 +29,17 @@ _CAMPOS_EDITAVEIS = {
 # 30/09/2026 - 'saiu_para_entrega' entra na lista: entregador saiu com a mercadoria.
 _STATUS_VALIDOS = ("aguardando_entrega", "aguardando_data", "agendado", "imediata", "saiu_para_entrega", "cancelado", "entregue")
 
+# 30/09/2026 - rotulo amigavel de cada status p/ mensagem ao cliente
+_STATUS_LABELS = {
+    "aguardando_entrega": "Aguardando entrega",
+    "aguardando_data": "Aguardando data",
+    "agendado": "Agendado",
+    "imediata": "Entrega imediata",
+    "saiu_para_entrega": "Saiu para entrega",
+    "cancelado": "Cancelado",
+    "entregue": "Entregue",
+}
+
 
 def _limpar_lembretes_agendamento(cnpj: str, agend_id: int) -> None:
     """CRIADO EM: 30/09/2026 - remove o rastro de lembretes proativos de um
@@ -67,6 +78,69 @@ def _limpar_lembretes_agendamento(cnpj: str, agend_id: int) -> None:
 
 def _cnpj_limpo(cnpj: str) -> str:
     return re.sub(r"[^0-9A-Za-z_-]", "", cnpj)
+
+
+def _enfileirar_aviso_cliente(cnpj: str, agend_id: int, status: str) -> None:
+    """CRIADO EM: 30/09/2026 - avisa o cliente informando o STATUS atual do
+    pedido. Usado sempre que o status muda p/ algo que o cliente deve saber
+    (ex.: 'saiu_para_entrega', voltou p/ 'agendado').
+
+    Mensagem padrao: "O status de seu pedido é: <status>".
+    Usa a MESMA fila do bot (tb_avisos_pendentes) que o Delphi entrega via
+    /avisos. Idempotente (UNIQUE tabela+numero+status): se ja houver aviso
+    pendente para o cliente, atualiza o texto (nao duplica)."""
+    c = _cnpj_limpo(cnpj)
+    label = _STATUS_LABELS.get(status)
+    if not label:
+        return
+    try:
+        with connection() as conn:
+            cur = conn.cursor()
+            try:
+                cur.execute(
+                    f"SELECT whatsapp, nome FROM `tb_agendamentos_entregas_{c}` WHERE id=%s",
+                    (agend_id,),
+                )
+                row = cur.fetchone()
+                if not row or not row[0]:
+                    return
+                wa = str(row[0])
+                nome = (row[1] or wa).strip()
+                mensagem = f'Olá {nome}! O status de seu pedido é: {label}. Qualquer dúvida, fale com a gente!'
+
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS tb_avisos_pendentes (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        tabela VARCHAR(120) NOT NULL,
+                        numero VARCHAR(40) NOT NULL,
+                        mensagem TEXT NOT NULL,
+                        audio LONGTEXT NULL,
+                        status VARCHAR(20) NOT NULL DEFAULT 'pendente',
+                        criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        UNIQUE KEY uq_pendente (tabela, numero, status)
+                    )
+                """)
+                cur.execute(
+                    "SELECT COUNT(*) FROM information_schema.columns "
+                    "WHERE table_schema = DATABASE() AND table_name = 'tb_avisos_pendentes' "
+                    "AND column_name = 'audio'"
+                )
+                if (cur.fetchone() or [0])[0] == 0:
+                    cur.execute(
+                        "ALTER TABLE tb_avisos_pendentes "
+                        "ADD COLUMN audio LONGTEXT NULL AFTER mensagem"
+                    )
+                cur.execute(
+                    "INSERT INTO tb_avisos_pendentes (tabela, numero, mensagem, audio, status) "
+                    "VALUES (%s, %s, %s, NULL, 'pendente') "
+                    "ON DUPLICATE KEY UPDATE mensagem = VALUES(mensagem), audio = NULL",
+                    (f"tb_prod_{c}", wa, mensagem),
+                )
+                conn.commit()
+            finally:
+                cur.close()
+    except Exception:
+        pass
 
 
 def _garantir_tabela(cnpj: str) -> None:
@@ -280,6 +354,10 @@ def mudar_status(cnpj: str, agend_id: int, status: str) -> bool:
     # notificar de novo (som + janela voltam a tocar).
     if atualizou:
         _limpar_lembretes_agendamento(cnpj, agend_id)
+        # 30/09/2026 - avisos ao cliente por alteracao de status (fila
+        # tb_avisos_pendentes, Delphi envia): informa o status do pedido.
+        if status in ('saiu_para_entrega', 'agendado'):
+            _enfileirar_aviso_cliente(cnpj, agend_id, status)
     return atualizou
 
 

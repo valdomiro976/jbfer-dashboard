@@ -46,6 +46,57 @@ def _marcar_agendamento_saiu(cnpj: str, entrega_id: int) -> None:
                     (row[0],),
                 )
                 conn.commit()
+                # CRIADO EM: 30/09/2026 - mercadoria saiu: avisa o cliente
+                # (fila tb_avisos_pendentes, Delphi envia).
+                if cur.rowcount:
+                    cur.execute(
+                        f"SELECT id FROM `tb_agendamentos_entregas_{c}` "
+                        f"WHERE pedido_id=%s AND status='saiu_para_entrega'",
+                        (row[0],),
+                    )
+                    for (agend_id,) in cur.fetchall() or []:
+                        agendamento_service._enfileirar_aviso_cliente(cnpj, agend_id, 'saiu_para_entrega')
+            finally:
+                cur.close()
+    except Exception:
+        pass
+
+
+def _marcar_agendamento_voltou_agendado(cnpj: str, entrega_id: int) -> None:
+    """CRIADO EM: 30/09/2026 - quando o entregador REVERTE a tarefa que estava
+    EM TRANSITO (volta p/ 'aceita'), o agendamento do mesmo pedido que estava
+    'saiu_para_entrega' volta para 'agendado' e o cliente e avisado sobre a
+    alteracao."""
+    c = _cnpj_limpo(cnpj)
+    try:
+        from app.services import agendamento_service
+
+        agendamento_service._garantir_tabela(cnpj)
+        with connection() as conn:
+            cur = conn.cursor()
+            try:
+                cur.execute(
+                    f"SELECT pedido_id FROM `tb_entregas_{c}` WHERE id=%s",
+                    (entrega_id,),
+                )
+                row = cur.fetchone()
+                if not row or not row[0]:
+                    return
+                cur.execute(
+                    f"UPDATE `tb_agendamentos_entregas_{c}` "
+                    f"SET status='agendado', atualizado_em=NOW() "
+                    f"WHERE pedido_id=%s AND status='saiu_para_entrega'",
+                    (row[0],),
+                )
+                conn.commit()
+                if cur.rowcount:
+                    cur.execute(
+                        f"SELECT id FROM `tb_agendamentos_entregas_{c}` "
+                        f"WHERE pedido_id=%s AND status='agendado'",
+                        (row[0],),
+                    )
+                    for (agend_id,) in cur.fetchall() or []:
+                        agendamento_service._enfileirar_aviso_cliente(cnpj, agend_id, 'agendado')
             finally:
                 cur.close()
     except Exception:
@@ -441,6 +492,10 @@ def atualizar_tarefa(
                 # CRIADO EM: 30/09/2026 - a mercadoria saiu com o entregador:
                 # o agendamento do mesmo pedido passa a 'saiu_para_entrega'.
                 _marcar_agendamento_saiu(ctx["cnpj"], entrega_id)
+            if status == "aceita":
+                # CRIADO EM: 30/09/2026 - entregador reverteu (saiu -> nao
+                # saiu): o agendamento volta a 'agendado' e o cliente e avisado.
+                _marcar_agendamento_voltou_agendado(ctx["cnpj"], entrega_id)
             if status == "entregue":
                 _marcar_agendamento_entregue(ctx["cnpj"], entrega_id)
             return {"sucesso": True, "mensagem": f"Status atualizado para {status}"}
