@@ -30,6 +30,41 @@ _CAMPOS_EDITAVEIS = {
 _STATUS_VALIDOS = ("aguardando_entrega", "aguardando_data", "agendado", "imediata", "saiu_para_entrega", "cancelado", "entregue")
 
 
+def _limpar_lembretes_agendamento(cnpj: str, agend_id: int) -> None:
+    """CRIADO EM: 30/09/2026 - remove o rastro de lembretes proativos de um
+    agendamento:
+      1) tb_agend_avisos (controle anti-spam da varredura do bot, tabela
+         global com UNIQUE cnpj+agendamento_id+tipo);
+      2) notificacoes antigas na tb_notif_<cnpj> (UNIQUE tipo+evento+ref).
+    Motivo: se o operador marcar 'entregue' por engano e voltar para 'agendado',
+    o bot precisa poder notificar DE NOVO (id novo no sino = som + janela)."""
+    c = _cnpj_limpo(cnpj)
+    try:
+        with connection() as conn:
+            cursor = conn.cursor()
+            try:
+                try:
+                    cursor.execute(
+                        "DELETE FROM `tb_agend_avisos` WHERE cnpj=%s AND agendamento_id=%s",
+                        (c, agend_id),
+                    )
+                except Exception:
+                    pass
+                try:
+                    cursor.execute(
+                        f"DELETE FROM `tb_notif_{c}` "
+                        f"WHERE tipo='entrega' AND ref_tipo='agendamento' AND ref_id=%s",
+                        (agend_id,),
+                    )
+                except Exception:
+                    pass
+                conn.commit()
+            finally:
+                cursor.close()
+    except Exception:
+        pass
+
+
 def _cnpj_limpo(cnpj: str) -> str:
     return re.sub(r"[^0-9A-Za-z_-]", "", cnpj)
 
@@ -216,9 +251,14 @@ def atualizar_agendamento(cnpj: str, agend_id: int, campos: dict) -> bool:
                 params,
             )
             conn.commit()
-            return cursor.rowcount > 0
+            atualizou = cursor.rowcount > 0
         finally:
             cursor.close()
+    # 30/09/2026 - dados/status alterados: limpa o rastro de lembretes p/ a
+    # varredura do bot poder notificar de novo (novo id no sino).
+    if atualizou and any(k in campos for k in ("status", "data_entrega", "hora_entrega")):
+        _limpar_lembretes_agendamento(cnpj, agend_id)
+    return atualizou
 
 
 def mudar_status(cnpj: str, agend_id: int, status: str) -> bool:
@@ -232,9 +272,15 @@ def mudar_status(cnpj: str, agend_id: int, status: str) -> bool:
                 (status, datetime.now(), agend_id),
             )
             conn.commit()
-            return cursor.rowcount > 0
+            atualizou = cursor.rowcount > 0
         finally:
             cursor.close()
+    # 30/09/2026 - operador trocou o status (ex.: 'entregue' por engano e
+    # depois 'agendado'): limpa o rastro de lembretes para a varredura do bot
+    # notificar de novo (som + janela voltam a tocar).
+    if atualizou:
+        _limpar_lembretes_agendamento(cnpj, agend_id)
+    return atualizou
 
 
 def remover_agendamento(cnpj: str, agend_id: int) -> bool:
