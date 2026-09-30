@@ -445,6 +445,52 @@ body {
   margin-top: 4px;
 }
 
+/* Janela de alerta de entrega em atraso (CRIADO EM: 29/09/2026) */
+.modal-alerta .modal {
+  width: 460px;
+  max-width: 92vw;
+  border: 1px solid rgba(248, 113, 113, 0.45);
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.12), var(--shadow);
+}
+
+.modal-alerta-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.modal-alerta-ic {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+  flex-shrink: 0;
+}
+
+.modal-alerta-titulo {
+  font-size: 17px;
+  font-weight: 800;
+  color: #f87171;
+}
+
+.modal-alerta-msg {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.45;
+  margin-bottom: 18px;
+}
+
+.modal-alerta-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
 .content {
   flex: 1;
   overflow-y: auto;
