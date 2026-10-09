@@ -151,20 +151,22 @@ export function Redirecionamentos() {
     return Object.values(l).some((v) => String(v ?? '').toLowerCase().includes(termo))
   })
 
-  // Resumo das colunas exibidas na grade: id + status (se existe) + até mais 5
+  // Resumo das colunas exibidas na grade: id + status (se existe) + até mais 5,
+  // priorizando identificacao do cliente (inclusive numero_real_cliente).
   function colunasVisiveis() {
     return colunas.filter((c) => !c.textarea && !c.timestamp)
   }
   const colunasResumidas = (() => {
     const all = colunasVisiveis()
+    const pri = ['whatsapp_cliente', 'nome_cliente', 'numero_real_cliente', 'departamento']
+    const ord = (arr) => [
+      ...arr.filter((c) => c.field === 'id'),
+      ...arr.filter((c) => c.field === 'status'),
+      ...arr.filter((c) => c.field !== 'id' && c.field !== 'status' && pri.includes(c.field)),
+      ...arr.filter((c) => c.field !== 'id' && c.field !== 'status' && !pri.includes(c.field)),
+    ]
     const temStatus = all.some((c) => c.field === 'status')
-    if (temStatus) {
-      const id = all.filter((c) => c.field === 'id')
-      const st = all.filter((c) => c.field === 'status')
-      const resto = all.filter((c) => c.field !== 'id' && c.field !== 'status')
-      return [...id, ...st, ...resto].slice(0, 7)
-    }
-    return all.slice(0, 6)
+    return ord(all).slice(0, temStatus ? 7 : 6)
   })()
 
   const renderCampo = (c) => {
