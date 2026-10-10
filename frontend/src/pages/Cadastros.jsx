@@ -26,7 +26,13 @@ const selectsPorTabela = {
   },
 }
 
+const ROTULOS_AMIGAVEIS = {
+  reaviso_redir_min: 'Reavisar redir a cada (min)',
+  aviso_agend_min: 'Avisar entrega antes de vencer (min)',
+}
+
 function rotuloCampo(field) {
+  if (ROTULOS_AMIGAVEIS[field]) return ROTULOS_AMIGAVEIS[field]
   return (field || '')
     .replace(/_/g, ' ')
     .replace(/\b\w/g, (c) => c.toUpperCase())
