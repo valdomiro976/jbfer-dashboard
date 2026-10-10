@@ -27,8 +27,9 @@ const selectsPorTabela = {
 }
 
 const ROTULOS_AMIGAVEIS = {
-  reaviso_redir_min: 'Reavisar redir a cada (min)',
-  aviso_agend_min: 'Avisar entrega antes de vencer (min)',
+  reaviso_redir_min: 'Repetir aviso de redir a cada (min)',
+  aviso_agend_min: 'Avisar quando faltar (min)',
+  reaviso_agend_min: 'Repetir aviso de atraso a cada (min)',
 }
 
 function rotuloCampo(field) {
