@@ -5,6 +5,8 @@ import re
 from datetime import datetime
 from typing import Any, Optional
 
+import math
+
 import requests
 
 from app.db.database import connection, execute_query
@@ -449,3 +451,133 @@ def listar_rotas(cnpj: str) -> list[dict]:
             "destinos": destinos,
         })
     return rotas
+
+
+# ---- Rota otimizada (ordem mais curta de visita) ----
+# CRIADO EM: 12/10/2026 - TSP (vizinho mais proximo + 2-opt) sobre destinos
+# geolocalizados; geometria por estradas via OSRM (best-effort, cai p/ reta).
+
+def haversine_km(lat1, lng1, lat2, lng2):
+    """Distancia em km (linha reta) entre dois pontos. Puro."""
+    p1 = math.radians(float(lat1))
+    p2 = math.radians(float(lat2))
+    dp = math.radians(float(lat2) - float(lat1))
+    dl = math.radians(float(lng2) - float(lng1))
+    a = (math.sin(dp / 2) ** 2
+         + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2)
+    return 2 * 6371.0 * math.asin(math.sqrt(a))
+
+
+def ordenar_paradas(origem, pontos):
+    """Ordem de visita (indices em `pontos`) partindo de `origem`.
+
+    Puro (sem I/O): vizinho mais proximo + 2-opt, origem fixa.
+    """
+    pts = [(float(origem["lat"]), float(origem["lng"]))]
+    for p in pontos:
+        pts.append((float(p["lat"]), float(p["lng"])))
+    n = len(pts)
+    if n <= 1:
+        return []
+    visitado = [False] * n
+    ordem = [0]
+    visitado[0] = True
+    for _ in range(n - 1):
+        ult = ordem[-1]
+        melhor, melhor_d = -1, None
+        for i in range(1, n):
+            if visitado[i]:
+                continue
+            d = haversine_km(pts[ult][0], pts[ult][1], pts[i][0], pts[i][1])
+            if melhor_d is None or d < melhor_d:
+                melhor, melhor_d = i, d
+        ordem.append(melhor)
+        visitado[melhor] = True
+    def _tot(oo):
+        return sum(haversine_km(pts[a][0], pts[a][1], pts[b][0], pts[b][1])
+                   for a, b in zip(oo, oo[1:]))
+    melhor_d = _tot(ordem)
+    mudou = True
+    while mudou:
+        mudou = False
+        for i in range(1, len(ordem) - 1):
+            for k in range(i + 1, len(ordem)):
+                nova = ordem[:i] + ordem[i:k + 1][::-1] + ordem[k + 1:]
+                d = _tot(nova)
+                if d < melhor_d - 1e-9:
+                    ordem, melhor_d = nova, d
+                    mudou = True
+    return [i - 1 for i in ordem[1:]]
+
+
+def otimizar_rota_entregas(cnpj, origem=None, entregador_id=None,
+                           entrega_ids=None, voltar_origem=False):
+    """Monta a rota otimizada: geolocaliza, ordena e traca por estradas."""
+    c = _cnpj_limpo(cnpj)
+    _garantir_tabelas(cnpj)
+    org = None
+    if origem and origem.get("lat") is not None and origem.get("lng") is not None:
+        org = {"lat": float(origem["lat"]), "lng": float(origem["lng"])}
+    elif entregador_id:
+        loc = obter_ultima_localizacao(cnpj, int(entregador_id))
+        if loc and loc.get("lat") is not None and loc.get("lng") is not None:
+            org = {"lat": float(loc["lat"]), "lng": float(loc["lng"])}
+    if not org:
+        raise ValueError("origem ou entregador_id com localização são obrigatórios")
+    ids = {int(i) for i in (entrega_ids or []) if str(i).isdigit()}
+    if not ids:
+        raise ValueError("entrega_ids vazios")
+    entregas = listar_entregas(cnpj)
+    alvos = [e for e in entregas
+             if e.get("id") in ids
+             and e.get("status") not in ("entregue", "cancelada")]
+    if not alvos:
+        raise ValueError("nenhuma entrega ativa nos ids informados")
+    pts, sem_geo = [], []
+    for e in alvos:
+        geo = _geolocalizar_destino(
+            e.get("cliente_endereco", ""), e.get("cliente_cidade", ""),
+            e.get("cliente_uf", ""), e.get("cliente_cep", ""))
+        if geo and geo.get("lat") is not None and geo.get("lng") is not None:
+            pts.append({"entrega_id": e.get("id"),
+                        "cliente": e.get("cliente_nome") or "Cliente",
+                        "endereco": e.get("cliente_endereco", ""),
+                        "lat": float(geo["lat"]), "lng": float(geo["lng"])})
+        else:
+            sem_geo.append(e.get("id"))
+    if not pts:
+        raise ValueError("nenhum destino geolocalizado")
+    ordem = ordenar_paradas(org, pts)
+    paradas, geometria, total = [], [], 0.0
+    ant = org
+    for n, idx in enumerate(ordem, 1):
+        p = pts[idx]
+        d = haversine_km(ant["lat"], ant["lng"], p["lat"], p["lng"])
+        total += d
+        trecho = _rota_osrm(ant["lat"], ant["lng"], p["lat"], p["lng"],
+                            timeout=4.0)
+        if trecho:
+            if geometria:
+                trecho = trecho[1:]
+            geometria += [[la, ln] for la, ln in trecho]
+        else:
+            geometria += [[ant["lat"], ant["lng"]], [p["lat"], p["lng"]]]
+        paradas.append({"n": n, "entrega_id": p["entrega_id"],
+                        "cliente": p["cliente"], "endereco": p["endereco"],
+                        "lat": p["lat"], "lng": p["lng"],
+                        "km_etapa": round(d, 2)})
+        ant = p
+    if voltar_origem and pts:
+        d = haversine_km(ant["lat"], ant["lng"], org["lat"], org["lng"])
+        total += d
+        trecho = _rota_osrm(ant["lat"], ant["lng"], org["lat"], org["lng"],
+                            timeout=4.0)
+        if trecho:
+            geometria += [[la, ln] for la, ln in trecho[1:]]
+        else:
+            geometria += [[org["lat"], org["lng"]]]
+    return {"origem": org, "ordem": paradas,
+            "distancia_km": round(total, 2),
+            "geometria": geometria,
+            "nao_geolocalizadas": sem_geo,
+            "voltar_origem": bool(voltar_origem)}

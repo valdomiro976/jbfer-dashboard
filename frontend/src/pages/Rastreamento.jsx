@@ -26,6 +26,16 @@ const vendaIcon = () =>
     popupAnchor: [0, -16],
   })
 
+// Marker numerado da rota otimizada
+const numeroIcon = (n) =>
+  L.divIcon({
+    className: 'custom-marker',
+    html: `<div style="width:30px;height:30px;border-radius:50%;background:#fb923c;border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;">${n}</div>`,
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
+    popupAnchor: [0, -16],
+  })
+
 // Marker que abre o popup automaticamente quando "aberto" é true
 function AutoOpenMarker({ position, icon, aberto, children }) {
   const ref = useRef(null)
@@ -83,6 +93,9 @@ export function Rastreamento() {
   const [vendas, setVendas] = useState([])
   const [rotas, setRotas] = useState([])
   const [rotasVersao, setRotasVersao] = useState(0)
+  const [otimizada, setOtimizada] = useState(null)
+  const [otimizando, setOtimizando] = useState(false)
+  const [otimId, setOtimId] = useState('')
   const [mostrarRotas, setMostrarRotas] = useState(true)
   const [corRota, setCorRota] = useState('#6366f1')
   const [dashedRota, setDashedRota] = useState(false)
@@ -132,6 +145,33 @@ export function Rastreamento() {
       setRotasVersao((v) => (v || 0) + 1)
     } catch (e) {
       console.error('Erro ao carregar rotas:', e)
+    }
+  }
+
+  // Otimiza a ordem de visita das entregas ativas do entregador
+  const otimizarRota = async () => {
+    if (!otimId) return
+    const rota = rotas.find((r) => r.entregador.id === Number(otimId))
+    const ids = (rota?.destinos || [])
+      .filter((d) => d.entrega_id != null && !['entregue', 'cancelada'].includes(d.status))
+      .map((d) => d.entrega_id)
+    if (!ids.length) {
+      setOtimizada({ erro: 'Sem entregas ativas para este entregador.' })
+      return
+    }
+    setOtimizando(true)
+    try {
+      const { data } = await api.post(
+        '/entregas/rota-otimizada',
+        { entregador_id: Number(otimId), entrega_ids: ids },
+        { timeout: 120000 },
+      )
+      setOtimizada(data.dados)
+    } catch (e) {
+      console.error('Erro ao otimizar rota:', e)
+      setOtimizada({ erro: 'Falha ao otimizar a rota.' })
+    } finally {
+      setOtimizando(false)
     }
   }
 
@@ -269,6 +309,26 @@ export function Rastreamento() {
               </>
             )}
 
+            <select
+              value={otimId}
+              onChange={(e) => setOtimId(e.target.value)}
+              title="Entregador para otimizar a rota"
+              style={{ padding: '6px 8px', borderRadius: 8, border: '1px solid var(--border, #ccc)', background: 'var(--card, #fff)' }}
+            >
+              <option value="">Entregador p/ rota…</option>
+              {comLocalizacao.map((d) => (
+                <option key={d.entregador.id} value={d.entregador.id}>{d.entregador.nome}</option>
+              ))}
+            </select>
+            <button
+              onClick={otimizarRota}
+              disabled={!otimId || otimizando}
+              title="Calcula a ordem mais curta de visita"
+              style={{ padding: '6px 12px', borderRadius: 8, border: 'none', background: (!otimId || otimizando) ? '#999' : '#fb923c', color: '#fff', fontWeight: 700, cursor: (!otimId || otimizando) ? 'default' : 'pointer' }}
+            >
+              {otimizando ? 'Otimizando…' : 'Otimizar rota'}
+            </button>
+
             <label className="row" style={{ gap: 6, cursor: 'pointer' }}>
               <input
                 type="checkbox"
@@ -280,6 +340,37 @@ export function Rastreamento() {
             </label>
           </div>
         </div>
+
+        {otimizada && !otimizada.erro && (
+          <div className="card" style={{ marginBottom: 16, padding: 16 }}>
+            <div className="row space-between wrap" style={{ gap: 10, alignItems: 'center' }}>
+              <strong>Rota otimizada — {otimizada.distancia_km} km</strong>
+              <button
+                onClick={() => setOtimizada(null)}
+                style={{ padding: '4px 10px', borderRadius: 8, border: '1px solid var(--border, #ccc)', background: 'transparent', cursor: 'pointer' }}
+              >
+                Limpar
+              </button>
+            </div>
+            <ol style={{ margin: '8px 0 0', paddingLeft: 22 }}>
+              {(otimizada.ordem || []).map((p) => (
+                <li key={p.entrega_id} style={{ marginBottom: 4, fontSize: 13 }}>
+                  <strong>{p.cliente}</strong>{p.endereco ? ` — ${p.endereco}` : ''} <span className="text-muted">({p.km_etapa} km)</span>
+                </li>
+              ))}
+            </ol>
+            {(otimizada.nao_geolocalizadas || []).length > 0 && (
+              <div className="text-sm" style={{ color: 'var(--warning)', marginTop: 6 }}>
+                Sem localização (fora da rota): entregas {otimizada.nao_geolocalizadas.join(', ')}
+              </div>
+            )}
+          </div>
+        )}
+        {otimizada && otimizada.erro && (
+          <div className="card" style={{ marginBottom: 16, padding: 12, color: 'var(--danger)' }}>
+            {otimizada.erro} <button onClick={() => setOtimizada(null)} style={{ marginLeft: 8, cursor: 'pointer' }}>OK</button>
+          </div>
+        )}
 
         <div className="card map-card">
           <MapContainer
@@ -410,6 +501,28 @@ export function Rastreamento() {
                     )
                   })
               })}
+
+            {/* Rota otimizada: trajeto único na ordem calculada */}
+            {otimizada && !otimizada.erro && (otimizada.geometria || []).length > 1 && (
+              <Polyline
+                key={`otim-${(otimizada.ordem || []).map((p) => p.entrega_id).join('-')}`}
+                positions={otimizada.geometria.map((p) => [parseFloat(p[0]), parseFloat(p[1])])}
+                pathOptions={{ color: '#fb923c', weight: 5, opacity: 0.9 }}
+              />
+            )}
+            {(otimizada && !otimizada.erro ? otimizada.ordem || [] : []).map((p) => (
+              p.lat != null && p.lng != null ? (
+                <Marker key={`otim-${p.entrega_id}`} position={[parseFloat(p.lat), parseFloat(p.lng)]} icon={numeroIcon(p.n)}>
+                  <Popup>
+                    <div style={{ fontSize: 12 }}>
+                      <strong>{p.n}) {p.cliente}</strong>
+                      {p.endereco ? <div>{p.endereco}</div> : null}
+                      <div className="text-muted">{p.km_etapa} km da parada anterior</div>
+                    </div>
+                  </Popup>
+                </Marker>
+              ) : null
+            ))}
           </MapContainer>
         </div>
       </div>

@@ -189,3 +189,36 @@ def get_geo_entrega(entrega_id: int, user: dict = Depends(get_current_cnpj)):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao geolocalizar entrega: {str(e)}")
+
+
+class OrigemRotaModel(BaseModel):
+    lat: float
+    lng: float
+
+
+class RotaOtimizadaModel(BaseModel):
+    origem: Optional[OrigemRotaModel] = None
+    entregador_id: Optional[int] = None
+    entrega_ids: list[int] = []
+    voltar_origem: bool = False
+
+
+# CRIADO EM: 12/10/2026 - ordem mais curta de visita (loja/entregador -> N
+# entregas), com geometria por estradas p/ o mapa.
+@router.post("/rota-otimizada", status_code=status.HTTP_200_OK)
+def post_rota_otimizada(payload: RotaOtimizadaModel, user: dict = Depends(get_current_cnpj)):
+    cnpj = user["cnpj"]
+    try:
+        dados = entrega_service.otimizar_rota_entregas(
+            cnpj,
+            origem=payload.origem.model_dump() if payload.origem else None,
+            entregador_id=payload.entregador_id,
+            entrega_ids=payload.entrega_ids,
+            voltar_origem=payload.voltar_origem)
+        return {"sucesso": True, "cnpj": cnpj, "dados": dados}
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao otimizar rota: {str(e)}")
