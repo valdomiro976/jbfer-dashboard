@@ -30,7 +30,7 @@ const vendaIcon = () =>
 const numeroIcon = (n) =>
   L.divIcon({
     className: 'custom-marker',
-    html: `<div style="width:30px;height:30px;border-radius:50%;background:#fb923c;border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;">${n}</div>`,
+    html: `<div style="width:30px;height:30px;border-radius:50%;background:#1d4ed8;border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;">${n}</div>`,
     iconSize: [30, 30],
     iconAnchor: [15, 15],
     popupAnchor: [0, -16],
@@ -324,7 +324,7 @@ export function Rastreamento() {
               onClick={otimizarRota}
               disabled={!otimId || otimizando}
               title="Calcula a ordem mais curta de visita"
-              style={{ padding: '6px 12px', borderRadius: 8, border: 'none', background: (!otimId || otimizando) ? '#999' : '#fb923c', color: '#fff', fontWeight: 700, cursor: (!otimId || otimizando) ? 'default' : 'pointer' }}
+              style={{ padding: '6px 12px', borderRadius: 8, border: 'none', background: (!otimId || otimizando) ? '#999' : '#1d4ed8', color: '#fff', fontWeight: 700, cursor: (!otimId || otimizando) ? 'default' : 'pointer' }}
             >
               {otimizando ? 'Otimizando…' : 'Otimizar rota'}
             </button>
@@ -507,7 +507,7 @@ export function Rastreamento() {
               <Polyline
                 key={`otim-${(otimizada.ordem || []).map((p) => p.entrega_id).join('-')}`}
                 positions={otimizada.geometria.map((p) => [parseFloat(p[0]), parseFloat(p[1])])}
-                pathOptions={{ color: '#fb923c', weight: 5, opacity: 0.9 }}
+                pathOptions={{ color: '#1d4ed8', weight: 6, opacity: 0.95 }}
               />
             )}
             {(otimizada && !otimizada.erro ? otimizada.ordem || [] : []).map((p) => (
