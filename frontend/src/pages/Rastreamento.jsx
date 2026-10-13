@@ -473,8 +473,9 @@ export function Rastreamento() {
               )
             })}
 
-            {/* Rotas: liga cada entregador às suas entregas geolocalizadas */}
-            {mostrarRotas &&
+            {/* Rotas: liga cada entregador às suas entregas geolocalizadas.
+                Escondidas enquanto a otimizada está ativa (evita duplicar). */}
+            {mostrarRotas && (!otimizada || otimizada.erro) &&
               rotas.map((rota) => {
                 const ent = rota.entregador
                 const loc = rota.localizacao
