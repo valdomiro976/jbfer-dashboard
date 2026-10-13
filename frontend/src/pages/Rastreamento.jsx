@@ -36,6 +36,16 @@ const numeroIcon = (n) =>
     popupAnchor: [0, -16],
   })
 
+// Marker para os destinos das rotas (entregas) — diferente das vendas
+const destinoIcon = () =>
+  L.divIcon({
+    className: 'custom-marker',
+    html: `<div style="width:26px;height:26px;border-radius:50%;background:#0d9488;border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;">📦</div>`,
+    iconSize: [26, 26],
+    iconAnchor: [13, 13],
+    popupAnchor: [0, -15],
+  })
+
 // Marker que abre o popup automaticamente quando "aberto" é true
 function AutoOpenMarker({ position, icon, aberto, children }) {
   const ref = useRef(null)
@@ -493,12 +503,24 @@ export function Rastreamento() {
                     const positions = dest.rota && dest.rota.length > 1
                       ? dest.rota.map((p) => [parseFloat(p[0]), parseFloat(p[1])])
                       : [origem, [parseFloat(dest.lat), parseFloat(dest.lng)]]
+                    const dlat = parseFloat(dest.lat)
+                    const dlng = parseFloat(dest.lng)
                     return (
-                      <Polyline
-                        key={`rota-${ent.id}-${dest.entrega_id ?? dest.pedido_id}-v${rotasVersao}`}
-                        positions={positions}
-                        pathOptions={{ color: rotaCor, weight: 3, opacity: 0.8, dashArray: dashedRota ? '6 8' : undefined }}
-                      />
+                      <div key={`rota-${ent.id}-${dest.entrega_id ?? dest.pedido_id}-v${rotasVersao}`}>
+                        <Polyline
+                          positions={positions}
+                          pathOptions={{ color: rotaCor, weight: 3, opacity: 0.8, dashArray: dashedRota ? '6 8' : undefined }}
+                        />
+                        <Marker position={[dlat, dlng]} icon={destinoIcon()}>
+                          <Popup>
+                            <div style={{ fontSize: 12 }}>
+                              <strong>{dest.cliente || 'Entrega'}</strong>
+                              {dest.endereco ? <div>{dest.endereco}{dest.cidade ? ` — ${dest.cidade}` : ''}{dest.uf ? `/${dest.uf}` : ''}</div> : null}
+                              <div className="text-muted">→ {ent.nome} · {dest.status || 'pendente'}</div>
+                            </div>
+                          </Popup>
+                        </Marker>
+                      </div>
                     )
                   })
               })}
