@@ -31,12 +31,13 @@ const ROTULOS_AMIGAVEIS = {
   aviso_agend_min: 'Avisar quando faltar (min)',
   reaviso_agend_min: 'Repetir aviso de atraso de entregas a cada (min)',
   horario_loja: 'Horário da loja (ex 08:00-18:00)',
+  nome_cliente: 'Nome cliente',
 }
 
 // Colunas exibidas na grade por tabela (padrão: resumo automático).
 // Config tem muita coluna e escondia os botões: só id + client_id.
 const COLUNAS_GRADE = {
-  config: ['id', 'client_id'],
+  config: ['id', 'client_id', 'nome_cliente'],
 }
 
 function rotuloCampo(field) {
