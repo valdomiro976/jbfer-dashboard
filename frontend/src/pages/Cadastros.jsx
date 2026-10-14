@@ -37,7 +37,7 @@ const ROTULOS_AMIGAVEIS = {
 // Colunas exibidas na grade por tabela (padrão: resumo automático).
 // Config tem muita coluna e escondia os botões: só id + client_id.
 const COLUNAS_GRADE = {
-  config: ['id', 'client_id', 'nome_cliente'],
+  config: ['id', 'nome_cliente', 'client_id'],
 }
 
 function rotuloCampo(field) {
