@@ -40,6 +40,15 @@ const COLUNAS_GRADE = {
   config: ['id', 'nome_cliente', 'client_id'],
 }
 
+// Campos somente leitura no CRUD (somem do formulário; legenda avisa).
+// Config: identidade da empresa, alterada só via Delphi/API.
+const SOMENTE_LEITURA = {
+  config: ['id', 'client_id', 'nome_cliente'],
+}
+const LEGENDA_LEITURA = {
+  config: 'ID, Cliente ID e Nome cliente são somente leitura (alteração via Delphi).',
+}
+
 function rotuloCampo(field) {
   if (ROTULOS_AMIGAVEIS[field]) return ROTULOS_AMIGAVEIS[field]
   return (field || '')
@@ -191,7 +200,8 @@ export function Cadastros({ padrao }) {
   }, [viewDptos])
 
   const metaAtual = meta.find((t) => t.rota === rotaTabela)
-  const camposEditaveis = colunas.filter((c) => !c.protegido && !c.timestamp)
+  const travados = SOMENTE_LEITURA[rotaTabela] || []
+  const camposEditaveis = colunas.filter((c) => !c.protegido && !c.timestamp && !travados.includes(c.field))
 
   const formuVazio = () => {
     const f = {}
@@ -488,7 +498,16 @@ export function Cadastros({ padrao }) {
 
               {!viewProdutos && !viewDptos && (
                 <>
-                  {camposEditaveis.length === 0 && <p className="text-muted text-sm">Nenhum campo editável</p>}
+                  {LEGENDA_LEITURA[rotaTabela] && (
+                    <p className="text-muted text-sm" style={{ marginBottom: 12 }}>{LEGENDA_LEITURA[rotaTabela]}</p>
+                  )}
+                  {travados.filter((f) => colunas.some((c) => c.field === f)).map((f) => (
+                    <div key={f} style={{ marginBottom: 12 }}>
+                      <label>{rotuloCampo(f)}</label>
+                      <input className="input" value={editing?.[f] ?? ''} disabled title="Somente leitura" />
+                    </div>
+                  ))}
+                  {camposEditaveis.length === 0 && travados.length === 0 && <p className="text-muted text-sm">Nenhum campo editável</p>}
                   {camposEditaveis.map(renderCampo)}
                 </>
               )}
