@@ -10,11 +10,12 @@ import { Plus, Pencil, Trash2, Search, RefreshCw } from 'lucide-react'
 const statusCor = {
   PENDENTE: 'badge badge-danger',
   ATENDIDO: 'badge badge-success',
+  CANCELADO_PELO_CLIENTE: 'badge badge-warning',
 }
 
 const selectsPorTabela = {
   redir: {
-    status: ['PENDENTE', 'ATENDIDO'],
+    status: ['PENDENTE', 'ATENDIDO', 'CANCELADO_PELO_CLIENTE'],
   },
 }
 
