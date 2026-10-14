@@ -354,7 +354,7 @@ export function Rastreamento() {
         {otimizada && !otimizada.erro && (
           <div className="card" style={{ marginBottom: 16, padding: 16 }}>
             <div className="row space-between wrap" style={{ gap: 10, alignItems: 'center' }}>
-              <strong>Rota otimizada — {otimizada.distancia_km} km</strong>
+              <strong>Rota otimizada — {otimizada.distancia_km} km{otimizada.km_roteada === false ? ' (linha reta)' : ''}</strong>
               <button
                 onClick={() => setOtimizada(null)}
                 style={{ padding: '4px 10px', borderRadius: 8, border: '1px solid var(--border, #ccc)', background: 'transparent', cursor: 'pointer' }}

@@ -370,6 +370,12 @@ OSRM_URL = "https://router.project-osrm.org/route/v1/driving"
 
 def _rota_osrm(origem_lat: float, origem_lng: float, destino_lat: float, destino_lng: float,
                timeout: float = 8.0) -> list[tuple[float, float]] | None:
+    r = _rota_osrm_completa(origem_lat, origem_lng, destino_lat, destino_lng, timeout=timeout)
+    return r[0] if r else None
+
+
+def _rota_osrm_completa(origem_lat: float, origem_lng: float, destino_lat: float,
+                        destino_lng: float, timeout: float = 8.0):
     """Calcula a rota por estradas usando a API pública do OSRM.
     Retorna lista de pontos [lat, lng] ou None se falhar (caller faz fallback para linha reta)."""
     try:
@@ -383,8 +389,11 @@ def _rota_osrm(origem_lat: float, origem_lng: float, destino_lat: float, destino
         if data.get("code") != "Ok" or not data.get("routes"):
             return None
         # GeoJSON: coordinates é [[lng, lat], ...]
-        coords_geo = data["routes"][0]["geometry"]["coordinates"]
-        return [(round(float(c[1]), 6), round(float(c[0]), 6)) for c in coords_geo]
+        rota0 = data["routes"][0]
+        coords_geo = rota0["geometry"]["coordinates"]
+        pts = [(round(float(c[1]), 6), round(float(c[0]), 6)) for c in coords_geo]
+        km = float(rota0.get("distance", 0) or 0) / 1000.0
+        return pts, km
     except Exception:
         return None
 
@@ -549,35 +558,40 @@ def otimizar_rota_entregas(cnpj, origem=None, entregador_id=None,
         raise ValueError("nenhum destino geolocalizado")
     ordem = ordenar_paradas(org, pts)
     paradas, geometria, total = [], [], 0.0
+    roteada = True
     ant = org
     for n, idx in enumerate(ordem, 1):
         p = pts[idx]
         d = haversine_km(ant["lat"], ant["lng"], p["lat"], p["lng"])
-        total += d
-        trecho = _rota_osrm(ant["lat"], ant["lng"], p["lat"], p["lng"],
-                            timeout=4.0)
-        if trecho:
+        r = _rota_osrm_completa(ant["lat"], ant["lng"], p["lat"], p["lng"],
+                                timeout=4.0)
+        if r:
+            trecho, d = r[0], r[1]
             if geometria:
                 trecho = trecho[1:]
             geometria += [[la, ln] for la, ln in trecho]
         else:
+            roteada = False
             geometria += [[ant["lat"], ant["lng"]], [p["lat"], p["lng"]]]
+        total += d
         paradas.append({"n": n, "entrega_id": p["entrega_id"],
                         "cliente": p["cliente"], "endereco": p["endereco"],
                         "lat": p["lat"], "lng": p["lng"],
                         "km_etapa": round(d, 2)})
         ant = p
     if voltar_origem and pts:
-        d = haversine_km(ant["lat"], ant["lng"], org["lat"], org["lng"])
-        total += d
-        trecho = _rota_osrm(ant["lat"], ant["lng"], org["lat"], org["lng"],
-                            timeout=4.0)
-        if trecho:
-            geometria += [[la, ln] for la, ln in trecho[1:]]
+        r = _rota_osrm_completa(ant["lat"], ant["lng"], org["lat"], org["lng"],
+                                timeout=4.0)
+        if r:
+            geometria += [[la, ln] for la, ln in r[0][1:]]
+            total += r[1]
         else:
+            roteada = False
+            total += haversine_km(ant["lat"], ant["lng"], org["lat"], org["lng"])
             geometria += [[org["lat"], org["lng"]]]
     return {"origem": org, "ordem": paradas,
             "distancia_km": round(total, 2),
+            "km_roteada": roteada,
             "geometria": geometria,
             "nao_geolocalizadas": sem_geo,
             "voltar_origem": bool(voltar_origem)}
