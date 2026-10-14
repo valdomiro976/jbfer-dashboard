@@ -625,6 +625,8 @@ export function Cadastros({ padrao }) {
                 >
                   <RefreshCw size={15} />
                 </button>
+                {/* Config sem "Novo": CNPJ novo so via Delphi/API. */}
+                {rotaTabela !== 'config' && (
                 <button
                   className="btn btn-primary"
                   onClick={abrirNovo}
@@ -633,6 +635,7 @@ export function Cadastros({ padrao }) {
                   <Plus size={16} />
                   Novo registro
                 </button>
+                )}
               </div>
             </div>
 
