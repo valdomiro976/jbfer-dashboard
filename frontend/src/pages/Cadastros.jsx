@@ -33,6 +33,12 @@ const ROTULOS_AMIGAVEIS = {
   horario_loja: 'Horário da loja (ex 08:00-18:00)',
 }
 
+// Colunas exibidas na grade por tabela (padrão: resumo automático).
+// Config tem muita coluna e escondia os botões: só id + client_id.
+const COLUNAS_GRADE = {
+  config: ['id', 'client_id'],
+}
+
 function rotuloCampo(field) {
   if (ROTULOS_AMIGAVEIS[field]) return ROTULOS_AMIGAVEIS[field]
   return (field || '')
@@ -321,6 +327,12 @@ export function Cadastros({ padrao }) {
     return colunas.filter((c) => !c.textarea && !c.timestamp)
   }
   const colunasResumidas = (() => {
+    const fixas = COLUNAS_GRADE[rotaTabela]
+    if (fixas) {
+      return fixas
+        .map((f) => colunasVisiveis().find((c) => c.field === f))
+        .filter(Boolean)
+    }
     const all = colunasVisiveis()
     const temStatus = all.some((c) => c.field === 'status')
     if (temStatus) {

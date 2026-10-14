@@ -271,6 +271,18 @@ def criar(cnpj: str, rota: str, dados: dict) -> dict:
     return obter(cnpj, rota, novo_id) or {"id": novo_id}
 
 
+def _registro_existe(tabela: str, rid: int) -> bool:
+    # CRIADO EM: 14/10/2026 - salvar sem alteracao dava 404 (rowcount 0):
+    # distingue "nao existe" de "nada mudou".
+    with connection() as conn:
+        cursor = conn.cursor()
+        try:
+            cursor.execute(f"SELECT 1 FROM `{tabela}` WHERE id=%s LIMIT 1", (rid,))
+            return cursor.fetchone() is not None
+        finally:
+            cursor.close()
+
+
 def atualizar(cnpj: str, rota: str, rid: int, dados: dict) -> bool:
     tabela = _tabela_fisica(cnpj, rota)
     if not _tabela_existe(tabela):
@@ -287,7 +299,7 @@ def atualizar(cnpj: str, rota: str, rid: int, dados: dict) -> bool:
         sets.append(f"`{campo}`=%s")
         valores.append(_deserializar(dados.get(campo), tipo))
     if not sets:
-        return False
+        return _registro_existe(tabela, rid)
     valores.append(rid)
     with connection() as conn:
         cursor = conn.cursor()
@@ -297,7 +309,9 @@ def atualizar(cnpj: str, rota: str, rid: int, dados: dict) -> bool:
                 valores,
             )
             conn.commit()
-            return cursor.rowcount > 0
+            if cursor.rowcount > 0:
+                return True
+            return _registro_existe(tabela, rid)
         finally:
             cursor.close()
 

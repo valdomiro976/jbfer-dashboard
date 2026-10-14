@@ -172,7 +172,12 @@ def atualizar_dpto(cnpj: str, dpto_id: int, campos: dict) -> bool:
                 params,
             )
             conn.commit()
-            return cursor.rowcount > 0
+            if cursor.rowcount > 0:
+                return True
+            # CRIADO EM: 14/10/2026 - salvar sem alteracao: rowcount 0 nao e
+            # "nao encontrado"; confirma existencia antes de dizer nao.
+            cursor.execute(f"SELECT 1 FROM `tb_dpto_{c}` WHERE id=%s LIMIT 1", (dpto_id,))
+            return cursor.fetchone() is not None
         finally:
             cursor.close()
 
