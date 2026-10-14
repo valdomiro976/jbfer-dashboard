@@ -30,7 +30,7 @@ const ROTULOS_AMIGAVEIS = {
   reaviso_redir_min: 'Repetir aviso de redir a cada (min)',
   aviso_agend_min: 'Avisar quando faltar (min)',
   reaviso_agend_min: 'Repetir aviso de atraso de entregas a cada (min)',
-  horario_loja: 'Horário da loja (ex 08:00-18:00, vazio = 24h)',
+  horario_loja: 'Horário da loja (ex 08:00-18:00, vazio = 08:00-18:00)',
 }
 
 function rotuloCampo(field) {
