@@ -46,7 +46,7 @@ const SOMENTE_LEITURA = {
   config: ['id', 'client_id', 'nome_cliente'],
 }
 const LEGENDA_LEITURA = {
-  config: 'ID, Cliente ID e Nome cliente são somente leitura (alteração via Delphi).',
+  config: 'ID, Cliente ID e Nome cliente são somente leitura (alteração via ADMIN).',
 }
 
 function rotuloCampo(field) {
