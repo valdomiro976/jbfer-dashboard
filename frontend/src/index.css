@@ -1270,3 +1270,148 @@ table.data-table tr:hover td {
     border-bottom: 1px solid var(--border);
   }
 }
+
+/* ---------- Responsivo (15/10/2026): drawer + empilhamento mobile.
+   Desktop intacto: tudo aqui so vale ate 900px/560px. */
+.hamburger {
+  display: none;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  padding: 8px;
+  cursor: pointer;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 98;
+}
+
+@media (max-width: 900px) {
+  .hamburger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 99;
+    width: min(280px, 84vw);
+    transform: translateX(-105%);
+    transition: transform 0.25s ease;
+    box-shadow: var(--shadow);
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .sidebar.mobile-open.collapsed {
+    width: min(280px, 84vw);
+  }
+
+  .sidebar-collapse-btn {
+    display: none;
+  }
+
+  .topbar {
+    padding: 14px 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .topbar .page-title h1 {
+    font-size: 18px;
+  }
+
+  .topbar .page-title p {
+    font-size: 12px;
+  }
+
+  .content {
+    padding: 16px;
+  }
+
+  .row {
+    flex-wrap: wrap;
+  }
+
+  .grid-2,
+  .grid-2-equal,
+  .modal-lg .modal-inner {
+    grid-template-columns: 1fr;
+  }
+
+  .modal {
+    width: calc(100vw - 32px);
+    max-height: calc(100vh - 48px);
+  }
+
+  .modal-lg {
+    width: calc(100vw - 24px);
+  }
+
+  .chat-layout {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .chat-sidebar {
+    max-height: 300px;
+  }
+
+  .chat-body {
+    min-height: 50vh;
+  }
+
+  .notif-panel {
+    width: calc(100vw - 48px);
+    max-width: 340px;
+  }
+
+  table.data-table {
+    font-size: 12px;
+    min-width: 640px;
+  }
+
+  table.data-table th,
+  table.data-table td {
+    padding: 10px 12px;
+  }
+}
+
+@media (max-width: 560px) {
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .stat-card {
+    padding: 14px;
+  }
+
+  .stat-card .stat-value {
+    font-size: 20px;
+  }
+
+  .topbar .page-title p {
+    display: none;
+  }
+
+  .btn {
+    font-size: 13px;
+  }
+
+  .map-card {
+    min-height: 320px;
+  }
+}

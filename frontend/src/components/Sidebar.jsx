@@ -47,6 +47,22 @@ export function Sidebar() {
   // ALTERADO EM: 25/09/2026 - Ajuda abre a aba Ajuda do Cadastros
   const ajudaAtiva = pathname === '/cadastros' && search.includes('ajuda=1')
   const [collapsed, setCollapsed] = useState(false)
+  // RESPONSIVO (15/10/2026): drawer no mobile via evento 'sidebar:toggle'
+  // (hamburger no Topbar). Fecha ao navegar ou no overlay.
+  const [mobileOpen, setMobileOpen] = useState(false)
+  useEffect(() => {
+    const abrir = () => setMobileOpen((v) => !v)
+    const fechar = () => setMobileOpen(false)
+    window.addEventListener('sidebar:toggle', abrir)
+    window.addEventListener('sidebar:close', fechar)
+    return () => {
+      window.removeEventListener('sidebar:toggle', abrir)
+      window.removeEventListener('sidebar:close', fechar)
+    }
+  }, [])
+  useEffect(() => {
+    setMobileOpen(false)
+  }, [pathname, search])
   const [entregAberto, setEntregAberto] = useState(false)
   const [entregadores, setEntregadores] = useState([])
   const [vendasAberto, setVendasAberto] = useState(false)
@@ -128,7 +144,14 @@ export function Sidebar() {
   }, [vendasAberto, collapsed])
 
   return (
-    <aside className={collapsed ? 'sidebar collapsed' : 'sidebar'}>
+    <>
+      {mobileOpen && (
+        <div
+          className="sidebar-overlay"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+      <aside className={`sidebar${collapsed ? ' collapsed' : ''}${mobileOpen ? ' mobile-open' : ''}`}>
       <div className="logo">
         <div className="logo-icon">J</div>
         {!collapsed && <span>Dashboard JBFER</span>}
@@ -142,6 +165,7 @@ export function Sidebar() {
             end={item.to === '/'}
             className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}
             title={item.label}
+            onClick={() => window.dispatchEvent(new Event('sidebar:close'))}
           >
             <item.icon size={18} />
             {!collapsed && item.label}
@@ -149,7 +173,10 @@ export function Sidebar() {
         ))}
         <button
           className={ajudaAtiva ? 'nav-item active' : 'nav-item'}
-          onClick={() => navigate('/cadastros?ajuda=1')}
+          onClick={() => {
+            window.dispatchEvent(new Event('sidebar:close'))
+            navigate('/cadastros?ajuda=1')
+          }}
           title="Ajuda"
           style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer' }}
         >
@@ -178,7 +205,10 @@ export function Sidebar() {
                 <button
                   key={v.id}
                   className="nav-sub-item"
-                  onClick={() => navigate(`/vendas?venda=${v.id}`)}
+                  onClick={() => {
+                    window.dispatchEvent(new Event('sidebar:close'))
+                    navigate(`/vendas?venda=${v.id}`)
+                  }}
                   title={`Venda #${v.id} - ${v.nome}`}
                 >
                   <span className={`venda-dot venda-${v.corVenda}`} />
@@ -195,6 +225,7 @@ export function Sidebar() {
                   e.preventDefault()
                   e.stopPropagation()
                   setVendasAberto(false)
+                  window.dispatchEvent(new Event('sidebar:close'))
                   if (window.location.pathname === '/vendas') {
                     window.location.assign('/vendas')
                   } else {
@@ -229,12 +260,15 @@ export function Sidebar() {
               {entregadores.map((d) => {
                 const online = statusOnline(d.localizacao)
                 return (
-                  <button
-                    key={d.entregador.id}
-                    className="nav-sub-item"
-                    onClick={() => navigate(`/rastreamento?entregador=${d.entregador.id}`)}
-                    title="Localizar no mapa"
-                  >
+                    <button
+                      key={d.entregador.id}
+                      className="nav-sub-item"
+                      onClick={() => {
+                        window.dispatchEvent(new Event('sidebar:close'))
+                        navigate(`/rastreamento?entregador=${d.entregador.id}`)
+                      }}
+                      title="Localizar no mapa"
+                    >
                     <span className={`dot ${online ? 'dot-online' : 'dot-offline'}`} />
                     <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.entregador.nome}</span>
                     <span className="text-muted text-sm">{online ? 'On' : 'Off'}</span>
@@ -242,7 +276,8 @@ export function Sidebar() {
                 )
               })}
               {entregadores.length === 0 && <div className="nav-sub-item text-muted" style={{ justifyContent: 'center', fontSize: 12 }}>Sem entregadores</div>}
-              <NavLink to="/entregadores" className="nav-sub-link" end>
+              <NavLink to="/entregadores" className="nav-sub-link" end
+                onClick={() => window.dispatchEvent(new Event('sidebar:close'))}>
                 <Plus size={14} />
                 Cadastro
               </NavLink>
@@ -270,12 +305,13 @@ export function Sidebar() {
       </div>
 
       <button
-        className="btn btn-ghost"
+        className="btn btn-ghost sidebar-collapse-btn"
         onClick={() => setCollapsed(!collapsed)}
         style={{ marginTop: 12, justifyContent: 'center' }}
       >
         {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
       </button>
     </aside>
+    </>
   )
 }
