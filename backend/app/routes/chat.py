@@ -38,6 +38,17 @@ def buscar_mensagens(termo: str = Query(..., min_length=1), user: dict = Depends
         raise HTTPException(status_code=500, detail=f"Erro ao buscar mensagens: {str(e)}")
 
 
+@router.delete("/historico", status_code=status.HTTP_200_OK)
+def excluir_historico_completo(user: dict = Depends(get_current_cnpj)):
+    """Apaga TODO o histórico de mensagens do cliente (arquivo + memória de trabalho)."""
+    cnpj = user["cnpj"]
+    try:
+        resultado = chat_service.limpar_tudo(cnpj)
+        return {"sucesso": True, "cnpj": cnpj, **resultado}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao excluir histórico: {str(e)}")
+
+
 @router.delete("/conversas/{numero}", status_code=status.HTTP_200_OK)
 def excluir_mensagens(numero: str, user: dict = Depends(get_current_cnpj)):
     cnpj = user["cnpj"]

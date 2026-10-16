@@ -15,6 +15,11 @@ def _tabela(cnpj: str) -> str:
     return f"tb_hist_msg_arq_{cnpj_limpo}"
 
 
+def _tabela_trabalho(cnpj: str) -> str:
+    cnpj_limpo = re.sub(r"[^0-9A-Za-z_-]", "", cnpj)
+    return f"tb_hist_msg_{cnpj_limpo}"
+
+
 def _tabela_clientes(cnpj: str) -> str:
     cnpj_limpo = re.sub(r"[^0-9A-Za-z_-]", "", cnpj)
     return f"tb_clientes_{cnpj_limpo}"
@@ -150,6 +155,30 @@ def remover_mensagens(cnpj: str, numero: str) -> int:
             return cursor.rowcount
         finally:
             cursor.close()
+
+
+def limpar_tudo(cnpj: str) -> dict:
+    """Apaga TODO o histórico de mensagens do cliente.
+
+    Limpa o ARQUIVO PERMANENTE (tb_hist_msg_arq_, exibido no painel) e a MEMÓRIA
+    DE TRABALHO do bot (tb_hist_msg_). Usa DELETE ALL (mantém a estrutura da
+    tabela), em vez de DROP, para não exigir recriação de schema.
+    """
+    resultado: dict = {"tabelas": [], "total_removido": 0}
+    for tabela in (_tabela(cnpj), _tabela_trabalho(cnpj)):
+        if not _tabela_existe(tabela):
+            continue
+        with connection() as conn:
+            cursor = conn.cursor()
+            try:
+                cursor.execute(f"DELETE FROM `{tabela}`")
+                conn.commit()
+                removidas = cursor.rowcount
+            finally:
+                cursor.close()
+        resultado["total_removido"] += removidas
+        resultado["tabelas"].append({"tabela": tabela, "removidas": removidas})
+    return resultado
 
 
 def buscar_conversas(cnpj: str, termo: str, limite: int = 50) -> list[dict]:

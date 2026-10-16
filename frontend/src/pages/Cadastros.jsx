@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import api from '../api/client'
 import { Topbar } from '../components/Topbar'
 import { Loader, formatDate, formatBRL } from '../components/utils'
-import { Plus, Pencil, Trash2, Search, Database, RefreshCw, Package, Building2, KeyRound, Users, Settings, CreditCard, ShoppingCart, CornerDownRight, HelpCircle } from 'lucide-react'
+import { Plus, Pencil, Trash2, Search, Database, RefreshCw, Package, Building2, KeyRound, Users, Settings, CreditCard, ShoppingCart, CornerDownRight, HelpCircle, MessageCircle, AlertTriangle } from 'lucide-react'
 
 const iconeTabela = {
   chaves_pix: KeyRound,
@@ -78,13 +78,13 @@ const formDptVazio = {
 export function Cadastros({ padrao }) {
   const navigate = useNavigate()
 
-  // view: 'tabela:<rota>' | 'produtos' | 'departamentos' | 'ajuda'
+  // view: 'tabela:<rota>' | 'produtos' | 'departamentos' | 'ajuda' | 'historico'
   // ALTERADO EM: 25/09/2026 - ?ajuda=1 abre direto na Ajuda (botao do lateral)
   const [view, setView] = useState(() => {
     try {
       if (new URLSearchParams(window.location.search).get('ajuda') === '1') return 'ajuda'
     } catch { /* noop */ }
-    return padrao || null
+    return padrao
   })
   const [meta, setMeta] = useState([])
   const [loadingMeta, setLoadingMeta] = useState(true)
@@ -106,6 +106,8 @@ export function Cadastros({ padrao }) {
   // Departamentos
   const [dptos, setDptos] = useState([])
   const [formDpt, setFormDpt] = useState(formDptVazio)
+
+  const [limpando, setLimpando] = useState(false)
 
   const loadMeta = async () => {
     setLoadingMeta(true)
@@ -131,6 +133,7 @@ export function Cadastros({ padrao }) {
   const viewDptos = view === 'departamentos'
   // ALTERADO EM: 25/09/2026 - visao Ajuda (manual do painel WhatsApp)
   const viewAjuda = view === 'ajuda'
+  const viewHistorico = view === 'historico'
 
   const selecionar = (v) => {
     setView(v)
@@ -311,6 +314,27 @@ export function Cadastros({ padrao }) {
     }
   }
 
+  const excluirTodoHistorico = async () => {
+    const ok = window.confirm(
+      'Excluir TODO o histórico de mensagens de WhatsApp deste cliente?\n\n' +
+      'Isso apaga as conversas exibidas no painel E a memória de trabalho do bot. ' +
+      'Esta ação NÃO pode ser desfeita.'
+    )
+    if (!ok) return
+    const digitado = window.prompt('Para confirmar, digite EXCLUIR:')
+    if ((digitado || '').trim().toUpperCase() !== 'EXCLUIR') return
+    setLimpando(true)
+    try {
+      const { data } = await api.delete('/chat/historico')
+      alert(`Histórico excluído. Mensagens removidas: ${data.total_removido ?? 0}.`)
+    } catch (e) {
+      console.error(e)
+      alert('Erro ao excluir o histórico de mensagens')
+    } finally {
+      setLimpando(false)
+    }
+  }
+
   const filtradasTabela = linhas.filter((l) => {
     const termo = busca.toLowerCase()
     if (!termo) return true
@@ -426,8 +450,8 @@ export function Cadastros({ padrao }) {
     )
   }
 
-  const titulo = viewProdutos ? 'Produtos' : viewDptos ? 'Departamentos' : viewAjuda ? 'Ajuda' : (metaAtual?.rotulo || 'Cadastros')
-  const subtitulo = viewProdutos ? 'Catálogo de produtos' : viewDptos ? 'Setores e expediente' : viewAjuda ? 'Como usar o Dashboard' : 'Gerencie tabelas e configurações do sistema'
+  const titulo = viewProdutos ? 'Produtos' : viewDptos ? 'Departamentos' : viewAjuda ? 'Ajuda' : viewHistorico ? 'Histórico de mensagens' : (metaAtual?.rotulo || 'Cadastros')
+  const subtitulo = viewProdutos ? 'Catálogo de produtos' : viewDptos ? 'Setores e expediente' : viewAjuda ? 'Como usar o Dashboard' : viewHistorico ? 'Apagar todo o histórico de conversas' : 'Gerencie tabelas e configurações do sistema'
 
   if (loadingMeta) return <Loader />
 
@@ -554,6 +578,11 @@ export function Cadastros({ padrao }) {
                 <span style={{ flex: 1, textAlign: 'left' }}>Departamentos</span>
               </button>
               <div className="crud-menu-sep" />
+              <button className={viewHistorico ? 'crud-menu-btn active' : 'crud-menu-btn'} onClick={() => selecionar('historico')}>
+                <MessageCircle size={15} />
+                <span style={{ flex: 1, textAlign: 'left' }}>Histórico de mensagens</span>
+              </button>
+              <div className="crud-menu-sep" />
               <button className={viewAjuda ? 'crud-menu-btn active' : 'crud-menu-btn'} onClick={() => selecionar('ajuda')}>
                 <HelpCircle size={15} />
                 <span style={{ flex: 1, textAlign: 'left' }}>Ajuda</span>
@@ -563,7 +592,28 @@ export function Cadastros({ padrao }) {
 
           {/* Conteúdo ao lado */}
           <div style={{ flex: 1, minWidth: 0 }}>
-            {viewAjuda ? (
+            {viewHistorico ? (
+              <div className="card" style={{ padding: 20, maxWidth: 760 }}>
+                <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <MessageCircle size={18} /> Histórico de mensagens
+                </h3>
+                <p className="text-muted text-sm">
+                  Apaga <b>todas</b> as conversas de WhatsApp deste cliente. A exclusão remove o
+                  arquivo permanente (exibido no painel) e a memória de trabalho do bot. Esta ação
+                  <b> não pode ser desfeita</b>.
+                </p>
+                <div style={{ marginTop: 18 }}>
+                  <button className="btn btn-danger" onClick={excluirTodoHistorico} disabled={limpando}>
+                    <Trash2 size={15} />
+                    {limpando ? 'Excluindo...' : 'Excluir todo o histórico de mensagens'}
+                  </button>
+                </div>
+                <p className="text-muted text-sm" style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <AlertTriangle size={14} />
+                  Para apagar apenas uma conversa específica, use a tela <b>Chat</b>.
+                </p>
+              </div>
+            ) : viewAjuda ? (
               <div className="card" style={{ padding: 20, maxWidth: 900 }}>
                 <h3>Ajuda — como operar o sistema</h3>
                 <p className="text-muted text-sm">Guia completo das telas. Use o menu lateral para navegar; o botão de seta no rodapé recolhe/expande o menu.</p>
@@ -590,6 +640,12 @@ export function Cadastros({ padrao }) {
                   <li><b>Histórico dos atendimentos</b> do robô com cada cliente, por número.</li>
                   <li>Use <b>Buscar conversa...</b> para achar um atendimento.</li>
                   <li><b>Excluir todas as mensagens deste número</b> apaga o histórico daquela conversa.</li>
+                </ul>
+
+                <h3>Histórico de mensagens (em Cadastros)</h3>
+                <ul>
+                  <li>O item <b>Histórico de mensagens</b> no menu de Cadastros apaga <b>todo</b> o histórico de WhatsApp do cliente de uma vez.</li>
+                  <li>A exclusão remove o arquivo permanente (painel) e a memória de trabalho do bot, e <b>não pode ser desfeita</b>.</li>
                 </ul>
 
                 <h3>Entregas</h3>
