@@ -842,6 +842,32 @@ table.data-table tr:hover td {
   color: #a5b4fc;
 }
 
+/* Status inline na grade (combo p/ alterar sem abrir a edicao).
+   CRIADO EM: 17/10/2026 */
+select.input.status-select {
+  width: auto;
+  min-width: 170px;
+  padding: 6px 34px 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  border-color: transparent;
+}
+
+select.input.status-select:focus {
+  border-color: var(--accent);
+}
+
+select.input.status-select:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+select.input.status-select.badge-success { background-color: rgba(52, 211, 153, 0.15); color: var(--success); }
+select.input.status-select.badge-warning { background-color: rgba(251, 191, 36, 0.15); color: var(--warning); }
+select.input.status-select.badge-danger { background-color: rgba(248, 113, 113, 0.15); color: var(--danger); }
+select.input.status-select.badge-primary { background-color: rgba(99, 102, 241, 0.15); color: #a5b4fc; }
+
 /* ---------- Chart colors ---------- */
 .chart-fill {
   fill: rgba(99, 102, 241, 0.08);

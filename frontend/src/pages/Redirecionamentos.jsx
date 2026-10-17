@@ -44,6 +44,7 @@ export function Redirecionamentos() {
   const [form, setForm] = useState({})
   const [salvando, setSalvando] = useState(false)
   const [busca, setBusca] = useState('')
+  const [salvandoStatus, setSalvandoStatus] = useState(() => new Set())
 
   const loadMeta = async () => {
     setLoadingMeta(true)
@@ -144,6 +145,34 @@ export function Redirecionamentos() {
       console.error(e)
       alert('Erro ao excluir registro')
     }
+  }
+
+  // CRIADO EM: 17/10/2026 - alterar o STATUS direto na grade (combo), sem
+  // abrir a tela de edicao. Atualizacao otimista + PUT parcial ({status}).
+  const atualizarStatus = async (registro, novo) => {
+    const anterior = registro.status
+    if (novo === anterior) return
+    setLinhas((prev) => prev.map((l) => (l.id === registro.id ? { ...l, status: novo } : l)))
+    setSalvandoStatus((prev) => new Set(prev).add(registro.id))
+    try {
+      await api.put(`/cruds/redir/${registro.id}`, { dados: { status: novo } })
+    } catch (e) {
+      console.error(e)
+      setLinhas((prev) => prev.map((l) => (l.id === registro.id ? { ...l, status: anterior } : l)))
+      alert('Erro ao alterar o status')
+    } finally {
+      setSalvandoStatus((prev) => {
+        const s = new Set(prev)
+        s.delete(registro.id)
+        return s
+      })
+    }
+  }
+
+  const opcoesStatus = (valor) => {
+    const base = selectsPorTabela.redir.status
+    const v = String(valor ?? '')
+    return base.includes(v) ? base : [v, ...base]
   }
 
   const filtradas = linhas.filter((l) => {
@@ -311,9 +340,20 @@ export function Redirecionamentos() {
                     {colunasResumidas.map((c) => (
                       <td key={c.field}>
                         {c.field === 'status'
-                          ? (statusCor[String(l[c.field]).toUpperCase()] || null)
-                            ? <span className={statusCor[String(l[c.field]).toUpperCase()]}>{valorExibicao(l[c.field])}</span>
-                            : valorExibicao(l[c.field])
+                          ? (
+                            <select
+                              className={`input status-select ${statusCor[String(l[c.field]).toUpperCase()] || ''}`}
+                              value={String(l[c.field] ?? '')}
+                              disabled={salvandoStatus.has(l.id)}
+                              title="Alterar status"
+                              onClick={(e) => e.stopPropagation()}
+                              onChange={(e) => atualizarStatus(l, e.target.value)}
+                            >
+                              {opcoesStatus(l[c.field]).map((o) => (
+                                <option key={o} value={o}>{o}</option>
+                              ))}
+                            </select>
+                          )
                           : c.type === 'datetime' || c.type === 'date'
                             ? formatDate(l[c.field])
                             : valorExibicao(l[c.field])}
