@@ -126,7 +126,7 @@ def criar_produto(
                     estoque,
                     1 if ativo else 0,
                     unidade,
-                    (texto_busca or "").strip() or nome,
+                    (texto_busca or "").strip() or None,
                     agora,
                 ),
             )
@@ -139,7 +139,7 @@ def criar_produto(
                 "estoque": estoque,
                 "ativo": ativo,
                 "unidade": unidade,
-                "texto_busca": (texto_busca or "").strip() or nome,
+                "texto_busca": (texto_busca or "").strip(),
             }
         finally:
             cursor.close()
@@ -159,8 +159,6 @@ def atualizar_produto(cnpj: str, produto_id: int, campos: dict) -> bool:
     }
     sets = []
     params: list = []
-    _nome_novo = None
-    _texto_informado = "texto_busca" in campos
     for k, v in campos.items():
         col = mapeamento.get(k)
         if col is None or v is None:
@@ -174,18 +172,11 @@ def atualizar_produto(cnpj: str, produto_id: int, campos: dict) -> bool:
         elif k == "ativo":
             v = 1 if v else 0
         elif k in ("nome", "texto_busca"):
-            v = str(v).strip()
-            if k == "nome":
-                _nome_novo = v
+            v = str(v).strip() or None
         sets.append(f"`{col}`=%s")
         params.append(v)
     if not sets:
         return False
-    # Se o nome mudou e o texto_busca NAO foi informado, mantem texto_busca
-    # sincronizado com o novo nome (fallback). Se foi informado, prevalece.
-    if _nome_novo is not None and not _texto_informado:
-        sets.append("texto_busca=%s")
-        params.append(_nome_novo)
     sets.append("atualizado_em=%s")
     params.append(datetime.now())
     params.append(produto_id)
