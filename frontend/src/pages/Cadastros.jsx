@@ -64,7 +64,7 @@ function valorExibicao(v) {
   return String(v)
 }
 
-const formProdutoVazio = { nome: '', preco: '', estoque: '', categoria_id: '', ativo: true }
+const formProdutoVazio = { nome: '', preco: '', estoque: '', categoria_id: '', ativo: true, texto_busca: '' }
 
 const formDptVazio = {
   departamento: '',
@@ -236,6 +236,7 @@ export function Cadastros({ padrao }) {
         estoque: registro.estoque,
         categoria_id: registro.categoria_id ?? '',
         ativo: !!registro.ativo,
+        texto_busca: registro.texto_busca || '',
       })
     } else if (viewDptos) {
       setFormDpt({
@@ -267,6 +268,7 @@ export function Cadastros({ padrao }) {
           estoque: parseInt(formProduto.estoque, 10) || 0,
           categoria_id: formProduto.categoria_id !== '' ? parseInt(formProduto.categoria_id, 10) : null,
           ativo: formProduto.ativo,
+          texto_busca: (formProduto.texto_busca || '').trim(),
         }
         if (editing) await api.put(`/produtos/${editing.id}`, payload)
         else await api.post('/produtos', payload)
@@ -473,6 +475,15 @@ export function Cadastros({ padrao }) {
                 <>
                   <label>Nome</label>
                   <input className="input" value={formProduto.nome} onChange={(e) => setFormProduto({ ...formProduto, nome: e.target.value })} style={{ marginBottom: 14 }} />
+                  <label>Palavras para este produto ser localizado</label>
+                  <textarea
+                    className="input"
+                    rows={2}
+                    placeholder="Ex.: gas, gas de cozinha, botijão grande, botijão pequeno"
+                    value={formProduto.texto_busca}
+                    onChange={(e) => setFormProduto({ ...formProduto, texto_busca: e.target.value })}
+                    style={{ marginBottom: 14 }}
+                  />
                   <div className="row" style={{ gap: 10 }}>
                     <div style={{ flex: 1 }}>
                       <label>Preço (R$)</label>

@@ -18,6 +18,7 @@ class ProdutoModel(BaseModel):
     categoria_id: Optional[int] = None
     ativo: Optional[bool] = True
     unidade: Optional[str] = ""
+    texto_busca: Optional[str] = None
 
 
 @router.get("", status_code=status.HTTP_200_OK)
@@ -55,6 +56,7 @@ def create_produto(payload: ProdutoModel, user: dict = Depends(get_current_cnpj)
             categoria_id=payload.categoria_id,
             ativo=True if payload.ativo is None else payload.ativo,
             unidade=(payload.unidade or "").strip(),
+            texto_busca=(payload.texto_busca or "").strip(),
         )
         return {"sucesso": True, "dados": resultado}
     except Exception as e:

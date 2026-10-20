@@ -10,7 +10,9 @@ export function Produtos() {
   const [busca, setBusca] = useState('')
   const [modal, setModal] = useState(false)
   const [editing, setEditing] = useState(null)
-  const [form, setForm] = useState({ nome: '', preco: '', estoque: '', categoria_id: '', ativo: true })
+  const [form, setForm] = useState({ nome: '', preco: '', estoque: '', categoria_id: '', ativo: true, texto_busca: '' })
+
+  const vazio = () => ({ nome: '', preco: '', estoque: '', categoria_id: '', ativo: true, texto_busca: '' })
 
   const load = async () => {
     setLoading(true)
@@ -42,6 +44,7 @@ export function Produtos() {
         estoque: parseInt(form.estoque, 10) || 0,
         categoria_id: form.categoria_id !== '' ? parseInt(form.categoria_id, 10) : null,
         ativo: form.ativo,
+        texto_busca: (form.texto_busca || '').trim(),
       }
       if (editing) {
         await api.put(`/produtos/${editing.id}`, payload)
@@ -50,7 +53,7 @@ export function Produtos() {
       }
       setModal(false)
       setEditing(null)
-      setForm({ nome: '', preco: '', estoque: '', categoria_id: '', ativo: true })
+      setForm(vazio())
       load()
     } catch (e) {
       console.error(e)
@@ -70,13 +73,13 @@ export function Produtos() {
 
   const abrirNovo = () => {
     setEditing(null)
-    setForm({ nome: '', preco: '', estoque: '', categoria_id: '', ativo: true })
+    setForm(vazio())
     setModal(true)
   }
 
   const abrirEdicao = (p) => {
     setEditing(p)
-    setForm({ nome: p.nome, preco: p.preco, estoque: p.estoque, categoria_id: p.categoria_id ?? '', ativo: !!p.ativo })
+    setForm({ nome: p.nome, preco: p.preco, estoque: p.estoque, categoria_id: p.categoria_id ?? '', ativo: !!p.ativo, texto_busca: p.texto_busca || '' })
     setModal(true)
   }
 
@@ -94,6 +97,16 @@ export function Produtos() {
 
             <label>Nome</label>
             <input className="input" value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} style={{ marginBottom: 14 }} />
+
+            <label>Palavras para este produto ser localizado</label>
+            <textarea
+              className="input"
+              rows={2}
+              placeholder="Ex.: gas, gas de cozinha, botijão grande, botijão pequeno"
+              value={form.texto_busca}
+              onChange={(e) => setForm({ ...form, texto_busca: e.target.value })}
+              style={{ marginBottom: 14 }}
+            />
 
             <div className="row" style={{ gap: 10 }}>
               <div style={{ flex: 1 }}>
