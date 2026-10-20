@@ -32,7 +32,7 @@ const ROTULOS_AMIGAVEIS = {
   reaviso_agend_min: 'Repetir aviso de atraso de entregas a cada (min)',
   horario_loja: 'Horário da loja (ex 08:00-18:00)',
   nome_cliente: 'Nome cliente',
-  fluxo_ia: 'Fluxo IA humanizado (0=atual, 1=novo)',
+  fluxo_ia: 'Fluxo I.A. humanizado (0=atual, 1=novo)',
 }
 
 // Colunas exibidas na grade por tabela (padrão: resumo automático).
