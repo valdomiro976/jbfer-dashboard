@@ -33,6 +33,9 @@ const ROTULOS_AMIGAVEIS = {
   horario_loja: 'Horário da loja (ex 08:00-18:00)',
   nome_cliente: 'Nome cliente',
   fluxo_ia: 'Fluxo I.A. humanizado (0=atual, 1=novo)',
+  // CRIADO EM: 21/10/2026 - beneficiario do Pix (aparece no QR Code do PDV)
+  beneficiario: 'Beneficiário do Pix (nome)',
+  cidade: 'Cidade do beneficiário',
 }
 
 // Colunas exibidas na grade por tabela (padrão: resumo automático).
