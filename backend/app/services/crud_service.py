@@ -18,6 +18,10 @@ TABELAS = {
 
 # campos que não devem ser editados/manipulados pelo CRUD
 CAMPOS_PROTEGIDOS = {"id"}
+# por tabela: campos extras protegidos (além de id)
+CAMPOS_PROTEGIDOS_POR_TABELA = {
+    "chaves_pix": {"tipo"},
+}
 CAMPOS_TIMESTAMP = {"criado_em", "created_at", "updated_at"}
 
 # colunas do tipo text/longtext -> textarea no frontend
@@ -151,6 +155,10 @@ def metadados(cnpj: str) -> list[dict]:
         for c in cols:
             campo = c.get("Field")
             tipo = _tipo_coluna(c)
+            protegido = campo in CAMPOS_PROTEGIDOS or campo in CAMPOS_PROTEGIDOS_POR_TABELA.get(rota, set())
+            legend = ""
+            if rota == "chaves_pix" and campo == "tipo":
+                legend = "Somente leitura — preenchido automaticamente pelo sistema (email, cpf, cnpj, telefone, aleatoria)"
             camposs.append({
                 "field": campo,
                 "type": tipo,
@@ -159,7 +167,9 @@ def metadados(cnpj: str) -> list[dict]:
                 "default": c.get("Default"),
                 "key": c.get("Key") or "",
                 "extra": c.get("Extra") or "",
-                "protegido": campo in CAMPOS_PROTEGIDOS,
+                "protegido": protegido,
+                "readonly": protegido,
+                "legend": legend,
                 "timestamp": campo in CAMPOS_TIMESTAMP,
                 "textarea": tipo in TEXTAREA,
             })
@@ -182,12 +192,18 @@ def listar(cnpj: str, rota: str, limite: int = 500) -> dict:
     meta = []
     for c in cols:
         campo = c.get("Field")
+        protegido = campo in CAMPOS_PROTEGIDOS or campo in CAMPOS_PROTEGIDOS_POR_TABELA.get(rota, set())
+        legend = ""
+        if rota == "chaves_pix" and campo == "tipo":
+            legend = "Somente leitura — preenchido automaticamente pelo sistema (email, cpf, cnpj, telefone, aleatoria)"
         meta.append({
             "field": campo,
             "type": _tipo_coluna(c),
             "bool": _eh_bool(c),
             "null": (c.get("Null") or "YES") == "YES",
-            "protegido": campo in CAMPOS_PROTEGIDOS,
+            "protegido": protegido,
+            "readonly": protegido,
+            "legend": legend,
             "timestamp": campo in CAMPOS_TIMESTAMP,
             "textarea": (c.get("Type") or "").lower() in TEXTAREA,
         })
@@ -230,10 +246,12 @@ def obter(cnpj: str, rota: str, rid: int) -> dict | None:
     }
 
 
-def _campos_editaveis(colunas: list[dict]) -> list[dict]:
+def _campos_editaveis(colunas: list[dict], rota: str = "") -> list[dict]:
+    protegidos = set(CAMPOS_PROTEGIDOS)
+    protegidos.update(CAMPOS_PROTEGIDOS_POR_TABELA.get(rota, set()))
     return [
         c for c in colunas
-        if not c.get("protegido") and not c.get("timestamp")
+        if c.get("Field") not in protegidos and not c.get("timestamp")
     ]
 
 
@@ -242,7 +260,7 @@ def criar(cnpj: str, rota: str, dados: dict) -> dict:
     if not _tabela_existe(tabela):
         raise ValueError(f"Tabela '{rota}' não existe para este CNPJ")
     cols = _columns(tabela)
-    editaveis = _campos_editaveis(cols)
+    editaveis = _campos_editaveis(cols, rota)
     campos = []
     valores = []
     for c in editaveis:
@@ -288,7 +306,7 @@ def atualizar(cnpj: str, rota: str, rid: int, dados: dict) -> bool:
     if not _tabela_existe(tabela):
         raise ValueError(f"Tabela '{rota}' não existe para este CNPJ")
     cols = _columns(tabela)
-    editaveis = _campos_editaveis(cols)
+    editaveis = _campos_editaveis(cols, rota)
     sets = []
     valores = []
     for c in editaveis:
