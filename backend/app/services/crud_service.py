@@ -8,12 +8,27 @@ from app.db.database import connection, execute_query
 
 # tabela_rota -> (nome_fisico, rótulo humano)
 TABELAS = {
+    # Tabelas do sistema principal (PDV/Chatbot)
     "chaves_pix": ("tb_chaves_pix", "Chaves PIX"),
-    "clientes": ("tb_clientes", "Clientes"),
+    "clientes": ("tb_clientes", "Clientes (Chatbot)"),
     "config": ("tb_config", "Configurações"),
     "formas_pgtos": ("tb_formas_pgtos", "Formas de Pagamento"),
     "pedidos": ("tb_pedidos", "Pedidos"),
     "redir": ("tb_redir", "Redirecionamentos"),
+    "produtos": ("tb_prod", "Produtos (Catálogo)"),
+    # Tabelas do Dashboard (Entregas/Entregadores)
+    "entregadores": ("tb_entregadores", "Entregadores"),
+    "entregas": ("tb_entregas", "Entregas"),
+    "clientes_entrega": ("tb_clientes", "Clientes (Entrega)"),
+    "localizacao": ("tb_localizacao", "Localização GPS"),
+    "agendamentos_entregas": ("tb_agendamentos_entregas", "Agendamentos de Entregas"),
+    # Notificações
+    "notificacoes": ("tb_notif", "Notificações"),
+    "notificacoes_estado": ("tb_notif_estado", "Estado Notificações"),
+    # Departamentos/Setores
+    "departamentos": ("tb_dpto", "Departamentos/Setores"),
+    # Avisos/Agendamentos
+    "avisos_pendentes": ("tb_avisos_pendentes", "Avisos Pendentes"),
 }
 
 # campos que não devem ser editados/manipulados pelo CRUD
@@ -85,6 +100,288 @@ def _tipo_coluna(col: dict) -> str:
     return "text"
 
 
+# ============================================================
+# Criação automática de tabelas (schemas idênticos aos services)
+# ============================================================
+
+def _garantir_tabela(cnpj: str, rota: str) -> None:
+    """Cria a tabela se não existir, usando o schema oficial de cada service."""
+    c = _cnpj_limpo(cnpj)
+    tabela = _tabela_fisica(cnpj, rota)
+    if _tabela_existe(tabela):
+        return
+
+    schemas = {
+        # Tabelas do sistema principal
+        "chaves_pix": f"""
+            CREATE TABLE `{tabela}` (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                chave_pix VARCHAR(200) DEFAULT '',
+                tipo VARCHAR(20) DEFAULT '',
+                beneficiario VARCHAR(100) DEFAULT '',
+                cidade VARCHAR(60) DEFAULT '',
+                enabled TINYINT(1) NOT NULL DEFAULT 1,
+                criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                KEY ix_chave (chave_pix)
+            )
+        """,
+        "clientes": f"""
+            CREATE TABLE `{tabela}` (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                whatsapp VARCHAR(50) NOT NULL,
+                nome VARCHAR(255) DEFAULT NULL,
+                tipo_cliente VARCHAR(20) DEFAULT NULL,
+                bot_ativo TINYINT(1) DEFAULT 1,
+                cep VARCHAR(20) DEFAULT NULL,
+                cidade VARCHAR(255) DEFAULT NULL,
+                uf VARCHAR(2) DEFAULT NULL,
+                bairro VARCHAR(255) DEFAULT NULL,
+                endereco VARCHAR(500) DEFAULT NULL,
+                referencia VARCHAR(500) DEFAULT NULL,
+                numero VARCHAR(50) DEFAULT NULL,
+                ddd1 VARCHAR(10) DEFAULT NULL,
+                ddd2 VARCHAR(10) DEFAULT NULL,
+                ddd3 VARCHAR(10) DEFAULT NULL,
+                ddd4 VARCHAR(10) DEFAULT NULL,
+                ddd5 VARCHAR(10) DEFAULT NULL,
+                fone1 VARCHAR(50) DEFAULT NULL,
+                fone2 VARCHAR(50) DEFAULT NULL,
+                fone3 VARCHAR(50) DEFAULT NULL,
+                fone4 VARCHAR(50) DEFAULT NULL,
+                fone5 VARCHAR(50) DEFAULT NULL,
+                obs TEXT DEFAULT NULL,
+                lat DECIMAL(10,7) DEFAULT NULL,
+                lng DECIMAL(10,7) DEFAULT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                UNIQUE KEY uk_whatsapp (whatsapp)
+            )
+        """,
+        "config": f"""
+            CREATE TABLE `{tabela}` (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                `key` VARCHAR(100) NOT NULL,
+                `value` TEXT NULL,
+                criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE KEY uk_key (`key`)
+            )
+        """,
+        "formas_pgtos": f"""
+            CREATE TABLE `{tabela}` (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                nome VARCHAR(100) NOT NULL,
+                enabled TINYINT(1) NOT NULL DEFAULT 1,
+                criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE KEY uk_forma (nome)
+            )
+        """,
+        "pedidos": f"""
+            CREATE TABLE `{tabela}` (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                whatsapp VARCHAR(50) NOT NULL,
+                produto VARCHAR(500) NOT NULL,
+                valor DECIMAL(10,2) NOT NULL DEFAULT 0,
+                nome VARCHAR(255) DEFAULT NULL,
+                pagamento VARCHAR(100) DEFAULT NULL,
+                dados JSON DEFAULT NULL,
+                origem VARCHAR(20) DEFAULT 'WHATSAPP',
+                operador VARCHAR(100) DEFAULT NULL,
+                troco DECIMAL(10,2) DEFAULT NULL,
+                chave_pix_usada VARCHAR(200) DEFAULT NULL,
+                criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """,
+        "redir": f"""
+            CREATE TABLE `{tabela}` (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                origem VARCHAR(100) NOT NULL,
+                destino VARCHAR(500) NOT NULL,
+                ativo TINYINT(1) DEFAULT 1,
+                criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE KEY uk_origem (origem)
+            )
+        """,
+        "produtos": f"""
+            CREATE TABLE `{tabela}` (
+                CodigoDoProduto INT AUTO_INCREMENT PRIMARY KEY,
+                NomeDoProduto VARCHAR(150) NULL,
+                CodigoDaCategoria INT NULL,
+                QuantidadePorUnidade VARCHAR(25) NULL,
+                PrecoUnitario DECIMAL(19,4) NULL,
+                UnidadesEmEstoque INT NULL DEFAULT 0,
+                ATIVO TINYINT(1) NULL DEFAULT 1,
+                NCM VARCHAR(255) NULL,
+                Unidade VARCHAR(255) NULL,
+                PrecoEspecial DECIMAL(19,4) NULL,
+                texto_busca TEXT NULL,
+                atributos_json JSON NULL,
+                origem_id VARCHAR(100) NULL,
+                atualizado_em DATETIME NULL
+            )
+        """,
+        # Tabelas do Dashboard (Entregas/Entregadores)
+        "entregadores": f"""
+            CREATE TABLE `{tabela}` (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                nome VARCHAR(255) NOT NULL,
+                telefone VARCHAR(50) DEFAULT '',
+                email VARCHAR(255) DEFAULT '',
+                senha VARCHAR(255) DEFAULT '',
+                ativo TINYINT(1) NOT NULL DEFAULT 1,
+                criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """,
+        "entregas": f"""
+            CREATE TABLE `{tabela}` (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                entregador_id INT NULL,
+                pedido_id INT NULL,
+                pedido_descricao VARCHAR(500) DEFAULT '',
+                cliente_nome VARCHAR(255) DEFAULT '',
+                cliente_endereco VARCHAR(500) DEFAULT '',
+                cliente_cidade VARCHAR(255) DEFAULT '',
+                cliente_uf VARCHAR(2) DEFAULT '',
+                cliente_cep VARCHAR(20) DEFAULT '',
+                valor_total DECIMAL(10,2) DEFAULT 0,
+                status VARCHAR(50) NOT NULL DEFAULT 'pendente',
+                criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                aceito_em DATETIME NULL,
+                coletado_em DATETIME NULL,
+                entregue_em DATETIME NULL,
+                cancelado_em DATETIME NULL,
+                motivo_cancelamento VARCHAR(500) DEFAULT '',
+                entregador_nome VARCHAR(255) DEFAULT '',
+                cliente_lat DECIMAL(10,7) DEFAULT NULL,
+                cliente_lng DECIMAL(10,7) DEFAULT NULL
+            )
+        """,
+        "clientes_entrega": f"""
+            CREATE TABLE `{tabela}` (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                whatsapp VARCHAR(50) NOT NULL,
+                nome VARCHAR(255) DEFAULT NULL,
+                tipo_cliente VARCHAR(20) DEFAULT NULL,
+                bot_ativo TINYINT(1) DEFAULT 1,
+                cep VARCHAR(20) DEFAULT NULL,
+                cidade VARCHAR(255) DEFAULT NULL,
+                uf VARCHAR(2) DEFAULT NULL,
+                bairro VARCHAR(255) DEFAULT NULL,
+                endereco VARCHAR(500) DEFAULT NULL,
+                referencia VARCHAR(500) DEFAULT NULL,
+                numero VARCHAR(50) DEFAULT NULL,
+                ddd1 VARCHAR(10) DEFAULT NULL,
+                ddd2 VARCHAR(10) DEFAULT NULL,
+                ddd3 VARCHAR(10) DEFAULT NULL,
+                ddd4 VARCHAR(10) DEFAULT NULL,
+                ddd5 VARCHAR(10) DEFAULT NULL,
+                fone1 VARCHAR(50) DEFAULT NULL,
+                fone2 VARCHAR(50) DEFAULT NULL,
+                fone3 VARCHAR(50) DEFAULT NULL,
+                fone4 VARCHAR(50) DEFAULT NULL,
+                fone5 VARCHAR(50) DEFAULT NULL,
+                obs TEXT DEFAULT NULL,
+                lat DECIMAL(10,7) DEFAULT NULL,
+                lng DECIMAL(10,7) DEFAULT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                UNIQUE KEY uk_whatsapp (whatsapp)
+            )
+        """,
+        "localizacao": f"""
+            CREATE TABLE `{tabela}` (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                entregador_id INT NOT NULL,
+                lat DECIMAL(10,7) NOT NULL,
+                lng DECIMAL(10,7) NOT NULL,
+                precisao DECIMAL(10,2) DEFAULT NULL,
+                velocidade DECIMAL(10,2) DEFAULT NULL,
+                direcao INT DEFAULT NULL,
+                criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_entregador (entregador_id),
+                INDEX idx_criado_em (criado_em)
+            )
+        """,
+        "agendamentos_entregas": f"""
+            CREATE TABLE `{tabela}` (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                whatsapp VARCHAR(50) NOT NULL,
+                nome VARCHAR(255) DEFAULT NULL,
+                pedido_id INT DEFAULT NULL,
+                produto VARCHAR(500) DEFAULT NULL,
+                endereco VARCHAR(500) DEFAULT NULL,
+                cidade VARCHAR(255) DEFAULT NULL,
+                uf VARCHAR(2) DEFAULT NULL,
+                cep VARCHAR(20) DEFAULT NULL,
+                data_entrega DATE DEFAULT NULL,
+                hora_entrega VARCHAR(10) DEFAULT NULL,
+                observacoes TEXT,
+                status VARCHAR(20) NOT NULL DEFAULT 'aguardando_data',
+                criado_em DATETIME DEFAULT NULL,
+                atualizado_em DATETIME DEFAULT NULL,
+                INDEX idx_whatsapp (whatsapp),
+                INDEX idx_status (status)
+            )
+        """,
+        "notificacoes": f"""
+            CREATE TABLE `{tabela}` (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                tipo VARCHAR(20) NOT NULL,
+                evento VARCHAR(30) NOT NULL,
+                titulo VARCHAR(255) NOT NULL,
+                mensagem TEXT NULL,
+                link VARCHAR(255) NULL,
+                ref_tipo VARCHAR(20) NULL,
+                ref_id INT NULL,
+                lida TINYINT(1) NOT NULL DEFAULT 0,
+                criado_em DATETIME NOT NULL,
+                UNIQUE KEY uniq_ref (tipo, evento, ref_tipo, ref_id)
+            )
+        """,
+        "notificacoes_estado": f"""
+            CREATE TABLE `{tabela}` (
+                id INT PRIMARY KEY,
+                ultimo_pedido_id INT NULL,
+                ultima_checada DATETIME NULL
+            )
+        """,
+        "departamentos": f"""
+            CREATE TABLE `{tabela}` (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                departamento VARCHAR(100) NOT NULL,
+                num_whatsapp VARCHAR(20) NULL DEFAULT '',
+                nome_contato VARCHAR(100) NULL DEFAULT '',
+                expediente_h_inicio TIME NULL,
+                expediente_h_final TIME NULL,
+                expediente_dia_semana VARCHAR(50) NULL DEFAULT '',
+                criado_em TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+            )
+        """,
+        "avisos_pendentes": f"""
+            CREATE TABLE `{tabela}` (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                whatsapp VARCHAR(50) NOT NULL,
+                mensagem TEXT NOT NULL,
+                status VARCHAR(20) NOT NULL DEFAULT 'pendente',
+                criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+                enviado_em DATETIME NULL,
+                tentativas INT DEFAULT 0
+            )
+        """,
+    }
+
+    sql = schemas.get(rota)
+    if not sql:
+        return  # rota não tem schema definido
+
+    with connection() as conn:
+        cursor = conn.cursor()
+        try:
+            cursor.execute(sql)
+            conn.commit()
+        finally:
+            cursor.close()
+
+
 def _serializar(v, col: dict, tipo_campo: str):
     if v is None:
         return None
@@ -143,13 +440,13 @@ def _deserializar(v, tipo_campo: str):
 
 
 def metadados(cnpj: str) -> list[dict]:
-    """Metadados de todas as tabelas permitidas (para gerar a UI)."""
+    """Metadados de todas as tabelas permitidas (para gerar a UI).
+    Cria a tabela automaticamente se não existir."""
     resultado = []
     for rota, (nome, rotulo) in TABELAS.items():
+        # Garante que a tabela exista (cria se necessário)
+        _garantir_tabela(cnpj, rota)
         tabela = f"{nome}_{_cnpj_limpo(cnpj)}"
-        if not _tabela_existe(tabela):
-            resultado.append({"rota": rota, "nome": nome, "rotulo": rotulo, "existe": False, "colunas": []})
-            continue
         cols = _columns(tabela)
         camposs = []
         for c in cols:
@@ -184,10 +481,9 @@ def metadados(cnpj: str) -> list[dict]:
 
 
 def listar(cnpj: str, rota: str, limite: int = 500) -> dict:
-    """Lista registros + metadados da tabela. Retorna None-ish se tabela não existe."""
+    """Lista registros + metadados da tabela. Cria a tabela automaticamente se não existir."""
+    _garantir_tabela(cnpj, rota)
     tabela = _tabela_fisica(cnpj, rota)
-    if not _tabela_existe(tabela):
-        return {"existe": False, "colunas": [], "dados": []}
     cols = _columns(tabela)
     meta = []
     for c in cols:
@@ -226,9 +522,8 @@ def listar(cnpj: str, rota: str, limite: int = 500) -> dict:
 
 
 def obter(cnpj: str, rota: str, rid: int) -> dict | None:
+    _garantir_tabela(cnpj, rota)
     tabela = _tabela_fisica(cnpj, rota)
-    if not _tabela_existe(tabela):
-        return None
     cols = _columns(tabela)
     meta = [{
         "field": c.get("Field"),
@@ -256,9 +551,8 @@ def _campos_editaveis(colunas: list[dict], rota: str = "") -> list[dict]:
 
 
 def criar(cnpj: str, rota: str, dados: dict) -> dict:
+    _garantir_tabela(cnpj, rota)
     tabela = _tabela_fisica(cnpj, rota)
-    if not _tabela_existe(tabela):
-        raise ValueError(f"Tabela '{rota}' não existe para este CNPJ")
     cols = _columns(tabela)
     editaveis = _campos_editaveis(cols, rota)
     campos = []
@@ -302,9 +596,8 @@ def _registro_existe(tabela: str, rid: int) -> bool:
 
 
 def atualizar(cnpj: str, rota: str, rid: int, dados: dict) -> bool:
+    _garantir_tabela(cnpj, rota)
     tabela = _tabela_fisica(cnpj, rota)
-    if not _tabela_existe(tabela):
-        raise ValueError(f"Tabela '{rota}' não existe para este CNPJ")
     cols = _columns(tabela)
     editaveis = _campos_editaveis(cols, rota)
     sets = []
@@ -335,9 +628,8 @@ def atualizar(cnpj: str, rota: str, rid: int, dados: dict) -> bool:
 
 
 def remover(cnpj: str, rota: str, rid: int) -> bool:
+    _garantir_tabela(cnpj, rota)
     tabela = _tabela_fisica(cnpj, rota)
-    if not _tabela_existe(tabela):
-        return False
     with connection() as conn:
         cursor = conn.cursor()
         try:
