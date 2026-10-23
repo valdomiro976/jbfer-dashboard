@@ -378,8 +378,25 @@ def _garantir_tabela(cnpj: str, rota: str) -> None:
         try:
             cursor.execute(sql)
             conn.commit()
+            # Remove colunas legadas pix_beneficiario / pix_cidade de tb_config_*
+            if rota == "config":
+                _remover_colunas_pix_legadas_dashboard(conn, tabela)
         finally:
             cursor.close()
+
+
+def _remover_colunas_pix_legadas_dashboard(conn, nome_tabela):
+    """Remove colunas pix_beneficiario e pix_cidade de tb_config_* (legacy).
+    Esses dados agora ficam em tb_chaves_pix_* (beneficiario, cidade)."""
+    for col in ('pix_beneficiario', 'pix_cidade'):
+        try:
+            with conn.cursor() as cur:
+                cur.execute(f"SHOW COLUMNS FROM `{nome_tabela}` LIKE '{col}'")
+                if cur.fetchone():
+                    cur.execute(f"ALTER TABLE `{nome_tabela}` DROP COLUMN `{col}`")
+                    conn.commit()
+        except Exception:
+            pass
 
 
 def _serializar(v, col: dict, tipo_campo: str):
