@@ -30,13 +30,7 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Acompanhe e atualize suas tarefas"
-                android:textColor="@color/text_secondary"
-                android:textSize="12sp"
-                android:layout_marginTop="0dp" />
+            <!-- subtitle removed to save top space -->
         </LinearLayout>
 
         <com.google.android.material.button.MaterialButton

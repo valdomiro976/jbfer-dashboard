@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/surface"
+    android:background="@color/surface_variant"
     android:fillViewport="true">
 
     <LinearLayout
@@ -26,8 +26,8 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Entrega #1"
-                android:textColor="@color/text_primary"
-                android:textSize="18sp"
+                android:textColor="@color/white"
+                android:textSize="20sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -48,8 +48,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Cliente"
-            android:textColor="@color/text_primary"
-            android:textSize="20sp"
+            android:textColor="@color/white"
+            android:textSize="22sp"
             android:textStyle="bold"
             android:layout_marginBottom="12dp" />
 
