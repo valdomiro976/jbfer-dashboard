@@ -186,10 +186,9 @@ class TasksFragment : Fragment() {
             hiddenIds.remove(tarefa.id)
             adapter.notifyDataSetChanged()
             clickedView?.visibility = View.VISIBLE
+            loadTasks()
         }
-        dialog.window?.setDimAmount(1.0f)
-        dialog.window?.setBackgroundDrawableResource(R.color.background)
-        dialog.window?.setLayout(android.view.ViewGroup.LayoutParams.MATCH_PARENT, android.view.ViewGroup.LayoutParams.MATCH_PARENT)
+        dialog.window?.setDimAmount(0.85f)
         dialog.show()
     }
 
@@ -277,14 +276,14 @@ class TasksFragment : Fragment() {
         }
     }
 
-    private fun atualizarStatus(tarefa: Tarefa, status: String, motivo: String? = null, onSuccess: (() -> Unit)? = null) {
+    private fun atualizarStatus(tarefa: Tarefa, status: String, motivo: String? = null, refresh: Boolean = true, onSuccess: (() -> Unit)? = null) {
         lifecycleScope.launch {
             try {
                 withContext(Dispatchers.IO) {
                     ApiClient.api.atualizarTarefa(tarefa.id, AtualizarRequest(status, motivo))
                 }
                 onSuccess?.invoke()
-                loadTasks()
+                if (refresh) loadTasks()
             } catch (e: Exception) {
                 showToast(requireContext(), "Erro: ${e.message}")
             }
