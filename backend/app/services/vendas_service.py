@@ -260,7 +260,10 @@ def atualizar_pedido(cnpj: str, pedido_id: int, campos: dict) -> bool:
                 params,
             )
             conn.commit()
-            return True
+            if cursor.rowcount > 0:
+                return True
+            cursor.execute(f"SELECT 1 FROM `{table}` WHERE id=%s LIMIT 1", (pedido_id,))
+            return cursor.fetchone() is not None
         finally:
             cursor.close()
 

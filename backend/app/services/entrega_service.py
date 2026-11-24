@@ -59,10 +59,22 @@ def _garantir_tabelas(cnpj: str) -> None:
                     coletado_em DATETIME NULL,
                     entregue_em DATETIME NULL,
                     cancelado_em DATETIME NULL,
-                    entregador_nome VARCHAR(255) DEFAULT ''
+                    entregador_nome VARCHAR(255) DEFAULT '',
+                    motivo_cancelamento VARCHAR(500) DEFAULT '',
+                    cliente_lat DECIMAL(10,7) DEFAULT NULL,
+                    cliente_lng DECIMAL(10,7) DEFAULT NULL
                 )
                 """
             )
+            # Garante colunas adicionadas em versões posteriores (idempotente)
+            for col, tipo in [
+                ("motivo_cancelamento", "VARCHAR(500) DEFAULT ''"),
+                ("cliente_lat", "DECIMAL(10,7) DEFAULT NULL"),
+                ("cliente_lng", "DECIMAL(10,7) DEFAULT NULL"),
+            ]:
+                cursor.execute(f"SHOW COLUMNS FROM `tb_entregas_{c}` LIKE '{col}'")
+                if not cursor.fetchone():
+                    cursor.execute(f"ALTER TABLE `tb_entregas_{c}` ADD COLUMN `{col}` {tipo}")
             conn.commit()
         finally:
             cursor.close()

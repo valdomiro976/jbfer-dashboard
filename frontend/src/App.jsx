@@ -1,17 +1,19 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { Sidebar } from './components/Sidebar'
 import { Login } from './pages/Login'
-import { Dashboard } from './pages/Dashboard'
-import { Vendas } from './pages/Vendas'
-import { Produtos } from './pages/Produtos'
-import { Chat } from './pages/Chat'
-import { Entregas } from './pages/Entregas'
-import { Rastreamento } from './pages/Rastreamento'
-import { Entregadores } from './pages/Entregadores'
-import { Agendamentos } from './pages/Agendamentos'
-import { Redirecionamentos } from './pages/Redirecionamentos'
-import { Cadastros } from './pages/Cadastros'
+
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const Vendas = lazy(() => import('./pages/Vendas'))
+const Produtos = lazy(() => import('./pages/Produtos'))
+const Chat = lazy(() => import('./pages/Chat'))
+const Entregas = lazy(() => import('./pages/Entregas'))
+const Rastreamento = lazy(() => import('./pages/Rastreamento'))
+const Entregadores = lazy(() => import('./pages/Entregadores'))
+const Agendamentos = lazy(() => import('./pages/Agendamentos'))
+const Redirecionamentos = lazy(() => import('./pages/Redirecionamentos'))
+const Cadastros = lazy(() => import('./pages/Cadastros'))
 
 function ProtectedLayout() {
   const { user } = useAuth()
@@ -20,6 +22,7 @@ function ProtectedLayout() {
     <div className="app">
       <Sidebar />
       <div className="main">
+        <Suspense fallback={<div style={{ padding: 24 }}>Carregando...</div>}>
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/vendas" element={<Vendas />} />
@@ -31,10 +34,10 @@ function ProtectedLayout() {
           <Route path="/agendamentos" element={<Agendamentos />} />
           <Route path="/redirecionamentos" element={<Redirecionamentos />} />
           <Route path="/departamentos" element={<Cadastros padrao="departamentos" />} />
-          <Route path="/produtos" element={<Cadastros padrao="produtos" />} />
           <Route path="/cadastros" element={<Cadastros />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </Suspense>
       </div>
     </div>
   )

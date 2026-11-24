@@ -459,7 +459,7 @@ def atualizar_tarefa(
     _garantir(ctx["cnpj"])
 
     status = payload.get("status", "")
-    valid_status = {"aceita", "em_transito", "entregue", "cancelada"}
+    valid_status = {"pendente", "aceita", "em_transito", "entregue", "cancelada"}
     if status not in valid_status:
         raise HTTPException(status_code=400, detail="Status inválido")
 

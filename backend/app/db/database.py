@@ -38,13 +38,17 @@ def obter_conexao():
 
 @contextmanager
 def connection(database: str | None = None):
-    conn = mysql.connector.connect(
-        host=settings.db_host,
-        port=settings.db_port,
-        database=database or settings.db_name,
-        user=settings.db_user,
-        password=settings.db_password,
-    )
+    db = database or settings.db_name
+    if db == settings.db_name:
+        conn = _get_pool().get_connection()
+    else:
+        conn = mysql.connector.connect(
+            host=settings.db_host,
+            port=settings.db_port,
+            database=db,
+            user=settings.db_user,
+            password=settings.db_password,
+        )
     try:
         yield conn
     finally:

@@ -61,7 +61,6 @@ def get_vinculo_pedido(pedido_id: int, user: dict = Depends(get_current_cnpj)):
 def create_entregador(payload: EntregadorModel, user: dict = Depends(get_current_cnpj)):
     cnpj = user["cnpj"]
     try:
-        print("criando entregador", cnpj, payload)
         resultado = entrega_service.criar_entregador(cnpj, payload.nome, payload.telefone, payload.senha)
         return {"sucesso": True, "dados": resultado}
     except Exception as e:
@@ -115,7 +114,6 @@ def get_entregas(status_: str | None = None, user: dict = Depends(get_current_cn
 def create_entrega(payload: EntregaModel, user: dict = Depends(get_current_cnpj)):
     cnpj = user["cnpj"]
     try:
-        print("criando entrega", cnpj, payload)
         resultado = entrega_service.criar_entrega(cnpj, payload.model_dump())
         return {"sucesso": True, "dados": resultado}
     except Exception as e:
@@ -142,7 +140,6 @@ def update_status_entrega(entrega_id: int, status_entrega: str, user: dict = Dep
 def salvar_localizacao(payload: LocalizacaoModel, user: dict = Depends(get_current_cnpj)):
     cnpj = user["cnpj"]
     try:
-        print("salvando localizacao", cnpj, payload)
         resultado = entrega_service.salvar_localizacao(cnpj, payload.entregador_id, payload.lat, payload.lng)
         return {"sucesso": True, "dados": resultado}
     except Exception as e:

@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 class Settings(BaseSettings):
     app_name: str = "Dashboard JBFER"
     version: str = "1.0.0"
-    debug: bool = True
+    debug: bool = False
 
     # Banco de dados MySQL (mesmo do chatbot - multi-tenant por CNPJ)
     # Suporta DB_HOST (IP/host) ou DB_SERVERNAME (nome do serviço EazyPanel)
