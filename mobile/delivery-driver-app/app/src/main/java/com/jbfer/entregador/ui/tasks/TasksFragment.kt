@@ -136,7 +136,6 @@ class TasksFragment : Fragment() {
             .joinToString(", ").trim()
         view.findViewById<TextView>(R.id.tvDialogEndereco).text = if (endereco.isNotEmpty()) "📍 $endereco" else ""
 
-        val btnAceitar = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnAceitar)
         val btnIniciar = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnIniciar)
         val btnConcluir = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnConcluir)
         val btnSalvarLocal = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnSalvarLocal)
@@ -151,9 +150,6 @@ class TasksFragment : Fragment() {
             btnCancelar.visibility = View.VISIBLE
         }
 
-        btnAceitar.setOnClickListener {
-            confirmarAcao("Aceitar entrega #${tarefa.id}?") { atualizarStatus(tarefa, "aceita") }
-        }
         btnIniciar.setOnClickListener {
             confirmarAcao("Marcar em rota de entrega #${tarefa.id}?") {
                 val chip = view.findViewById<TextView>(R.id.tvDialogStatus)

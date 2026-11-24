@@ -113,17 +113,6 @@
             android:orientation="vertical">
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAceitar"
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:text="Aceitar entrega"
-                android:textStyle="bold"
-                android:layout_marginBottom="8dp"
-                android:visibility="gone"
-                app:cornerRadius="14dp"
-                android:backgroundTint="@color/success" />
-
-            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnIniciar"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
@@ -146,16 +135,6 @@
                 android:backgroundTint="@color/success" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSalvarLocal"
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:text="Salvar localização do cliente"
-                android:textStyle="bold"
-                android:layout_marginBottom="8dp"
-                app:cornerRadius="14dp"
-                android:backgroundTint="@color/accent" />
-
-            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnNavegar"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
@@ -166,15 +145,26 @@
                 android:backgroundTint="@color/surface_variant" />
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSalvarLocal"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="Salvar localização do cliente"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"
+                app:cornerRadius="14dp"
+                android:backgroundTint="@color/accent" />
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnCancelar"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
-                android:text="Cancelar a entrega"
+                android:text="Cancelar entrega"
                 android:textStyle="bold"
                 android:visibility="gone"
                 app:cornerRadius="14dp"
                 android:backgroundTint="@color/danger" />
         </LinearLayout>
+
 
     </LinearLayout>
 </ScrollView>
