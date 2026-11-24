@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Entregador JBFER</string>
+    <string name="login">Entrar</string>
+    <string name="cnpj">CNPJ</string>
+    <string name="telefone">Telefone</string>
+    <string name="senha">Senha</string>
+    <string name="entrar">Entrar</string>
+    <string name="minhas_tarefas">Minhas Entregas</string>
+    <string name="rastreamento">Rastreamento</string>
+    <string name="perfil">Perfil</string>
+    <string name="sair">Sair</string>
+    <string name="placeholder_cnpj">02408190000136-1</string>
+    <string name="placeholder_telefone">5511999888777</string>
+    <string name="placeholder_senha">entregue123</string>
+    <string name="time_continuo">Rastreamento contínuo ativo</string>
+    <string name="time_continuo_desc">Sua localização está sendo enviada em tempo real</string>
+    <string name="permissao_localizacao">Permissão de localização necessária para o rastreamento contínuo</string>
+</resources>

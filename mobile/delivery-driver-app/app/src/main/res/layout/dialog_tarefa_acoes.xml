@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/surface"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="4dp">
+
+            <TextView
+                android:id="@+id/tvDialogNumero"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Entrega #1"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvDialogStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp"
+                android:text="PENDENTE"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="@color/warning"
+                android:background="@color/surface_variant" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvDialogCliente"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cliente"
+            android:textColor="@color/text_primary"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Detalhes -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="@color/surface_variant"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="0dp"
+            android:layout_marginBottom="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    android:id="@+id/tvDialogProduto"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Produto"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tvDialogPagamento"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Pagamento"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    android:layout_marginTop="4dp" />
+
+                <TextView
+                    android:id="@+id/tvDialogValor"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="R$ 0,00"
+                    android:textColor="@color/success"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="4dp" />
+
+                <TextView
+                    android:id="@+id/tvDialogEndereco"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Endereço"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    android:layout_marginTop="8dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Ações -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAceitar"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="Aceitar entrega"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"
+                android:visibility="gone"
+                app:cornerRadius="14dp"
+                android:backgroundTint="@color/success" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnIniciar"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="Marcar em rota de entrega"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"
+                android:visibility="gone"
+                app:cornerRadius="14dp"
+                android:backgroundTint="@color/primary" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnConcluir"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="Marcar como entregue"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"
+                android:visibility="gone"
+                app:cornerRadius="14dp"
+                android:backgroundTint="@color/success" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSalvarLocal"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="Salvar localização do cliente"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"
+                app:cornerRadius="14dp"
+                android:backgroundTint="@color/accent" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnNavegar"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="Navegar até o cliente"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"
+                app:cornerRadius="14dp"
+                android:backgroundTint="@color/surface_variant" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCancelar"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="Cancelar a entrega"
+                android:textStyle="bold"
+                android:visibility="gone"
+                app:cornerRadius="14dp"
+                android:backgroundTint="@color/danger" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
