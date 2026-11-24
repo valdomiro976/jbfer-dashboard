@@ -45,6 +45,7 @@ class TasksFragment : Fragment() {
     private var _binding: FragmentTasksBinding? = null
     private val binding get() = _binding!!
     private val tarefas = mutableListOf<Tarefa>()
+    private val hiddenIds = mutableSetOf<Int>()
     private lateinit var adapter: TarefasAdapter
 
     companion object {
@@ -60,7 +61,7 @@ class TasksFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = TarefasAdapter(requireContext(), tarefas) { tarefa, itemView ->
+        adapter = TarefasAdapter(requireContext(), tarefas, hiddenIds) { tarefa, itemView ->
             showActionsDialog(tarefa, itemView)
         }
         binding.recyclerTasks.layoutManager = LinearLayoutManager(requireContext())
@@ -114,6 +115,8 @@ class TasksFragment : Fragment() {
         val status = tarefa.status ?: ""
         val view = layoutInflater.inflate(R.layout.dialog_tarefa_acoes, null)
         clickedView?.visibility = View.GONE
+        hiddenIds.add(tarefa.id)
+        adapter.notifyDataSetChanged()
         view.post { view.scrollTo(0, 0) }
 
         view.findViewById<TextView>(R.id.tvDialogNumero).text = "Entrega #${tarefa.id}"
@@ -179,7 +182,11 @@ class TasksFragment : Fragment() {
         val dialog = MaterialAlertDialogBuilder(requireContext())
             .setView(view)
             .create()
-        dialog.setOnDismissListener { clickedView?.visibility = View.VISIBLE }
+        dialog.setOnDismissListener {
+            hiddenIds.remove(tarefa.id)
+            adapter.notifyDataSetChanged()
+            clickedView?.visibility = View.VISIBLE
+        }
         dialog.show()
     }
 
@@ -401,6 +408,7 @@ class TasksFragment : Fragment() {
 class TarefasAdapter(
     private val context: Context,
     private val items: List<Tarefa>,
+    private val hiddenIds: MutableSet<Int>,
     private val onClick: (Tarefa, View) -> Unit
 ) : RecyclerView.Adapter<TarefasAdapter.VH>() {
 
@@ -427,6 +435,7 @@ holder.binding.apply {
                 tvStatus.text = t.status?.replace('_', ' ')?.uppercase() ?: ""
                 tvStatus.setTextColor(statusColor(context, t.status))
                 root.setOnClickListener { onClick(t, root) }
+            holder.itemView.visibility = if (hiddenIds.contains(t.id)) View.GONE else View.VISIBLE
             }
     }
 }
