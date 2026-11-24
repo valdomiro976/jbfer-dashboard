@@ -144,7 +144,7 @@ class TasksFragment : Fragment() {
 
         when (status) {
             "pendente", "aceita" -> btnIniciar.visibility = View.VISIBLE
-            "em_transito" -> btnConcluir.visibility = View.VISIBLE
+            "pendente", "aceita", "em_transito" -> btnConcluir.visibility = View.VISIBLE
         }
         if (status != "entregue" && status != "cancelada") {
             btnCancelar.visibility = View.VISIBLE
