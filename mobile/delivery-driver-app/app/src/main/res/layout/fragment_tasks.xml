@@ -27,7 +27,7 @@
                 android:layout_height="wrap_content"
                 android:text="Minhas Entregas"
                 android:textColor="@color/text_primary"
-                android:textSize="20sp"
+                android:textSize="18sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -41,8 +41,8 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnRefresh"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:insetLeft="0dp"
             android:insetTop="0dp"
             android:insetRight="0dp"
