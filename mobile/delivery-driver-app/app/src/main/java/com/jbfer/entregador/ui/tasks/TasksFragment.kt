@@ -156,23 +156,28 @@ class TasksFragment : Fragment() {
         }
         btnIniciar.setOnClickListener {
             confirmarAcao("Marcar em rota de entrega #${tarefa.id}?") {
-                atualizarStatus(tarefa, "em_transito") {
-                    view.findViewById<TextView>(R.id.tvDialogStatus).text = "EM TRANSITO"
-                    view.findViewById<TextView>(R.id.tvDialogStatus).setTextColor(resources.getColor(R.color.accent, null))
-                }
+                val chip = view.findViewById<TextView>(R.id.tvDialogStatus)
+                chip.text = "EM TRANSITO"
+                chip.setTextColor(resources.getColor(R.color.accent, null))
+                atualizarStatus(tarefa, "em_transito")
             }
         }
         btnConcluir.setOnClickListener {
-            confirmarAcao("Marcar entrega #${tarefa.id} como entregue?") { concluirEntrega(tarefa) }
+            confirmarAcao("Marcar entrega #${tarefa.id} como entregue?") {
+                val chip = view.findViewById<TextView>(R.id.tvDialogStatus)
+                chip.text = "ENTREGUE"
+                chip.setTextColor(resources.getColor(R.color.success, null))
+                concluirEntrega(tarefa)
+            }
         }
         btnSalvarLocal.setOnClickListener { salvarLocalizacaoCliente(tarefa) }
         btnNavegar.setOnClickListener { navegarParaCliente(tarefa) }
         btnCancelar.setOnClickListener {
             confirmarAcao("Voltar esta entrega para pendente?") {
-                atualizarStatus(tarefa, "pendente") {
-                    view.findViewById<TextView>(R.id.tvDialogStatus).text = "PENDENTE"
-                    view.findViewById<TextView>(R.id.tvDialogStatus).setTextColor(resources.getColor(R.color.warning, null))
-                }
+                val chip = view.findViewById<TextView>(R.id.tvDialogStatus)
+                chip.text = "PENDENTE"
+                chip.setTextColor(resources.getColor(R.color.warning, null))
+                atualizarStatus(tarefa, "pendente")
             }
         }
 
