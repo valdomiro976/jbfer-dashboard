@@ -45,14 +45,8 @@ class HomeActivity : AppCompatActivity() {
         // Solicita permissões de localização (inclui segundo plano) e inicia o rastreamento
         requestLocationPermission()
 
-        binding.bottomNav.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                com.jbfer.entregador.R.id.nav_tarefas -> {
-                    changeFragment(TasksFragment())
-                    true
-                }
-                else -> false
-            }
+        binding.bottomNav.setOnClickListener {
+            changeFragment(TasksFragment())
         }
 
         if (savedInstanceState == null) {
