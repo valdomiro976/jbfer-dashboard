@@ -188,7 +188,7 @@ class TasksFragment : Fragment() {
             clickedView?.visibility = View.VISIBLE
             loadTasks()
         }
-        dialog.window?.setDimAmount(0.85f)
+        dialog.window?.setDimAmount(0.0f)
         dialog.window?.setBackgroundDrawableResource(R.color.surface_variant)
         dialog.show()
     }
