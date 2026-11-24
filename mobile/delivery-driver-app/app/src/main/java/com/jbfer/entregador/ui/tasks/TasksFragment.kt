@@ -142,10 +142,8 @@ class TasksFragment : Fragment() {
         val btnNavegar = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnNavegar)
         val btnCancelar = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnCancelar)
 
-        when (status) {
-            "pendente", "aceita" -> btnIniciar.visibility = View.VISIBLE
-            "pendente", "aceita", "em_transito" -> btnConcluir.visibility = View.VISIBLE
-        }
+        btnIniciar.visibility = View.VISIBLE
+        btnConcluir.visibility = View.VISIBLE
         if (status != "entregue" && status != "cancelada") {
             btnCancelar.visibility = View.VISIBLE
         }

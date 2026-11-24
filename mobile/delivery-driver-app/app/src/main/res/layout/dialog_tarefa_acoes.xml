@@ -119,7 +119,6 @@
                 android:text="Marcar em rota de entrega"
                 android:textStyle="bold"
                 android:layout_marginBottom="8dp"
-                android:visibility="gone"
                 app:cornerRadius="14dp"
                 android:backgroundTint="@color/primary" />
 
@@ -130,7 +129,6 @@
                 android:text="Marcar como entregue"
                 android:textStyle="bold"
                 android:layout_marginBottom="8dp"
-                android:visibility="gone"
                 app:cornerRadius="14dp"
                 android:backgroundTint="@color/success" />
 
