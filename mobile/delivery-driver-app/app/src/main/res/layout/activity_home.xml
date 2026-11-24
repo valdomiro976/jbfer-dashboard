@@ -23,13 +23,13 @@
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottomNav"
             android:layout_width="match_parent"
-            android:layout_height="64dp"
+            android:layout_height="80dp"
             android:background="@color/surface"
             app:menu="@menu/bottom_nav_menu"
             app:itemIconTint="@color/nav_item_selector"
             app:itemTextColor="@color/nav_item_selector"
             app:labelVisibilityMode="labeled"
-            app:itemIconSize="30dp"
+            app:itemIconSize="36dp"
             app:itemTextAppearanceActive="@style/TextAppearance.Material3.LabelLarge"
             app:itemTextAppearanceInactive="@style/TextAppearance.Material3.LabelMedium" />
     </com.google.android.material.card.MaterialCardView>
