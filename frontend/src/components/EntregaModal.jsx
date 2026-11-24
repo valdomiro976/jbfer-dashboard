@@ -22,7 +22,7 @@ const STATUS_ASSOC = {
   cancelada: 'Cancelada',
 }
 
-const STATUS_ORDER = ['pendente', 'aceita', 'em_transito', 'entregue']
+const STATUS_ORDER = ['pendente', 'aceita', 'em_transito', 'entregue', 'cancelada']
 
 const STATUS_STYLE = {
   pendente: { color: '#fbbf24', bg: 'rgba(251,191,36,0.16)', border: 'rgba(251,191,36,0.35)' },
@@ -278,7 +278,7 @@ export function EntregaModal({ entrega, onClose, onSalvo }) {
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
                   style={{ marginBottom: 14, background: 'var(--surface-variant, #1e293b)' }}
-                  disabled={['entregue', 'cancelada'].includes(status)}
+                  disabled={false}
                 >
                   {STATUS_ORDER.map((s) => (
                     <option key={s} value={s}>{STATUS_ASSOC[s]}</option>
