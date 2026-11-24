@@ -114,6 +114,7 @@ class TasksFragment : Fragment() {
         val status = tarefa.status ?: ""
         val view = layoutInflater.inflate(R.layout.dialog_tarefa_acoes, null)
         clickedView?.visibility = View.GONE
+        view.post { view.scrollTo(0, 0) }
 
         view.findViewById<TextView>(R.id.tvDialogNumero).text = "Entrega #${tarefa.id}"
         val tvStatus = view.findViewById<TextView>(R.id.tvDialogStatus)
