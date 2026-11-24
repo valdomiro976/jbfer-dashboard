@@ -187,6 +187,8 @@ class TasksFragment : Fragment() {
             adapter.notifyDataSetChanged()
             clickedView?.visibility = View.VISIBLE
         }
+        dialog.window?.setDimAmount(1.0f)
+        dialog.window?.setBackgroundDrawableResource(R.color.background)
         dialog.show()
     }
 
