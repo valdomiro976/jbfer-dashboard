@@ -189,6 +189,7 @@ class TasksFragment : Fragment() {
         }
         dialog.window?.setDimAmount(1.0f)
         dialog.window?.setBackgroundDrawableResource(R.color.background)
+        dialog.window?.setLayout(android.view.ViewGroup.LayoutParams.MATCH_PARENT, android.view.ViewGroup.LayoutParams.MATCH_PARENT)
         dialog.show()
     }
 
