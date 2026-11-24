@@ -155,8 +155,11 @@ class TasksFragment : Fragment() {
             confirmarAcao("Aceitar entrega #${tarefa.id}?") { atualizarStatus(tarefa, "aceita") }
         }
         btnIniciar.setOnClickListener {
-            confirmarAcao("Iniciar entrega #${tarefa.id}?") {
-                atualizarStatus(tarefa, "em_transito")
+            confirmarAcao("Marcar em rota de entrega #${tarefa.id}?") {
+                atualizarStatus(tarefa, "em_transito") {
+                    view.findViewById<TextView>(R.id.tvDialogStatus).text = "EM TRANSITO"
+                    view.findViewById<TextView>(R.id.tvDialogStatus).setTextColor(resources.getColor(R.color.accent, null))
+                }
             }
         }
         btnConcluir.setOnClickListener {
@@ -166,7 +169,10 @@ class TasksFragment : Fragment() {
         btnNavegar.setOnClickListener { navegarParaCliente(tarefa) }
         btnCancelar.setOnClickListener {
             confirmarAcao("Voltar esta entrega para pendente?") {
-                atualizarStatus(tarefa, "pendente")
+                atualizarStatus(tarefa, "pendente") {
+                    view.findViewById<TextView>(R.id.tvDialogStatus).text = "PENDENTE"
+                    view.findViewById<TextView>(R.id.tvDialogStatus).setTextColor(resources.getColor(R.color.warning, null))
+                }
             }
         }
 
@@ -261,12 +267,13 @@ class TasksFragment : Fragment() {
         }
     }
 
-    private fun atualizarStatus(tarefa: Tarefa, status: String, motivo: String? = null) {
+    private fun atualizarStatus(tarefa: Tarefa, status: String, motivo: String? = null, onSuccess: (() -> Unit)? = null) {
         lifecycleScope.launch {
             try {
                 withContext(Dispatchers.IO) {
                     ApiClient.api.atualizarTarefa(tarefa.id, AtualizarRequest(status, motivo))
                 }
+                onSuccess?.invoke()
                 loadTasks()
             } catch (e: Exception) {
                 showToast(requireContext(), "Erro: ${e.message}")

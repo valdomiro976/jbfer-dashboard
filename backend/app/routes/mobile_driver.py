@@ -497,7 +497,14 @@ def atualizar_tarefa(
                 )
             conn.commit()
             if cur.rowcount == 0:
-                raise HTTPException(status_code=404, detail="Tarefa não encontrada para este entregador")
+                # Distingue "não existe" de "nada mudou" (UPDATE que mantém
+                # o mesmo valor retorna rowcount 0 no MySQL).
+                cur.execute(
+                    f"SELECT 1 FROM `tb_entregas_{c}` WHERE id=%s AND entregador_id=%s LIMIT 1",
+                    (entrega_id, ctx["entregador_id"]),
+                )
+                if cur.fetchone() is None:
+                    raise HTTPException(status_code=404, detail="Tarefa não encontrada para este entregador")
             if status == "em_transito":
                 # CRIADO EM: 30/09/2026 - a mercadoria saiu com o entregador:
                 # o agendamento do mesmo pedido passa a 'saiu_para_entrega'.
