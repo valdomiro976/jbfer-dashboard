@@ -49,7 +49,7 @@ class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (SessionManager.isLoggedIn() && !SessionManager.isTokenExpired()) {
+        if (SessionManager.isLoggedIn()) {
             openHome(this)
             finish()
             return
@@ -59,37 +59,10 @@ class LoginActivity : ComponentActivity() {
         setContentView(binding.root)
 
         Log.d("LoginActivity", "Prefill: cnpj=${SessionManager.getCnpj()} tel=${SessionManager.getTelefone()} senhaLen=${SessionManager.getSenha()?.length}")
-        val savedCnpj = SessionManager.getCnpj()
-        val savedTel = SessionManager.getTelefone()
-        val savedSenha = SessionManager.getSenha()
-        Toast.makeText(this, "DEBUG: cnpj=$savedCnpj tel=$savedTel senhaLen=${savedSenha?.length}", Toast.LENGTH_LONG).show()
-        savedCnpj?.let { binding.etCnpj.setText(it) }
-        savedTel?.let { binding.etTelefone.setText(it) }
-        savedSenha?.let { binding.etSenha.setText(it) }
-
-        // Auto-login com credenciais salvas
-        val savedCnpj = SessionManager.getCnpj()
-        val savedTel = SessionManager.getTelefone()
-        val savedSenha = SessionManager.getSenha()
-        if (savedCnpj != null && savedTel != null && savedSenha != null && !SessionManager.isLoggedIn()) {
-            binding.btnLogin.isEnabled = false
-            binding.btnLogin.text = "Entrando..."
-            lifecycleScope.launch {
-                val erro = viewModel.doLogin(savedCnpj, savedTel, savedSenha)
-                binding.btnLogin.isEnabled = true
-                binding.btnLogin.text = getString(R.string.login)
-                if (erro != null) {
-                    // Credenciais salvas invalidas: limpa apenas a senha
-                    SessionManager.clearSenha()
-                    binding.etSenha.setText("")
-                    Toast.makeText(this@LoginActivity, "Digite sua senha novamente.", Toast.LENGTH_LONG).show()
-                } else {
-                    Toast.makeText(this@LoginActivity, "Bem-vindo, ${SessionManager.getNome()}!", Toast.LENGTH_SHORT).show()
-                    openHome(this@LoginActivity)
-                    finish()
-                }
-            }
-        }
+        Toast.makeText(this, "DEBUG: cnpj=${SessionManager.getCnpj()} tel=${SessionManager.getTelefone()} senhaLen=${SessionManager.getSenha()?.length}", Toast.LENGTH_LONG).show()
+        SessionManager.getCnpj()?.let { binding.etCnpj.setText(it) }
+        SessionManager.getTelefone()?.let { binding.etTelefone.setText(it) }
+        SessionManager.getSenha()?.let { binding.etSenha.setText(it) }
 
         binding.btnLogin.setOnClickListener {
             val cnpj = binding.etCnpj.text.toString().trim()
@@ -105,12 +78,10 @@ class LoginActivity : ComponentActivity() {
             binding.btnLogin.text = "Entrando..."
 
             lifecycleScope.launch {
-                Log.d("LoginActivity", "Login manual: cnpj=$cnpj tel=$telefone")
-            val erro = viewModel.doLogin(cnpj, telefone, senha)
+                val erro = viewModel.doLogin(cnpj, telefone, senha)
                 binding.btnLogin.isEnabled = true
                 binding.btnLogin.text = getString(R.string.login)
                 if (erro != null) {
-                    Log.e("LoginActivity", "Login manual falhou: $erro")
                     Toast.makeText(this@LoginActivity, erro, Toast.LENGTH_LONG).show()
                 } else {
                     Toast.makeText(this@LoginActivity, "Bem-vindo, ${SessionManager.getNome()}!", Toast.LENGTH_SHORT).show()
