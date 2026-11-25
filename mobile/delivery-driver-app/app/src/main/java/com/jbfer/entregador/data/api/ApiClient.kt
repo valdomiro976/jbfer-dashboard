@@ -70,9 +70,9 @@ object SessionManager {
     private const val PREFS_NAME = "entregador_prefs"
     private const val KEY_TOKEN = "token"
     private const val KEY_NOME = "nome"
-    private const val KEY_CNPJ = "cnpj"
-    private const val KEY_TELEFONE = "telefone"
-    private const val KEY_SENHA = "senha"
+    private const val KEY_CNPJ = "saved_cnpj"
+    private const val KEY_TELEFONE = "saved_telefone"
+    private const val KEY_SENHA = "saved_senha"
 
     private val prefs by lazy {
         com.jbfer.entregador.App.instance.getSharedPreferences(PREFS_NAME, android.content.Context.MODE_PRIVATE)
