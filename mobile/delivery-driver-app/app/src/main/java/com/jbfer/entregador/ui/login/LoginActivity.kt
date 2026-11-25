@@ -27,7 +27,7 @@ class LoginViewModel : ViewModel() {
             val response = ApiClient.api.login(LoginRequest(cnpj, telefone, senha))
             if (response.sucesso) {
                 val nome = response.entregador?.nome ?: ""
-                SessionManager.save(response.accessToken, nome, response.cnpj ?: cnpj, telefone)
+                SessionManager.save(response.accessToken, nome, response.cnpj ?: cnpj, telefone, senha)
                 null
             } else {
                 "Falha na autenticação"
@@ -59,6 +59,31 @@ class LoginActivity : ComponentActivity() {
 
         SessionManager.getCnpj()?.let { binding.etCnpj.setText(it) }
         SessionManager.getTelefone()?.let { binding.etTelefone.setText(it) }
+        SessionManager.getSenha()?.let { binding.etSenha.setText(it) }
+
+        // Auto-login com credenciais salvas
+        val savedCnpj = SessionManager.getCnpj()
+        val savedTel = SessionManager.getTelefone()
+        val savedSenha = SessionManager.getSenha()
+        if (savedCnpj != null && savedTel != null && savedSenha != null && !SessionManager.isLoggedIn()) {
+            binding.btnLogin.isEnabled = false
+            binding.btnLogin.text = "Entrando..."
+            lifecycleScope.launch {
+                val erro = viewModel.doLogin(savedCnpj, savedTel, savedSenha)
+                binding.btnLogin.isEnabled = true
+                binding.btnLogin.text = getString(R.string.login)
+                if (erro != null) {
+                    // Credenciais salvas invalidas: limpa apenas a senha
+                    SessionManager.clearSenha()
+                    binding.etSenha.setText("")
+                    Toast.makeText(this@LoginActivity, "Digite sua senha novamente.", Toast.LENGTH_LONG).show()
+                } else {
+                    Toast.makeText(this@LoginActivity, "Bem-vindo, ${SessionManager.getNome()}!", Toast.LENGTH_SHORT).show()
+                    openHome(this@LoginActivity)
+                    finish()
+                }
+            }
+        }
 
         binding.btnLogin.setOnClickListener {
             val cnpj = binding.etCnpj.text.toString().trim()
