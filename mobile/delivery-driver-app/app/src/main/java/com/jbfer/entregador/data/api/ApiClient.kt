@@ -110,4 +110,7 @@ object SessionManager {
     fun clear() {
         prefs.edit().remove(KEY_TOKEN).remove(KEY_NOME).remove(KEY_CNPJ).remove(KEY_TELEFONE).remove(KEY_SENHA).apply()
     }
+    fun clearSenha() {
+        prefs.edit().remove(KEY_SENHA).apply()
+    }
 }

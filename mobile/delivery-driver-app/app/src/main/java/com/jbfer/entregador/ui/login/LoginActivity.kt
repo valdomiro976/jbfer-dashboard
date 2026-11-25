@@ -74,7 +74,7 @@ class LoginActivity : ComponentActivity() {
                 binding.btnLogin.text = getString(R.string.login)
                 if (erro != null) {
                     // Limpa apenas a senha, mantem cnpj/telefone preenchidos
-                    SessionManager.prefs.edit().remove("senha").apply()
+                    SessionManager.clearSenha()
                     binding.etSenha.setText("")
                     Toast.makeText(this@LoginActivity, "Sessão expirada. Digite a senha novamente.", Toast.LENGTH_LONG).show()
                 } else {
