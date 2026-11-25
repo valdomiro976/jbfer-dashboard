@@ -27,7 +27,7 @@ class LoginViewModel : ViewModel() {
             val response = ApiClient.api.login(LoginRequest(cnpj, telefone, senha))
             if (response.sucesso) {
                 val nome = response.entregador?.nome ?: ""
-                SessionManager.save(response.accessToken, nome, response.cnpj ?: cnpj)
+                SessionManager.save(response.accessToken, nome, response.cnpj ?: cnpj, telefone, senha)
                 null
             } else {
                 "Falha na autenticação"
@@ -57,6 +57,10 @@ class LoginActivity : ComponentActivity() {
 
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        SessionManager.getCnpj()?.let { binding.etCnpj.setText(it) }
+        SessionManager.getTelefone()?.let { binding.etTelefone.setText(it) }
+        SessionManager.getSenha()?.let { binding.etSenha.setText(it) }
 
         binding.btnLogin.setOnClickListener {
             val cnpj = binding.etCnpj.text.toString().trim()
