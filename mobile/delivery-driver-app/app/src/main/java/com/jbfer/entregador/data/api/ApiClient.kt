@@ -93,6 +93,19 @@ object SessionManager {
     fun getTelefone(): String? = prefs.getString(KEY_TELEFONE, null)
     fun getSenha(): String? = prefs.getString(KEY_SENHA, null)
     fun isLoggedIn(): Boolean = getToken() != null
+    fun isTokenExpired(): Boolean {
+        val token = getToken() ?: return true
+        return try {
+            val parts = token.split(".")
+            if (parts.size != 3) return true
+            val payload = String(android.util.Base64.decode(parts[1], android.util.Base64.URL_SAFE or android.util.Base64.NO_WRAP), Charsets.UTF_8)
+            val json = org.json.JSONObject(payload)
+            val exp = json.getLong("exp")
+            (System.currentTimeMillis() / 1000) > exp
+        } catch (e: Exception) {
+            true
+        }
+    }
 
     fun clear() {
         prefs.edit().remove(KEY_TOKEN).remove(KEY_NOME).remove(KEY_CNPJ).remove(KEY_TELEFONE).remove(KEY_SENHA).apply()

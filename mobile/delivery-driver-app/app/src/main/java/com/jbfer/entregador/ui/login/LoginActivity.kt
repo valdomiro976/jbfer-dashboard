@@ -48,7 +48,7 @@ class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (SessionManager.isLoggedIn()) {
+        if (SessionManager.isLoggedIn() && !SessionManager.isTokenExpired()) {
             openHome(this)
             finish()
             return
@@ -73,7 +73,8 @@ class LoginActivity : ComponentActivity() {
                 binding.btnLogin.isEnabled = true
                 binding.btnLogin.text = getString(R.string.login)
                 if (erro != null) {
-                    SessionManager.clear()
+                    // Limpa apenas a senha, mantem cnpj/telefone preenchidos
+                    SessionManager.prefs.edit().remove("senha").apply()
                     binding.etSenha.setText("")
                     Toast.makeText(this@LoginActivity, "Sessão expirada. Digite a senha novamente.", Toast.LENGTH_LONG).show()
                 } else {
