@@ -87,6 +87,7 @@ object SessionManager {
             .putString(KEY_TELEFONE, telefone)
             .putString(KEY_SENHA, senha)
             .apply()
+        Log.d("SessionManager", "Verificacao apos save: cnpj=${prefs.getString(KEY_CNPJ, null)} tel=${prefs.getString(KEY_TELEFONE, null)} senhaLen=${prefs.getString(KEY_SENHA, null)?.length}")
     }
 
     fun getToken(): String? = prefs.getString(KEY_TOKEN, null)
