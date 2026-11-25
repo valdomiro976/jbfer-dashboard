@@ -1,0 +1,245 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.jbfer.entregador"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="24"
+9        android:targetSdkVersion="34" />
+10
+11    <!-- Internet -->
+12    <uses-permission android:name="android.permission.INTERNET" />
+12-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:6:5-67
+12-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:6:22-64
+13    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+13-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:7:5-79
+13-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:7:22-76
+14
+15    <!-- GPS/Localização -->
+16    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+16-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:10:5-79
+16-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:10:22-76
+17    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+17-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:11:5-81
+17-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:11:22-78
+18    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+18-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:12:5-85
+18-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:12:22-82
+19    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+19-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:13:5-77
+19-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:13:22-74
+20    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+20-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:14:5-86
+20-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:14:22-83
+21    <uses-permission android:name="android.permission.WAKE_LOCK" />
+21-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:15:5-68
+21-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:15:22-65
+22    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+22-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:16:5-95
+22-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:16:22-92
+23
+24    <!-- WhatsApp (opcional, para contato) -->
+25    <uses-permission android:name="android.permission.INTERNET" />
+25-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:6:5-67
+25-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:6:22-64
+26
+27    <permission
+27-->[androidx.core:core:1.13.1] D:\gradle-8.2\caches\8.13\transforms\daefe56b1847e442c2fbc218e34168da\transformed\core-1.13.1\AndroidManifest.xml:22:5-24:47
+28        android:name="com.jbfer.entregador.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+28-->[androidx.core:core:1.13.1] D:\gradle-8.2\caches\8.13\transforms\daefe56b1847e442c2fbc218e34168da\transformed\core-1.13.1\AndroidManifest.xml:23:9-81
+29        android:protectionLevel="signature" />
+29-->[androidx.core:core:1.13.1] D:\gradle-8.2\caches\8.13\transforms\daefe56b1847e442c2fbc218e34168da\transformed\core-1.13.1\AndroidManifest.xml:24:9-44
+30
+31    <uses-permission android:name="com.jbfer.entregador.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+31-->[androidx.core:core:1.13.1] D:\gradle-8.2\caches\8.13\transforms\daefe56b1847e442c2fbc218e34168da\transformed\core-1.13.1\AndroidManifest.xml:26:5-97
+31-->[androidx.core:core:1.13.1] D:\gradle-8.2\caches\8.13\transforms\daefe56b1847e442c2fbc218e34168da\transformed\core-1.13.1\AndroidManifest.xml:26:22-94
+32
+33    <supports-screens
+33-->[org.osmdroid:osmdroid-android:6.1.18] D:\gradle-8.2\caches\8.13\transforms\e9eca88a18cc2ffda0a355bcecbcd4dd\transformed\osmdroid-android-6.1.18\AndroidManifest.xml:9:5-12:40
+34        android:anyDensity="true"
+34-->[org.osmdroid:osmdroid-android:6.1.18] D:\gradle-8.2\caches\8.13\transforms\e9eca88a18cc2ffda0a355bcecbcd4dd\transformed\osmdroid-android-6.1.18\AndroidManifest.xml:10:9-34
+35        android:largeScreens="true"
+35-->[org.osmdroid:osmdroid-android:6.1.18] D:\gradle-8.2\caches\8.13\transforms\e9eca88a18cc2ffda0a355bcecbcd4dd\transformed\osmdroid-android-6.1.18\AndroidManifest.xml:11:9-36
+36        android:normalScreens="true" />
+36-->[org.osmdroid:osmdroid-android:6.1.18] D:\gradle-8.2\caches\8.13\transforms\e9eca88a18cc2ffda0a355bcecbcd4dd\transformed\osmdroid-android-6.1.18\AndroidManifest.xml:12:9-37
+37
+38    <uses-feature
+38-->[org.osmdroid:osmdroid-android:6.1.18] D:\gradle-8.2\caches\8.13\transforms\e9eca88a18cc2ffda0a355bcecbcd4dd\transformed\osmdroid-android-6.1.18\AndroidManifest.xml:14:5-16:36
+39        android:name="android.hardware.location.network"
+39-->[org.osmdroid:osmdroid-android:6.1.18] D:\gradle-8.2\caches\8.13\transforms\e9eca88a18cc2ffda0a355bcecbcd4dd\transformed\osmdroid-android-6.1.18\AndroidManifest.xml:15:9-57
+40        android:required="false" />
+40-->[org.osmdroid:osmdroid-android:6.1.18] D:\gradle-8.2\caches\8.13\transforms\e9eca88a18cc2ffda0a355bcecbcd4dd\transformed\osmdroid-android-6.1.18\AndroidManifest.xml:16:9-33
+41    <uses-feature
+41-->[org.osmdroid:osmdroid-android:6.1.18] D:\gradle-8.2\caches\8.13\transforms\e9eca88a18cc2ffda0a355bcecbcd4dd\transformed\osmdroid-android-6.1.18\AndroidManifest.xml:17:5-19:36
+42        android:name="android.hardware.location.gps"
+42-->[org.osmdroid:osmdroid-android:6.1.18] D:\gradle-8.2\caches\8.13\transforms\e9eca88a18cc2ffda0a355bcecbcd4dd\transformed\osmdroid-android-6.1.18\AndroidManifest.xml:18:9-53
+43        android:required="false" />
+43-->[org.osmdroid:osmdroid-android:6.1.18] D:\gradle-8.2\caches\8.13\transforms\e9eca88a18cc2ffda0a355bcecbcd4dd\transformed\osmdroid-android-6.1.18\AndroidManifest.xml:19:9-33
+44    <uses-feature
+44-->[org.osmdroid:osmdroid-android:6.1.18] D:\gradle-8.2\caches\8.13\transforms\e9eca88a18cc2ffda0a355bcecbcd4dd\transformed\osmdroid-android-6.1.18\AndroidManifest.xml:20:5-22:36
+45        android:name="android.hardware.telephony"
+45-->[org.osmdroid:osmdroid-android:6.1.18] D:\gradle-8.2\caches\8.13\transforms\e9eca88a18cc2ffda0a355bcecbcd4dd\transformed\osmdroid-android-6.1.18\AndroidManifest.xml:21:9-50
+46        android:required="false" />
+46-->[org.osmdroid:osmdroid-android:6.1.18] D:\gradle-8.2\caches\8.13\transforms\e9eca88a18cc2ffda0a355bcecbcd4dd\transformed\osmdroid-android-6.1.18\AndroidManifest.xml:22:9-33
+47    <uses-feature
+47-->[org.osmdroid:osmdroid-android:6.1.18] D:\gradle-8.2\caches\8.13\transforms\e9eca88a18cc2ffda0a355bcecbcd4dd\transformed\osmdroid-android-6.1.18\AndroidManifest.xml:23:5-25:36
+48        android:name="android.hardware.wifi"
+48-->[org.osmdroid:osmdroid-android:6.1.18] D:\gradle-8.2\caches\8.13\transforms\e9eca88a18cc2ffda0a355bcecbcd4dd\transformed\osmdroid-android-6.1.18\AndroidManifest.xml:24:9-45
+49        android:required="false" />
+49-->[org.osmdroid:osmdroid-android:6.1.18] D:\gradle-8.2\caches\8.13\transforms\e9eca88a18cc2ffda0a355bcecbcd4dd\transformed\osmdroid-android-6.1.18\AndroidManifest.xml:25:9-33
+50
+51    <application
+51-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:21:5-57:19
+52        android:name="com.jbfer.entregador.App"
+52-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:22:9-28
+53        android:allowBackup="true"
+53-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:23:9-35
+54        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+54-->[androidx.core:core:1.13.1] D:\gradle-8.2\caches\8.13\transforms\daefe56b1847e442c2fbc218e34168da\transformed\core-1.13.1\AndroidManifest.xml:28:18-86
+55        android:debuggable="true"
+56        android:extractNativeLibs="false"
+57        android:icon="@mipmap/ic_launcher"
+57-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:24:9-43
+58        android:label="@string/app_name"
+58-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:26:9-41
+59        android:roundIcon="@mipmap/ic_launcher"
+59-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:25:5-44
+60        android:supportsRtl="true"
+60-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:27:9-35
+61        android:testOnly="true"
+62        android:theme="@style/Theme.Entregador"
+62-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:28:9-48
+63        android:usesCleartextTraffic="true" >
+63-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:29:9-44
+64        <activity
+64-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:32:9-40:20
+65            android:name="com.jbfer.entregador.MainActivity"
+65-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:33:13-41
+66            android:exported="true"
+66-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:34:13-36
+67            android:launchMode="singleTask" >
+67-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:35:13-44
+68            <intent-filter>
+68-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:36:13-39:29
+69                <action android:name="android.intent.action.MAIN" />
+69-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:37:17-69
+69-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:37:25-66
+70
+71                <category android:name="android.intent.category.LAUNCHER" />
+71-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:38:17-77
+71-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:38:27-74
+72            </intent-filter>
+73        </activity>
+74        <activity
+74-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:42:9-45:47
+75            android:name="com.jbfer.entregador.ui.login.LoginActivity"
+75-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:43:13-51
+76            android:exported="false"
+76-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:44:13-37
+77            android:launchMode="singleTask" />
+77-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:45:13-44
+78        <activity
+78-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:47:9-50:47
+79            android:name="com.jbfer.entregador.ui.home.HomeActivity"
+79-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:48:13-49
+80            android:exported="false"
+80-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:49:13-37
+81            android:launchMode="singleTask" />
+81-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:50:13-44
+82
+83        <service
+83-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:52:9-56:44
+84            android:name="com.jbfer.entregador.services.LocationTrackingService"
+84-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:53:13-61
+85            android:exported="false"
+85-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:54:13-37
+86            android:foregroundServiceType="location"
+86-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:55:13-53
+87            android:stopWithTask="false" />
+87-->H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\src\main\AndroidManifest.xml:56:13-41
+88
+89        <activity
+89-->[com.google.android.gms:play-services-base:18.5.0] D:\gradle-8.2\caches\8.13\transforms\94e704b1cfe05145dd8ab5372326385a\transformed\play-services-base-18.5.0\AndroidManifest.xml:5:9-173
+90            android:name="com.google.android.gms.common.api.GoogleApiActivity"
+90-->[com.google.android.gms:play-services-base:18.5.0] D:\gradle-8.2\caches\8.13\transforms\94e704b1cfe05145dd8ab5372326385a\transformed\play-services-base-18.5.0\AndroidManifest.xml:5:19-85
+91            android:exported="false"
+91-->[com.google.android.gms:play-services-base:18.5.0] D:\gradle-8.2\caches\8.13\transforms\94e704b1cfe05145dd8ab5372326385a\transformed\play-services-base-18.5.0\AndroidManifest.xml:5:146-170
+92            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+92-->[com.google.android.gms:play-services-base:18.5.0] D:\gradle-8.2\caches\8.13\transforms\94e704b1cfe05145dd8ab5372326385a\transformed\play-services-base-18.5.0\AndroidManifest.xml:5:86-145
+93
+94        <meta-data
+94-->[com.google.android.gms:play-services-basement:18.4.0] D:\gradle-8.2\caches\8.13\transforms\6b9bbed099428be6c10b8515e802e0d0\transformed\play-services-basement-18.4.0\AndroidManifest.xml:6:9-122
+95            android:name="com.google.android.gms.version"
+95-->[com.google.android.gms:play-services-basement:18.4.0] D:\gradle-8.2\caches\8.13\transforms\6b9bbed099428be6c10b8515e802e0d0\transformed\play-services-basement-18.4.0\AndroidManifest.xml:6:20-65
+96            android:value="@integer/google_play_services_version" />
+96-->[com.google.android.gms:play-services-basement:18.4.0] D:\gradle-8.2\caches\8.13\transforms\6b9bbed099428be6c10b8515e802e0d0\transformed\play-services-basement-18.4.0\AndroidManifest.xml:6:66-119
+97
+98        <provider
+98-->[androidx.emoji2:emoji2:1.3.0] D:\gradle-8.2\caches\8.13\transforms\ceb0692d5b0236cb73668c5acb04293f\transformed\emoji2-1.3.0\AndroidManifest.xml:24:9-32:20
+99            android:name="androidx.startup.InitializationProvider"
+99-->[androidx.emoji2:emoji2:1.3.0] D:\gradle-8.2\caches\8.13\transforms\ceb0692d5b0236cb73668c5acb04293f\transformed\emoji2-1.3.0\AndroidManifest.xml:25:13-67
+100            android:authorities="com.jbfer.entregador.androidx-startup"
+100-->[androidx.emoji2:emoji2:1.3.0] D:\gradle-8.2\caches\8.13\transforms\ceb0692d5b0236cb73668c5acb04293f\transformed\emoji2-1.3.0\AndroidManifest.xml:26:13-68
+101            android:exported="false" >
+101-->[androidx.emoji2:emoji2:1.3.0] D:\gradle-8.2\caches\8.13\transforms\ceb0692d5b0236cb73668c5acb04293f\transformed\emoji2-1.3.0\AndroidManifest.xml:27:13-37
+102            <meta-data
+102-->[androidx.emoji2:emoji2:1.3.0] D:\gradle-8.2\caches\8.13\transforms\ceb0692d5b0236cb73668c5acb04293f\transformed\emoji2-1.3.0\AndroidManifest.xml:29:13-31:52
+103                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+103-->[androidx.emoji2:emoji2:1.3.0] D:\gradle-8.2\caches\8.13\transforms\ceb0692d5b0236cb73668c5acb04293f\transformed\emoji2-1.3.0\AndroidManifest.xml:30:17-75
+104                android:value="androidx.startup" />
+104-->[androidx.emoji2:emoji2:1.3.0] D:\gradle-8.2\caches\8.13\transforms\ceb0692d5b0236cb73668c5acb04293f\transformed\emoji2-1.3.0\AndroidManifest.xml:31:17-49
+105            <meta-data
+105-->[androidx.lifecycle:lifecycle-process:2.8.4] D:\gradle-8.2\caches\8.13\transforms\ec1423ffb2c5e93eb9b3c870b97f28b1\transformed\lifecycle-process-2.8.4\AndroidManifest.xml:29:13-31:52
+106                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+106-->[androidx.lifecycle:lifecycle-process:2.8.4] D:\gradle-8.2\caches\8.13\transforms\ec1423ffb2c5e93eb9b3c870b97f28b1\transformed\lifecycle-process-2.8.4\AndroidManifest.xml:30:17-78
+107                android:value="androidx.startup" />
+107-->[androidx.lifecycle:lifecycle-process:2.8.4] D:\gradle-8.2\caches\8.13\transforms\ec1423ffb2c5e93eb9b3c870b97f28b1\transformed\lifecycle-process-2.8.4\AndroidManifest.xml:31:17-49
+108            <meta-data
+108-->[androidx.profileinstaller:profileinstaller:1.3.1] D:\gradle-8.2\caches\8.13\transforms\f586674cafdc603cc3b0480777d8e72d\transformed\profileinstaller-1.3.1\AndroidManifest.xml:29:13-31:52
+109                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+109-->[androidx.profileinstaller:profileinstaller:1.3.1] D:\gradle-8.2\caches\8.13\transforms\f586674cafdc603cc3b0480777d8e72d\transformed\profileinstaller-1.3.1\AndroidManifest.xml:30:17-85
+110                android:value="androidx.startup" />
+110-->[androidx.profileinstaller:profileinstaller:1.3.1] D:\gradle-8.2\caches\8.13\transforms\f586674cafdc603cc3b0480777d8e72d\transformed\profileinstaller-1.3.1\AndroidManifest.xml:31:17-49
+111        </provider>
+112
+113        <receiver
+113-->[androidx.profileinstaller:profileinstaller:1.3.1] D:\gradle-8.2\caches\8.13\transforms\f586674cafdc603cc3b0480777d8e72d\transformed\profileinstaller-1.3.1\AndroidManifest.xml:34:9-52:20
+114            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+114-->[androidx.profileinstaller:profileinstaller:1.3.1] D:\gradle-8.2\caches\8.13\transforms\f586674cafdc603cc3b0480777d8e72d\transformed\profileinstaller-1.3.1\AndroidManifest.xml:35:13-76
+115            android:directBootAware="false"
+115-->[androidx.profileinstaller:profileinstaller:1.3.1] D:\gradle-8.2\caches\8.13\transforms\f586674cafdc603cc3b0480777d8e72d\transformed\profileinstaller-1.3.1\AndroidManifest.xml:36:13-44
+116            android:enabled="true"
+116-->[androidx.profileinstaller:profileinstaller:1.3.1] D:\gradle-8.2\caches\8.13\transforms\f586674cafdc603cc3b0480777d8e72d\transformed\profileinstaller-1.3.1\AndroidManifest.xml:37:13-35
+117            android:exported="true"
+117-->[androidx.profileinstaller:profileinstaller:1.3.1] D:\gradle-8.2\caches\8.13\transforms\f586674cafdc603cc3b0480777d8e72d\transformed\profileinstaller-1.3.1\AndroidManifest.xml:38:13-36
+118            android:permission="android.permission.DUMP" >
+118-->[androidx.profileinstaller:profileinstaller:1.3.1] D:\gradle-8.2\caches\8.13\transforms\f586674cafdc603cc3b0480777d8e72d\transformed\profileinstaller-1.3.1\AndroidManifest.xml:39:13-57
+119            <intent-filter>
+119-->[androidx.profileinstaller:profileinstaller:1.3.1] D:\gradle-8.2\caches\8.13\transforms\f586674cafdc603cc3b0480777d8e72d\transformed\profileinstaller-1.3.1\AndroidManifest.xml:40:13-42:29
+120                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+120-->[androidx.profileinstaller:profileinstaller:1.3.1] D:\gradle-8.2\caches\8.13\transforms\f586674cafdc603cc3b0480777d8e72d\transformed\profileinstaller-1.3.1\AndroidManifest.xml:41:17-91
+120-->[androidx.profileinstaller:profileinstaller:1.3.1] D:\gradle-8.2\caches\8.13\transforms\f586674cafdc603cc3b0480777d8e72d\transformed\profileinstaller-1.3.1\AndroidManifest.xml:41:25-88
+121            </intent-filter>
+122            <intent-filter>
+122-->[androidx.profileinstaller:profileinstaller:1.3.1] D:\gradle-8.2\caches\8.13\transforms\f586674cafdc603cc3b0480777d8e72d\transformed\profileinstaller-1.3.1\AndroidManifest.xml:43:13-45:29
+123                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+123-->[androidx.profileinstaller:profileinstaller:1.3.1] D:\gradle-8.2\caches\8.13\transforms\f586674cafdc603cc3b0480777d8e72d\transformed\profileinstaller-1.3.1\AndroidManifest.xml:44:17-85
+123-->[androidx.profileinstaller:profileinstaller:1.3.1] D:\gradle-8.2\caches\8.13\transforms\f586674cafdc603cc3b0480777d8e72d\transformed\profileinstaller-1.3.1\AndroidManifest.xml:44:25-82
+124            </intent-filter>
+125            <intent-filter>
+125-->[androidx.profileinstaller:profileinstaller:1.3.1] D:\gradle-8.2\caches\8.13\transforms\f586674cafdc603cc3b0480777d8e72d\transformed\profileinstaller-1.3.1\AndroidManifest.xml:46:13-48:29
+126                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+126-->[androidx.profileinstaller:profileinstaller:1.3.1] D:\gradle-8.2\caches\8.13\transforms\f586674cafdc603cc3b0480777d8e72d\transformed\profileinstaller-1.3.1\AndroidManifest.xml:47:17-88
+126-->[androidx.profileinstaller:profileinstaller:1.3.1] D:\gradle-8.2\caches\8.13\transforms\f586674cafdc603cc3b0480777d8e72d\transformed\profileinstaller-1.3.1\AndroidManifest.xml:47:25-85
+127            </intent-filter>
+128            <intent-filter>
+128-->[androidx.profileinstaller:profileinstaller:1.3.1] D:\gradle-8.2\caches\8.13\transforms\f586674cafdc603cc3b0480777d8e72d\transformed\profileinstaller-1.3.1\AndroidManifest.xml:49:13-51:29
+129                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+129-->[androidx.profileinstaller:profileinstaller:1.3.1] D:\gradle-8.2\caches\8.13\transforms\f586674cafdc603cc3b0480777d8e72d\transformed\profileinstaller-1.3.1\AndroidManifest.xml:50:17-95
+129-->[androidx.profileinstaller:profileinstaller:1.3.1] D:\gradle-8.2\caches\8.13\transforms\f586674cafdc603cc3b0480777d8e72d\transformed\profileinstaller-1.3.1\AndroidManifest.xml:50:25-92
+130            </intent-filter>
+131        </receiver>
+132    </application>
+133
+134</manifest>

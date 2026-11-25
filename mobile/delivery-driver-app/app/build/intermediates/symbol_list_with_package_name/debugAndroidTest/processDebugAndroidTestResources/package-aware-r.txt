@@ -1,0 +1,3 @@
+com.jbfer.entregador.test
+style WhiteBackgroundDialogTheme
+style WhiteBackgroundTheme
