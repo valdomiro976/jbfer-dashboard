@@ -59,9 +59,13 @@ class LoginActivity : ComponentActivity() {
         setContentView(binding.root)
 
         Log.d("LoginActivity", "Prefill: cnpj=${SessionManager.getCnpj()} tel=${SessionManager.getTelefone()} senhaLen=${SessionManager.getSenha()?.length}")
-        SessionManager.getCnpj()?.let { binding.etCnpj.setText(it) }
-        SessionManager.getTelefone()?.let { binding.etTelefone.setText(it) }
-        SessionManager.getSenha()?.let { binding.etSenha.setText(it) }
+        val savedCnpj = SessionManager.getCnpj()
+        val savedTel = SessionManager.getTelefone()
+        val savedSenha = SessionManager.getSenha()
+        Toast.makeText(this, "DEBUG: cnpj=$savedCnpj tel=$savedTel senhaLen=${savedSenha?.length}", Toast.LENGTH_LONG).show()
+        savedCnpj?.let { binding.etCnpj.setText(it) }
+        savedTel?.let { binding.etTelefone.setText(it) }
+        savedSenha?.let { binding.etSenha.setText(it) }
 
         // Auto-login com credenciais salvas
         val savedCnpj = SessionManager.getCnpj()
