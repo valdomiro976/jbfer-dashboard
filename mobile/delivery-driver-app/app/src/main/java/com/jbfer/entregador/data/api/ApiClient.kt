@@ -71,19 +71,17 @@ object SessionManager {
     private const val KEY_NOME = "nome"
     private const val KEY_CNPJ = "cnpj"
     private const val KEY_TELEFONE = "telefone"
-    private const val KEY_SENHA = "senha"
 
     private val prefs by lazy {
         com.jbfer.entregador.App.instance.getSharedPreferences(PREFS_NAME, android.content.Context.MODE_PRIVATE)
     }
 
-    fun save(token: String, nome: String, cnpj: String, telefone: String = "", senha: String = "") {
+    fun save(token: String, nome: String, cnpj: String, telefone: String = "") {
         prefs.edit()
             .putString(KEY_TOKEN, token)
             .putString(KEY_NOME, nome)
             .putString(KEY_CNPJ, cnpj)
             .putString(KEY_TELEFONE, telefone)
-            .putString(KEY_SENHA, senha)
             .apply()
     }
 
@@ -91,7 +89,6 @@ object SessionManager {
     fun getNome(): String? = prefs.getString(KEY_NOME, null)
     fun getCnpj(): String? = prefs.getString(KEY_CNPJ, null)
     fun getTelefone(): String? = prefs.getString(KEY_TELEFONE, null)
-    fun getSenha(): String? = prefs.getString(KEY_SENHA, null)
     fun isLoggedIn(): Boolean = getToken() != null
     fun isTokenExpired(): Boolean {
         val token = getToken() ?: return true
@@ -108,7 +105,7 @@ object SessionManager {
     }
 
     fun clear() {
-        prefs.edit().remove(KEY_TOKEN).remove(KEY_NOME).remove(KEY_CNPJ).remove(KEY_TELEFONE).remove(KEY_SENHA).apply()
+        prefs.edit().remove(KEY_TOKEN).remove(KEY_NOME).remove(KEY_CNPJ).remove(KEY_TELEFONE).apply()
     }
     fun clearSenha() {
         prefs.edit().remove(KEY_SENHA).apply()
