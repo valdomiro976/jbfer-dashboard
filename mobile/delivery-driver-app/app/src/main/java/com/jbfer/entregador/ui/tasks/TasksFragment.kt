@@ -71,21 +71,24 @@ class TasksFragment : Fragment() {
         loadTasks()
     }
 
+    private fun setUiState(loading: Boolean, empty: Boolean) {
+        binding.progress.isVisible = loading
+        binding.tvEmpty.isVisible = !loading && empty
+        binding.recyclerTasks.isVisible = !loading && !empty
+    }
+
     private fun loadTasks() {
-        binding.progress.visibility = View.VISIBLE
-        binding.tvEmpty.isVisible = false
+        setUiState(loading = true, empty = false)
         lifecycleScope.launch {
             try {
                 val response = withContext(Dispatchers.IO) { ApiClient.api.minhasTarefas() }
                 tarefas.clear()
                 tarefas.addAll(response.tarefas.orEmpty())
                 adapter.notifyDataSetChanged()
-                binding.tvEmpty.isVisible = tarefas.isEmpty()
+                setUiState(loading = false, empty = tarefas.isEmpty())
             } catch (e: Exception) {
-                binding.tvEmpty.visibility = View.VISIBLE
                 binding.tvEmpty.text = "Erro: ${e.message}"
-            } finally {
-                binding.progress.visibility = View.INVISIBLE
+                setUiState(loading = false, empty = true)
             }
         }
     }
