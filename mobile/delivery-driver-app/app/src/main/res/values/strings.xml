@@ -10,9 +10,9 @@
     <string name="rastreamento">Rastreamento</string>
     <string name="perfil">Perfil</string>
     <string name="sair">Sair</string>
-    <string name="placeholder_cnpj">""</string>
-    <string name="placeholder_telefone">""</string>
-    <string name="placeholder_senha">""</string>
+    <string name="placeholder_cnpj">02408190000136-1</string>
+    <string name="placeholder_telefone">5511999888777</string>
+    <string name="placeholder_senha">entregue123</string>
     <string name="time_continuo">Rastreamento contínuo ativo</string>
     <string name="time_continuo_desc">Sua localização está sendo enviada em tempo real</string>
     <string name="permissao_localizacao">Permissão de localização necessária para o rastreamento contínuo</string>

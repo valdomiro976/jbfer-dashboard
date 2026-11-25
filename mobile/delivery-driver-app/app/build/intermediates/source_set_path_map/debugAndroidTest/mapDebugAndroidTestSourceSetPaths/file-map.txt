@@ -1,6 +1,0 @@
-com.jbfer.entregador.test.app-core-1.6.1-0 D:\gradle-8.2\caches\8.13\transforms\df44dd853f48390615c37740e6ecedaf\transformed\core-1.6.1\res
-com.jbfer.entregador.test.app-androidTest-1 H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\build\generated\res\resValues\androidTest\debug
-com.jbfer.entregador.test.app-updated_navigation_xml-2 H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\build\generated\updated_navigation_xml\debugAndroidTest
-com.jbfer.entregador.test.app-mergeDebugAndroidTestResources-3 H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\merged.dir
-com.jbfer.entregador.test.app-mergeDebugAndroidTestResources-4 H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\stripped.dir
-com.jbfer.entregador.test.app-debugAndroidTest-5 H:\dashboard_e_app_entrega\mobile\delivery-driver-app\app\build\intermediates\merged_res\debugAndroidTest\mergeDebugAndroidTestResources
