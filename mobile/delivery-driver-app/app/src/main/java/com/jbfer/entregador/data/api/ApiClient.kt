@@ -53,6 +53,20 @@ object ApiClient {
             }
             builder.build().let { chain.proceed(it) }
         }
+        .addInterceptor { chain ->
+            val response = chain.proceed(chain.request())
+            if (response.code == 401) {
+                SessionManager.clear()
+                try {
+                    val intent = android.content.Intent(com.jbfer.entregador.App.instance, com.jbfer.entregador.ui.login.LoginActivity::class.java)
+                    intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    com.jbfer.entregador.App.instance.startActivity(intent)
+                } catch (e: Exception) {
+                    // ignora
+                }
+            }
+            response
+        }
         .addInterceptor(logging)
         .build()
 
