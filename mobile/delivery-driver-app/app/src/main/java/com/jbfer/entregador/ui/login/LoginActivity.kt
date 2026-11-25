@@ -2,6 +2,7 @@ package com.jbfer.entregador.ui.login
 
 import android.os.Bundle
 import android.util.Log
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
@@ -58,6 +59,7 @@ class LoginActivity : ComponentActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        Log.d("LoginActivity", "Prefill: cnpj=${SessionManager.getCnpj()} tel=${SessionManager.getTelefone()} senhaLen=${SessionManager.getSenha()?.length}")
         SessionManager.getCnpj()?.let { binding.etCnpj.setText(it) }
         SessionManager.getTelefone()?.let { binding.etTelefone.setText(it) }
         SessionManager.getSenha()?.let { binding.etSenha.setText(it) }
