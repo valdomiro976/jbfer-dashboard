@@ -2,6 +2,7 @@ package com.jbfer.entregador.data.api
 
 import com.jbfer.entregador.BuildConfig
 import com.jbfer.entregador.data.model.*
+import android.util.Log
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -78,6 +79,7 @@ object SessionManager {
     }
 
     fun save(token: String, nome: String, cnpj: String, telefone: String = "", senha: String = "") {
+        Log.d("SessionManager", "Salvando login: cnpj=$cnpj tel=$telefone senhaLen=${senha.length}")
         prefs.edit()
             .putString(KEY_TOKEN, token)
             .putString(KEY_NOME, nome)

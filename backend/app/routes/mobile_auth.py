@@ -106,8 +106,10 @@ def login_mobile(payload: dict):
     if not cnpj or not telefone or not senha:
         raise HTTPException(status_code=400, detail="CNPJ, telefone e senha são obrigatórios")
 
+    print(f"[mobile_auth] login tentativa: cnpj={cnpj} tel={telefone}")
     entregador = autenticar_entregador(cnpj, telefone, senha)
     if not entregador:
+        print(f"[mobile_auth] login falhou: cnpj={cnpj} tel={telefone}")
         raise HTTPException(status_code=401, detail="Telefone ou senha inválidos")
 
     token = token_para_entregador(cnpj, entregador)

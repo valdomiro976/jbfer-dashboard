@@ -1,6 +1,7 @@
 package com.jbfer.entregador.ui.login
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
@@ -99,10 +100,12 @@ class LoginActivity : ComponentActivity() {
             binding.btnLogin.text = "Entrando..."
 
             lifecycleScope.launch {
-                val erro = viewModel.doLogin(cnpj, telefone, senha)
+                Log.d("LoginActivity", "Login manual: cnpj=$cnpj tel=$telefone")
+            val erro = viewModel.doLogin(cnpj, telefone, senha)
                 binding.btnLogin.isEnabled = true
                 binding.btnLogin.text = getString(R.string.login)
                 if (erro != null) {
+                    Log.e("LoginActivity", "Login manual falhou: $erro")
                     Toast.makeText(this@LoginActivity, erro, Toast.LENGTH_LONG).show()
                 } else {
                     Toast.makeText(this@LoginActivity, "Bem-vindo, ${SessionManager.getNome()}!", Toast.LENGTH_SHORT).show()
