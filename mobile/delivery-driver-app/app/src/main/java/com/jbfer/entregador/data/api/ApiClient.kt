@@ -120,7 +120,7 @@ object SessionManager {
         prefs.edit().remove(KEY_LOGGED_OUT).apply()
     }
     fun setLoggedOut(value: Boolean) {
-        prefs.edit().putBoolean(KEY_LOGGED_OUT, value).apply()
+        prefs.edit().putBoolean(KEY_LOGGED_OUT, value).commit()
     }
     fun isTokenExpired(): Boolean {
         val token = getToken() ?: return true

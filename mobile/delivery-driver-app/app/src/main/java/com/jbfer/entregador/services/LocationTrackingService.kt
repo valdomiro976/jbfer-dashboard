@@ -31,6 +31,9 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 class LocationTrackingService : Service() {
+    companion object {
+        @Volatile var stopped = false
+    }
 
     private lateinit var fusedClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
@@ -48,6 +51,7 @@ class LocationTrackingService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        stopped = false
         if (!hasLocationPermission()) {
             stopSelf()
             return START_NOT_STICKY
@@ -73,7 +77,7 @@ class LocationTrackingService : Service() {
     }
 
     private fun enviarLocalizacao(lat: Double, lng: Double, precisao: Float, velocidade: Float) {
-        if (SessionManager.isLoggedOut() || !SessionManager.isLoggedIn()) {
+        if (stopped || SessionManager.isLoggedOut() || !SessionManager.isLoggedIn()) {
             stopSelf()
             return
         }
@@ -138,11 +142,13 @@ class LocationTrackingService : Service() {
         const val NOTIFICATION_ID = 101
 
         fun start(context: Context) {
+            stopped = false
             val intent = Intent(context, LocationTrackingService::class.java)
             ContextCompat.startForegroundService(context, intent)
         }
 
         fun stop(context: Context) {
+            stopped = true
             context.stopService(Intent(context, LocationTrackingService::class.java))
         }
     }
