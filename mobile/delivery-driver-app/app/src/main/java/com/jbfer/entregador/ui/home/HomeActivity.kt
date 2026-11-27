@@ -81,19 +81,7 @@ class HomeActivity : AppCompatActivity() {
             moveTaskToBack(true)
         }
 
-        binding.btnLogout.setOnClickListener {
-            AlertDialog.Builder(this)
-                .setTitle("Sair da conta")
-                .setMessage("Deseja realmente sair? Você precisará fazer login novamente.")
-                .setPositiveButton("Sim, sair") { _, _ ->
-                    LocationTrackingService.stop(this)
-                    SessionManager.clear()
-                    com.jbfer.entregador.utils.openLogin(this)
-                    finish()
-                }
-                .setNegativeButton("Cancelar", null)
-                .show()
-        }
+        // Logout agora é feito via menu 3 pontinhos na tela de entregas
 
         if (savedInstanceState == null) {
             changeFragment(TasksFragment())
