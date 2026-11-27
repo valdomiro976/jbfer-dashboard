@@ -403,7 +403,7 @@ export function Rastreamento() {
         <div className="card map-card">
           <MapContainer
             key={`map-r-${rotasVersao}`}
-            center={centro}
+            center={[-23.5505, -46.6333]}
             zoom={14}
             scrollWheelZoom
             style={{ height: 'calc(100vh - 220px)', minHeight: 520, width: '100%' }}
