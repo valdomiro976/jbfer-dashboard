@@ -149,6 +149,7 @@ export function Rastreamento() {
   useEffect(() => {
     const handler = (e) => {
       const id = e.detail
+      console.log('Entregador selecionado:', id)
       if (id) setSelecionadoId(Number(id))
     }
     window.addEventListener('entregador:selecionado', handler)
