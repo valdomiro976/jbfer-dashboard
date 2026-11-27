@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import api from '../api/client'
-import { MapContainer, TileLayer, Marker, Popup, Tooltip, CircleMarker, Polyline, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, CircleMarker, Polyline, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import { Topbar } from '../components/Topbar'
 import { Loader, formatDate, formatBRL } from '../components/utils'
@@ -11,16 +11,6 @@ const customIcon = (color = '#6366f1') =>
   L.divIcon({
     className: 'custom-marker',
     html: `<div style="width:34px;height:34px;border-radius:50%;background:${color};border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;">🚚</div>`,
-    iconSize: [34, 34],
-    iconAnchor: [17, 17],
-    popupAnchor: [0, -18],
-  })
-
-// Marker da loja
-const lojaIcon = () =>
-  L.divIcon({
-    className: 'custom-marker',
-    html: `<div style="width:34px;height:34px;border-radius:50%;background:#f59e0b;border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px;">🏢</div>`,
     iconSize: [34, 34],
     iconAnchor: [17, 17],
     popupAnchor: [0, -18],
@@ -77,62 +67,17 @@ function AutoOpenMarker({ position, icon, aberto, children }) {
   )
 }
 
-function OpenPopupOnSelect({ selecionadoId, dados }) {
-  const map = useMap()
-  const lastId = useRef(null)
-  useEffect(() => {
-    if (!selecionadoId) return
-    const d = dados.find((dd) => dd && dd.entregador && dd.entregador.id === selecionadoId && dd.localizacao)
-    if (!d || !d.localizacao) return
-    const pos = [parseFloat(d.localizacao.lat), parseFloat(d.localizacao.lng)]
-    const nome = d.entregador.nome || 'Entregador'
-    const tel = d.entregador.telefone || '—'
-    const loc = d.localizacao
-    const status = loc ? (statusOnline(d) ? 'Online' : 'Offline') : ''
-    const ultima = loc ? formatDate(loc.criado_em) : ''
-    const vel = loc && loc.velocidade != null ? `${Number(loc.velocidade).toFixed(1)} km/h` : '—'
-    const html = `<div style="min-width:180px"><strong>${nome}</strong>${status ? `<div style="font-size:12px;margin:2px 0">${status}</div>` : ''}<div style="font-size:12px">Telefone: ${tel}</div>${ultima ? `<div style="font-size:12px">Ultima posicao: ${ultima}</div>` : ''}<div style="font-size:12px">Velocidade: ${vel}</div></div>`
-    const popup = L.popup({ autoClose: true, closeOnClick: true })
-    popup.setContent(html)
-    lastId.current = selecionadoId
-    setTimeout(() => {
-      try { map.openPopup(popup, pos) } catch (e) { console.error(e) }
-    }, 300)
-  }, [selecionadoId, dados, map])
-  return null
-}
-
 // Centraliza o mapa na posição do entregador selecionado (só quando muda)
-function FlyTo({ pos, selecionadoId }) {
+function FlyTo({ pos }) {
   const map = useMap()
-  const lastSelectedRef = useRef(null)
+  const lastKeyRef = useRef(null)
   useEffect(() => {
-    if (!pos || !selecionadoId) return
-    // Só voa quando o entregador selecionado MUDA (não quando a posição muda)
-    if (lastSelectedRef.current === selecionadoId) return
-    lastSelectedRef.current = selecionadoId
+    if (!pos) return
+    const key = pos[0].toFixed(6) + ',' + pos[1].toFixed(6)
+    if (lastKeyRef.current === key) return
+    lastKeyRef.current = key
     map.flyTo(pos, 15, { duration: 1 })
-  }, [selecionadoId, pos, map])
-  return null
-}
-
-function PopupOpener({ position, entregador }) {
-  const map = useMap()
-  const opened = useRef(false)
-  useEffect(() => {
-    if (opened.current) return
-    opened.current = true
-    const nome = entregador?.entregador?.nome || 'Entregador'
-    const tel = entregador?.entregador?.telefone || '—'
-    const loc = entregador?.localizacao
-    const status = loc ? (statusOnline(entregador) ? '● Online' : '● Offline') : ''
-    const ultima = loc ? formatDate(loc.criado_em) : ''
-    const vel = loc && loc.velocidade != null ? `${Number(loc.velocidade).toFixed(1)} km/h` : '—'
-    const html = `<div style="min-width:180px"><strong>${nome}</strong>${status ? `<div style="font-size:12px;margin:2px 0;color:${status.includes('Online') ? '#34d399' : '#f87171'}">${status}</div>` : ''}<div style="font-size:12px">Telefone: ${tel}</div>${ultima ? `<div style="font-size:12px">Última posição: ${ultima}</div>` : ''}<div style="font-size:12px">Velocidade: ${vel}</div></div>`
-    const popup = L.popup({ autoClose: true, closeOnClick: true })
-    popup.setContent(html)
-    map.openPopup(popup, position)
-  }, [map, position])
+  }, [pos, map])
   return null
 }
 
@@ -156,8 +101,6 @@ function FitBounds({ pontos }) {
 export function Rastreamento() {
   const [dados, setDados] = useState([])
   const [vendas, setVendas] = useState([])
-  const [loja, setLoja] = useState(null)
-  const [popupEntregador, setPopupEntregador] = useState(null)
   const [rotas, setRotas] = useState([])
   const [rotasVersao, setRotasVersao] = useState(0)
   const [otimizada, setOtimizada] = useState(null)
@@ -176,7 +119,7 @@ export function Rastreamento() {
 
   useEffect(() => {
     const v = searchParams.get('entregador')
-    if (v) { setSelecionadoId(Number(v)); setPopupEntregador(Number(v)) }
+    if (v) setSelecionadoId(Number(v))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
 
@@ -246,9 +189,6 @@ export function Rastreamento() {
     load()
     loadVendas()
     loadRotas()
-    api.get('/vendas/loja').then(({ data }) => {
-      if (data.dados && data.dados.lat != null && data.dados.lng != null) setLoja(data.dados)
-    }).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -257,34 +197,6 @@ export function Rastreamento() {
       return () => clearInterval(intervalRef.current)
     }
   }, [autoRefresh])
-
-  // Abre popup do entregador selecionado no menu (uma vez por selecao)
-  const lastPopupId = useRef(null)
-  useEffect(() => {
-    if (!selecionadoId) { lastPopupId.current = null; return }
-    if (lastPopupId.current === selecionadoId) return
-    lastPopupId.current = selecionadoId
-    const d = dados.find((dd) => dd && dd.entregador && dd.entregador.id === selecionadoId && dd.localizacao)
-    if (!d || !d.localizacao) return
-    const pos = [parseFloat(d.localizacao.lat), parseFloat(d.localizacao.lng)]
-    const nome = d.entregador.nome || 'Entregador'
-    const tel = d.entregador.telefone || '—'
-    const loc = d.localizacao
-    const status = loc ? (statusOnline(d) ? '● Online' : '● Offline') : ''
-    const ultima = loc ? formatDate(loc.criado_em) : ''
-    const vel = loc && loc.velocidade != null ? `${Number(loc.velocidade).toFixed(1)} km/h` : '—'
-    const html = `<div style="min-width:180px"><strong>${nome}</strong>${status ? `<div style="font-size:12px;margin:2px 0;color:${status.includes('Online') ? '#34d399' : '#f87171'}">${status}</div>` : ''}<div style="font-size:12px">Telefone: ${tel}</div>${ultima ? `<div style="font-size:12px">Ultima posicao: ${ultima}</div>` : ''}<div style="font-size:12px">Velocidade: ${vel}</div></div>`
-    const timer = setTimeout(() => {
-      try {
-        if (mapRef.current) {
-          const popup = L.popup({ autoClose: true, closeOnClick: true })
-          popup.setContent(html)
-          mapRef.current.openPopup(popup, pos)
-        }
-      } catch (e) { console.error(e) }
-    }, 500)
-    return () => clearTimeout(timer)
-  }, [selecionadoId, dados])
 
   const comLocalizacao = dados.filter((d) => d.localizacao)
 
@@ -478,33 +390,22 @@ export function Rastreamento() {
             scrollWheelZoom
             style={{ height: 'calc(100vh - 220px)', minHeight: 520, width: '100%' }}
           >
-            <OpenPopupOnSelect selecionadoId={selecionadoId} dados={dados} />
             <TileLayer
               url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             />
-            {null}
-
-            {/* Popup do entregador selecionado no menu */}
-            {null}
-
-            {/* Centraliza no entregador selecionado no menu (apenas quando muda) */}
-            <FlyTo pos={alvo} selecionadoId={selecionadoId} />
-
-            {/* Marker da loja */}
-            {loja && loja.lat != null && loja.lng != null && (
-              <Marker position={[parseFloat(loja.lat), parseFloat(loja.lng)]} icon={lojaIcon()}>
-                <Tooltip permanent direction="top" offset={[0, -18]}>
-                  Loja
-                </Tooltip>
-                <Popup>
-                  <div style={{ fontSize: 12 }}>
-                    <strong>Loja</strong>
-                    {loja.endereco ? <div>{loja.endereco}</div> : null}
-                    {loja.cidade ? <div>{loja.cidade}{loja.uf ? `/${loja.uf}` : ''}</div> : null}
-                  </div>
-                </Popup>
-              </Marker>
+            {alvo && selecionadoId != null ? (
+              <FitBounds
+                pontos={[
+                  alvo,
+                  ...(rotas
+                    .find((r) => r.entregador.id === selecionadoId)
+                    ?.destinos?.filter((d) => d.lat != null && d.lng != null)
+                    .map((d) => [parseFloat(d.lat), parseFloat(d.lng)]) || []),
+                ]}
+              />
+            ) : (
+              <FlyTo pos={alvo} />
             )}
 
             {/* Marcadores das vendas (clientes) */}
@@ -518,9 +419,6 @@ export function Rastreamento() {
                   icon={vendaIcon()}
                   eventHandlers={{ click: () => setSelecionadoId(null) }}
                 >
-                  <Tooltip permanent direction="top" offset={[0, -16]}>
-                    {v.cliente}
-                  </Tooltip>
                   <Popup>
                     <div style={{ minWidth: 220, maxWidth: 280, fontSize: 12, lineHeight: 1.5 }}>
                       <div className="row space-between" style={{ gap: 10, alignItems: 'baseline' }}>
@@ -569,9 +467,6 @@ export function Rastreamento() {
                     icon={customIcon(cor)}
                     aberto={selecionadoId === d.entregador.id}
                   >
-                    <Tooltip permanent direction="top" offset={[0, -18]}>
-                      {d.entregador.nome}
-                    </Tooltip>
                     <Popup>
                       <div style={{ minWidth: 180 }}>
                         <strong>{d.entregador.nome}</strong>
@@ -580,7 +475,7 @@ export function Rastreamento() {
                         </div>
                         <div className="text-sm">Telefone: {d.entregador.telefone || '—'}</div>
                         <div className="text-sm">Última posição: {formatDate(loc.criado_em)}</div>
-                        <div className="text-sm">Velocidade: {loc.velocidade != null ? `${Number(loc.velocidade).toFixed(1)} km/h` : '—'}</div>
+                        <div className="text-sm">Lat: {lat.toFixed(6)} / Lng: {lng.toFixed(6)}</div>
                       </div>
                     </Popup>
                   </AutoOpenMarker>
@@ -617,9 +512,6 @@ export function Rastreamento() {
                           pathOptions={{ color: rotaCor, weight: 3, opacity: 0.8, dashArray: dashedRota ? '6 8' : undefined }}
                         />
                         <Marker position={[dlat, dlng]} icon={destinoIcon()}>
-                          <Tooltip permanent direction="top" offset={[0, -15]}>
-                            {dest.cliente || 'Entrega'}
-                          </Tooltip>
                           <Popup>
                             <div style={{ fontSize: 12 }}>
                               <strong>{dest.cliente || 'Entrega'}</strong>
