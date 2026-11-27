@@ -70,7 +70,6 @@ class TasksFragment : Fragment() {
         binding.recyclerTasks.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerTasks.adapter = adapter
 
-        binding.btnRefresh.setOnClickListener { loadTasks() }
         binding.btnMenu.setOnClickListener { view ->
             val popup = PopupMenu(requireContext(), view)
             popup.menu.add("Sair da conta")
