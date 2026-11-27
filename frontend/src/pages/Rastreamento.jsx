@@ -111,6 +111,27 @@ function FitBounds({ pontos }) {
   return null
 }
 
+function PopupOpener({ position, entregador, onClose }) {
+  const map = useMap()
+  const opened = useRef(false)
+  useEffect(() => {
+    if (opened.current) return
+    opened.current = true
+    const nome = entregador?.entregador?.nome || 'Entregador'
+    const tel = entregador?.entregador?.telefone || '—'
+    const loc = entregador?.localizacao
+    const status = loc ? (statusOnline(entregador) ? '● Online' : '● Offline') : ''
+    const ultima = loc ? formatDate(loc.criado_em) : ''
+    const vel = loc && loc.velocidade != null ? `${Number(loc.velocidade).toFixed(1)} km/h` : '—'
+    const html = `<div style="min-width:180px"><strong>${nome}</strong>${status ? `<div style="font-size:12px;margin:2px 0">${status}</div>` : ''}<div style="font-size:12px">Telefone: ${tel}</div>${ultima ? `<div style="font-size:12px">Última posição: ${ultima}</div>` : ''}<div style="font-size:12px">Velocidade: ${vel}</div></div>`
+    const popup = L.popup({ autoClose: true, closeOnClick: true })
+    popup.setContent(html)
+    map.openPopup(popup, position)
+    popup.on('remove', () => { if (onClose) onClose() })
+  }, [map, position])
+  return null
+}
+
 export function Rastreamento() {
   const [dados, setDados] = useState([])
   const [vendas, setVendas] = useState([])
@@ -434,24 +455,11 @@ export function Rastreamento() {
 
             {/* Popup do entregador selecionado no menu */}
             {popupEntregador && alvo && (
-              <Popup
+              <PopupOpener
                 position={alvo}
-                eventHandlers={{ popupclose: () => setPopupEntregador(null) }}
-              >
-                <div style={{ minWidth: 180 }}>
-                  <strong>{dados.find((d) => d.entregador.id === popupEntregador)?.entregador?.nome}</strong>
-                  <div className="text-sm" style={{ color: statusOnline(dados.find((d) => d.entregador.id === popupEntregador)) ? 'var(--success)' : 'var(--danger)' }}>
-                    {statusOnline(dados.find((d) => d.entregador.id === popupEntregador)) ? '● Online' : '● Offline'}
-                  </div>
-                  <div className="text-sm">Telefone: {dados.find((d) => d.entregador.id === popupEntregador)?.entregador?.telefone || '—'}</div>
-                  {dados.find((d) => d.entregador.id === popupEntregador)?.localizacao && (
-                    <>
-                      <div className="text-sm">Última posição: {formatDate(dados.find((d) => d.entregador.id === popupEntregador).localizacao.criado_em)}</div>
-                      <div className="text-sm">Velocidade: {dados.find((d) => d.entregador.id === popupEntregador).localizacao.velocidade != null ? `${Number(dados.find((d) => d.entregador.id === popupEntregador).localizacao.velocidade).toFixed(1)} km/h` : '—'}</div>
-                    </>
-                  )}
-                </div>
-              </Popup>
+                entregador={dados.find((d) => d.entregador.id === popupEntregador)}
+                onClose={() => setPopupEntregador(null)}
+              />
             )}
 
             {/* Marcadores das vendas (clientes) */}
