@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import api from '../api/client'
-import { MapContainer, TileLayer, Marker, Popup, Tooltip, CircleMarker, Polyline, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, CircleMarker, Polyline, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import { Topbar } from '../components/Topbar'
 import { Loader, formatDate, formatBRL } from '../components/utils'
@@ -11,16 +11,6 @@ const customIcon = (color = '#6366f1') =>
   L.divIcon({
     className: 'custom-marker',
     html: `<div style="width:34px;height:34px;border-radius:50%;background:${color};border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;">🚚</div>`,
-    iconSize: [34, 34],
-    iconAnchor: [17, 17],
-    popupAnchor: [0, -18],
-  })
-
-// Marker da loja
-const lojaIcon = () =>
-  L.divIcon({
-    className: 'custom-marker',
-    html: `<div style="width:34px;height:34px;border-radius:50%;background:#f59e0b;border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px;">🏪</div>`,
     iconSize: [34, 34],
     iconAnchor: [17, 17],
     popupAnchor: [0, -18],
@@ -94,35 +84,29 @@ function FlyTo({ pos }) {
 // Enquadra múltiplos pontos (entregador + vendas) no mapa
 function FitBounds({ pontos }) {
   const map = useMap()
-  const lastCountRef = useRef(0)
+  const lastRef = useRef(null)
   useEffect(() => {
     if (!pontos || pontos.length === 0) return
-    if (lastCountRef.current === pontos.length) return
-    lastCountRef.current = pontos.length
-    // Delay para garantir que os marcadores já foram renderizados (como no PDV)
-    const timer = setTimeout(() => {
-      try {
-        const bounds = L.latLngBounds(pontos.map((p) => [Number(p[0]), Number(p[1])]))
-        map.invalidateSize()
-        map.fitBounds(bounds, { padding: [70, 70], maxZoom: 17, duration: 1 })
-      } catch { /* ignora bounds inválidos */ }
-    }, 300)
-    return () => clearTimeout(timer)
-  }, [pontos?.length, map])
+    const key = pontos.map((p) => p.map((v) => Number(v).toFixed(6)).join(',')).join('|')
+    if (lastRef.current === key) return
+    lastRef.current = key
+    try {
+      const bounds = L.latLngBounds(pontos.map((p) => [Number(p[0]), Number(p[1])]))
+      map.fitBounds(bounds, { padding: [70, 70], maxZoom: 17, duration: 1 })
+    } catch { /* ignora bounds inválidos */ }
+  }, [pontos, map])
   return null
 }
 
 export function Rastreamento() {
   const [dados, setDados] = useState([])
   const [vendas, setVendas] = useState([])
-  const [loja, setLoja] = useState(null)
   const [rotas, setRotas] = useState([])
   const [rotasVersao, setRotasVersao] = useState(0)
   const [otimizada, setOtimizada] = useState(null)
   const [otimizando, setOtimizando] = useState(false)
   const [otimId, setOtimId] = useState('')
   const [mostrarRotas, setMostrarRotas] = useState(true)
-  const [popupsVisiveis, setPopupsVisiveis] = useState(true)
   const [corRota, setCorRota] = useState('#6366f1')
   const [dashedRota, setDashedRota] = useState(false)
   const [corPorEntregador, setCorPorEntregador] = useState(true)
@@ -205,10 +189,6 @@ export function Rastreamento() {
     load()
     loadVendas()
     loadRotas()
-    // Carrega coordenadas da loja
-    api.get("/vendas/loja").then(({ data }) => {
-      if (data.dados && data.dados.lat != null && data.dados.lng != null) setLoja(data.dados)
-    }).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -233,14 +213,10 @@ export function Rastreamento() {
   })()
 
   const statusOnline = (d) => {
-    if (!d.localizacao || !d.localizacao.criado_em) return false
+    if (!d.localizacao) return false
     try {
-      let s = d.localizacao.criado_em
-      if (typeof s === 'string' && !s.endsWith('Z') && !/[+-]\\d{2}:?\\d{2}$/.test(s)) {
-        s = s.replace(' ', 'T') + 'Z'
-      }
-      const criado = new Date(s)
-      return (Date.now() - criado.getTime()) < 2 * 60 * 1000
+      const criado = new Date(d.localizacao.criado_em)
+      return (Date.now() - criado.getTime()) < 5 * 60 * 1000
     } catch {
       return false
     }
@@ -299,13 +275,6 @@ export function Rastreamento() {
               />
               <span className="text-sm" style={{ fontWeight: 600 }}>Mostrar rotas</span>
             </label>
-
-            <button
-              onClick={() => setPopupsVisiveis((v) => !v)}
-              style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border, #ccc)', background: 'transparent', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
-            >
-              {popupsVisiveis ? 'Ocultar nomes' : 'Mostrar nomes'}
-            </button>
 
             {mostrarRotas && (
               <>
@@ -418,7 +387,6 @@ export function Rastreamento() {
             key={`map-r-${rotasVersao}`}
             center={centro}
             zoom={14}
-            zoomControl={true}
             scrollWheelZoom
             style={{ height: 'calc(100vh - 220px)', minHeight: 520, width: '100%' }}
           >
@@ -437,30 +405,7 @@ export function Rastreamento() {
                 ]}
               />
             ) : (
-              <FitBounds
-                pontos={[
-                  ...comLocalizacao.map((d) => [parseFloat(d.localizacao.lat), parseFloat(d.localizacao.lng)]),
-                  ...vendasComLocalizacao.map((v) => [parseFloat(v.lat), parseFloat(v.lng)]),
-                  ...(loja && loja.lat != null && loja.lng != null ? [[parseFloat(loja.lat), parseFloat(loja.lng)]] : []),
-                  ...rotas.flatMap((r) => (r.destinos || []).filter((d) => d.lat != null && d.lng != null).map((d) => [parseFloat(d.lat), parseFloat(d.lng)])),
-                ]}
-              />
-            )}
-
-            {/* Marker da loja */}
-            {loja && loja.lat != null && loja.lng != null && (
-              <Marker position={[parseFloat(loja.lat), parseFloat(loja.lng)]} icon={lojaIcon()}>
-                {popupsVisiveis && <Tooltip permanent direction="top" offset={[0, -18]}>
-                  Loja
-                </Tooltip>}
-                <Popup>
-                  <div style={{ fontSize: 12 }}>
-                    <strong>Loja</strong>
-                    {loja.endereco ? <div>{loja.endereco}</div> : null}
-                    {loja.cidade ? <div>{loja.cidade}{loja.uf ? `/${loja.uf}` : ''}</div> : null}
-                  </div>
-                </Popup>
-              </Marker>
+              <FlyTo pos={alvo} />
             )}
 
             {/* Marcadores das vendas (clientes) */}
@@ -474,9 +419,6 @@ export function Rastreamento() {
                   icon={vendaIcon()}
                   eventHandlers={{ click: () => setSelecionadoId(null) }}
                 >
-                  {popupsVisiveis && <Tooltip permanent direction="top" offset={[0, -16]}>
-                    {v.cliente}
-                  </Tooltip>}
                   <Popup>
                     <div style={{ minWidth: 220, maxWidth: 280, fontSize: 12, lineHeight: 1.5 }}>
                       <div className="row space-between" style={{ gap: 10, alignItems: 'baseline' }}>
@@ -525,9 +467,6 @@ export function Rastreamento() {
                     icon={customIcon(cor)}
                     aberto={selecionadoId === d.entregador.id}
                   >
-                    {popupsVisiveis && <Tooltip permanent direction="top" offset={[0, -18]}>
-                      {d.entregador.nome}
-                    </Tooltip>}
                     <Popup>
                       <div style={{ minWidth: 180 }}>
                         <strong>{d.entregador.nome}</strong>
@@ -543,27 +482,6 @@ export function Rastreamento() {
                 </div>
               )
             })}
-
-            {/* Entregas (destinos) sempre visíveis no mapa, mesmo sem entregador localizado */}
-            {(!otimizada || otimizada.erro) &&
-              rotas.flatMap((rota) => (rota.destinos || []).filter((d) => d.lat != null && d.lng != null)).map((dest, i) => {
-                const dlat = parseFloat(dest.lat)
-                const dlng = parseFloat(dest.lng)
-                return (
-                  <Marker key={`entrega-${dest.entrega_id ?? dest.pedido_id}-${i}`} position={[dlat, dlng]} icon={destinoIcon()}>
-                    {popupsVisiveis && <Tooltip permanent direction="top" offset={[0, -15]}>
-                      {dest.cliente || 'Entrega'}
-                    </Tooltip>}
-                    <Popup>
-                      <div style={{ fontSize: 12 }}>
-                        <strong>{dest.cliente || 'Entrega'}</strong>
-                        {dest.endereco ? <div>{dest.endereco}{dest.cidade ? ` — ${dest.cidade}` : ''}{dest.uf ? `/${dest.uf}` : ''}</div> : null}
-                        <div className="text-muted">Status: {dest.status || 'pendente'}</div>
-                      </div>
-                    </Popup>
-                  </Marker>
-                )
-              })}
 
             {/* Rotas: liga cada entregador às suas entregas geolocalizadas.
                 Escondidas enquanto a otimizada está ativa (evita duplicar). */}
