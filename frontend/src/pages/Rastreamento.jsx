@@ -528,9 +528,6 @@ export function Rastreamento() {
                     <Popup>
                       <div style={{ minWidth: 180 }}>
                         <strong>{d.entregador.nome}</strong>
-                        <div className="text-sm" style={{ color: online ? 'var(--success)' : 'var(--danger)' }}>
-                          {online ? '● Online' : '● Offline'}
-                        </div>
                         <div className="text-sm">Telefone: {d.entregador.telefone || '—'}</div>
                         <div className="text-sm">Última posição: {formatDate(loc.criado_em)}</div>
                         <div className="text-sm">Lat: {lat.toFixed(6)} / Lng: {lng.toFixed(6)}</div>
