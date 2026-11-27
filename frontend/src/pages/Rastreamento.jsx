@@ -122,6 +122,7 @@ export function Rastreamento() {
   const [otimizando, setOtimizando] = useState(false)
   const [otimId, setOtimId] = useState('')
   const [mostrarRotas, setMostrarRotas] = useState(true)
+  const [popupsVisiveis, setPopupsVisiveis] = useState(true)
   const [corRota, setCorRota] = useState('#6366f1')
   const [dashedRota, setDashedRota] = useState(false)
   const [corPorEntregador, setCorPorEntregador] = useState(true)
@@ -299,6 +300,13 @@ export function Rastreamento() {
               <span className="text-sm" style={{ fontWeight: 600 }}>Mostrar rotas</span>
             </label>
 
+            <button
+              onClick={() => setPopupsVisiveis((v) => !v)}
+              style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border, #ccc)', background: 'transparent', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
+            >
+              {popupsVisiveis ? 'Ocultar nomes' : 'Mostrar nomes'}
+            </button>
+
             {mostrarRotas && (
               <>
                 <label className="row" style={{ gap: 6, cursor: 'pointer' }}>
@@ -442,9 +450,9 @@ export function Rastreamento() {
             {/* Marker da loja */}
             {loja && loja.lat != null && loja.lng != null && (
               <Marker position={[parseFloat(loja.lat), parseFloat(loja.lng)]} icon={lojaIcon()}>
-                <Tooltip permanent direction="top" offset={[0, -18]}>
+                {popupsVisiveis && <Tooltip permanent direction="top" offset={[0, -18]}>
                   Loja
-                </Tooltip>
+                </Tooltip>}
                 <Popup>
                   <div style={{ fontSize: 12 }}>
                     <strong>Loja</strong>
@@ -466,9 +474,9 @@ export function Rastreamento() {
                   icon={vendaIcon()}
                   eventHandlers={{ click: () => setSelecionadoId(null) }}
                 >
-                  <Tooltip permanent direction="top" offset={[0, -16]}>
+                  {popupsVisiveis && <Tooltip permanent direction="top" offset={[0, -16]}>
                     {v.cliente}
-                  </Tooltip>
+                  </Tooltip>}
                   <Popup>
                     <div style={{ minWidth: 220, maxWidth: 280, fontSize: 12, lineHeight: 1.5 }}>
                       <div className="row space-between" style={{ gap: 10, alignItems: 'baseline' }}>
@@ -517,9 +525,9 @@ export function Rastreamento() {
                     icon={customIcon(cor)}
                     aberto={selecionadoId === d.entregador.id}
                   >
-                    <Tooltip permanent direction="top" offset={[0, -18]}>
+                    {popupsVisiveis && <Tooltip permanent direction="top" offset={[0, -18]}>
                       {d.entregador.nome}
-                    </Tooltip>
+                    </Tooltip>}
                     <Popup>
                       <div style={{ minWidth: 180 }}>
                         <strong>{d.entregador.nome}</strong>
@@ -543,9 +551,9 @@ export function Rastreamento() {
                 const dlng = parseFloat(dest.lng)
                 return (
                   <Marker key={`entrega-${dest.entrega_id ?? dest.pedido_id}-${i}`} position={[dlat, dlng]} icon={destinoIcon()}>
-                    <Tooltip permanent direction="top" offset={[0, -15]}>
+                    {popupsVisiveis && <Tooltip permanent direction="top" offset={[0, -15]}>
                       {dest.cliente || 'Entrega'}
-                    </Tooltip>
+                    </Tooltip>}
                     <Popup>
                       <div style={{ fontSize: 12 }}>
                         <strong>{dest.cliente || 'Entrega'}</strong>
