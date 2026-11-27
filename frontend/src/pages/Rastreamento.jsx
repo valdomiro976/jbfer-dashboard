@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import api from '../api/client'
-import { MapContainer, TileLayer, Marker, Popup, CircleMarker, Polyline, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, Tooltip, CircleMarker, Polyline, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import { Topbar } from '../components/Topbar'
 import { Loader, formatDate, formatBRL } from '../components/utils'
@@ -419,6 +419,9 @@ export function Rastreamento() {
                   icon={vendaIcon()}
                   eventHandlers={{ click: () => setSelecionadoId(null) }}
                 >
+                  <Tooltip permanent direction="top" offset={[0, -16]}>
+                    {v.cliente}
+                  </Tooltip>
                   <Popup>
                     <div style={{ minWidth: 220, maxWidth: 280, fontSize: 12, lineHeight: 1.5 }}>
                       <div className="row space-between" style={{ gap: 10, alignItems: 'baseline' }}>
@@ -467,6 +470,9 @@ export function Rastreamento() {
                     icon={customIcon(cor)}
                     aberto={selecionadoId === d.entregador.id}
                   >
+                    <Tooltip permanent direction="top" offset={[0, -18]}>
+                      {d.entregador.nome}
+                    </Tooltip>
                     <Popup>
                       <div style={{ minWidth: 180 }}>
                         <strong>{d.entregador.nome}</strong>
@@ -512,6 +518,9 @@ export function Rastreamento() {
                           pathOptions={{ color: rotaCor, weight: 3, opacity: 0.8, dashArray: dashedRota ? '6 8' : undefined }}
                         />
                         <Marker position={[dlat, dlng]} icon={destinoIcon()}>
+                          <Tooltip permanent direction="top" offset={[0, -15]}>
+                            {dest.cliente || 'Entrega'}{dest.distancia_loja_km != null ? ` - ${dest.distancia_loja_km} km` : ''}
+                          </Tooltip>
                           <Popup>
                             <div style={{ fontSize: 12 }}>
                               <strong>{dest.cliente || 'Entrega'}</strong>

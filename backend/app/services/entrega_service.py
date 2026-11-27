@@ -432,6 +432,17 @@ def listar_rotas(cnpj: str) -> list[dict]:
     entregadores = listar_entregadores(cnpj)
     entregas = listar_entregas(cnpj)  # todas, para associar por entregador
 
+    # Coordenadas da loja (para distancia)
+    loja_lat, loja_lng = None, None
+    try:
+        from app.services.vendas_service import obter_loja
+        loja = obter_loja(cnpj)
+        if loja:
+            loja_lat = loja.get("lat")
+            loja_lng = loja.get("lng")
+    except Exception:
+        pass
+
     rotas = []
     for e in entregadores:
         loc = obter_ultima_localizacao(cnpj, e["id"])
@@ -456,6 +467,10 @@ def listar_rotas(cnpj: str) -> list[dict]:
             rota = []
             if origem and destino["lat"] is not None and destino["lng"] is not None:
                 rota = _rota_pontos(origem, destino)
+            # Distancia da loja
+            distancia_loja = None
+            if loja_lat is not None and loja_lng is not None and destino["lat"] is not None and destino["lng"] is not None:
+                distancia_loja = round(haversine_km(loja_lat, loja_lng, destino["lat"], destino["lng"]), 2)
             destinos.append({
                 "entrega_id": en.get("id"),
                 "pedido_id": en.get("pedido_id"),
@@ -469,6 +484,7 @@ def listar_rotas(cnpj: str) -> list[dict]:
                 "lat": destino["lat"],
                 "lng": destino["lng"],
                 "rota": rota,
+                "distancia_loja_km": distancia_loja,
             })
         rotas.append({
             "entregador": e,
