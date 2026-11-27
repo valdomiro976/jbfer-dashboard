@@ -425,9 +425,7 @@ export function Rastreamento() {
                     .map((d) => [parseFloat(d.lat), parseFloat(d.lng)]) || []),
                 ]}
               />
-            ) : (
-              <FlyTo pos={alvo} />
-            )}
+            ) : null}
 
             {/* Marker da loja */}
             {loja && loja.lat != null && loja.lng != null && (
