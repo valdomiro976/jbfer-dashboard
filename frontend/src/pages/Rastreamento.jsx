@@ -444,7 +444,6 @@ export function Rastreamento() {
                     <>
                       <div className="text-sm">Última posição: {formatDate(dados.find((d) => d.entregador.id === selecionadoId).localizacao.criado_em)}</div>
                       <div className="text-sm">Velocidade: {dados.find((d) => d.entregador.id === selecionadoId).localizacao.velocidade != null ? `${Number(dados.find((d) => d.entregador.id === selecionadoId).localizacao.velocidade).toFixed(1)} km/h` : '—'}</div>
-                      <div className="text-sm">Lat: {parseFloat(dados.find((d) => d.entregador.id === selecionadoId).localizacao.lat).toFixed(6)} / Lng: {parseFloat(dados.find((d) => d.entregador.id === selecionadoId).localizacao.lng).toFixed(6)}</div>
                     </>
                   )}
                 </div>
