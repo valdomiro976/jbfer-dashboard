@@ -517,6 +517,7 @@ export function Rastreamento() {
                     pathOptions={{ color: cor, fillColor: cor, fillOpacity: 0.15, weight: 2 }}
                   />
                   <AutoOpenMarker
+                    key={`ent-${d.entregador.id}-${statusOnline(d)}`}
                     position={[lat, lng]}
                     icon={customIcon(cor)}
                     aberto={selecionadoId === d.entregador.id}
