@@ -515,6 +515,24 @@ export function Rastreamento() {
               )
             })}
 
+            {/* Entregas (destinos) sempre visíveis no mapa, mesmo sem entregador localizado */}
+            {(!otimizada || otimizada.erro) &&
+              rotas.flatMap((rota) => (rota.destinos || []).filter((d) => d.lat != null && d.lng != null)).map((dest, i) => {
+                const dlat = parseFloat(dest.lat)
+                const dlng = parseFloat(dest.lng)
+                return (
+                  <Marker key={`entrega-${dest.entrega_id ?? dest.pedido_id}-${i}`} position={[dlat, dlng]} icon={destinoIcon()}>
+                    <Popup>
+                      <div style={{ fontSize: 12 }}>
+                        <strong>{dest.cliente || 'Entrega'}</strong>
+                        {dest.endereco ? <div>{dest.endereco}{dest.cidade ? ` — ${dest.cidade}` : ''}{dest.uf ? `/${dest.uf}` : ''}</div> : null}
+                        <div className="text-muted">Status: {dest.status || 'pendente'}</div>
+                      </div>
+                    </Popup>
+                  </Marker>
+                )
+              })}
+
             {/* Rotas: liga cada entregador às suas entregas geolocalizadas.
                 Escondidas enquanto a otimizada está ativa (evita duplicar). */}
             {mostrarRotas && (!otimizada || otimizada.erro) &&
