@@ -516,7 +516,7 @@ export function Rastreamento() {
                         </div>
                         <div className="text-sm">Telefone: {d.entregador.telefone || '—'}</div>
                         <div className="text-sm">Última posição: {formatDate(loc.criado_em)}</div>
-                        <div className="text-sm">Lat: {lat.toFixed(6)} / Lng: {lng.toFixed(6)}</div>
+                        <div className="text-sm">Velocidade: {loc.velocidade != null ? `${Number(loc.velocidade).toFixed(1)} km/h` : '—'}</div>
                       </div>
                     </Popup>
                   </AutoOpenMarker>
