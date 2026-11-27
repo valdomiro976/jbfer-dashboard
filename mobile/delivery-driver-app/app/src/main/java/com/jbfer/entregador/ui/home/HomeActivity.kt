@@ -17,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.jbfer.entregador.databinding.ActivityHomeBinding
+import com.jbfer.entregador.data.api.SessionManager
 import com.jbfer.entregador.R
 import com.jbfer.entregador.services.LocationTrackingService
 import com.jbfer.entregador.ui.tasks.TasksFragment
