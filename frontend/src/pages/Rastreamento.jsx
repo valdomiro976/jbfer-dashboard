@@ -221,7 +221,12 @@ export function Rastreamento() {
     if (!selecionadoId) return
     const marker = markerRefs.current[selecionadoId]
     if (marker) {
-      setTimeout(() => marker.openPopup(), 300)
+      setTimeout(() => {
+        try {
+          if (marker.marker) marker.marker.openPopup()
+          else if (marker.openPopup) marker.openPopup()
+        } catch (e) { console.error('Erro ao abrir popup:', e) }
+      }, 300)
     }
   }, [selecionadoId])
 
