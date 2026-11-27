@@ -429,19 +429,7 @@ export function Rastreamento() {
               url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             />
-            {alvo && selecionadoId != null ? (
-              <FitBounds
-                pontos={[
-                  alvo,
-                  ...(rotas
-                    .find((r) => r.entregador.id === selecionadoId)
-                    ?.destinos?.filter((d) => d.lat != null && d.lng != null)
-                    .map((d) => [parseFloat(d.lat), parseFloat(d.lng)]) || []),
-                ]}
-              />
-            ) : (
-              <FlyTo pos={alvo} />
-            )}
+            {null}
 
             {/* Popup do entregador selecionado no menu */}
             {null}
