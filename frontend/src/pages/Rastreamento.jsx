@@ -519,19 +519,7 @@ export function Rastreamento() {
                         />
                         <Marker position={[dlat, dlng]} icon={destinoIcon()}>
                           <Tooltip permanent direction="top" offset={[0, -15]}>
-                            {dest.cliente || 'Entrega'}{(() => {
-                              const km = dest.distancia_loja_km != null ? dest.distancia_loja_km
-                                : (loja && loja.lat != null && loja.lng != null && dest.lat != null && dest.lng != null
-                                    ? (function() {
-                                        const R = 6371
-                                        const dLat = (parseFloat(dest.lat) - parseFloat(loja.lat)) * Math.PI / 180
-                                        const dLng = (parseFloat(dest.lng) - parseFloat(loja.lng)) * Math.PI / 180
-                                        const a = Math.sin(dLat/2)**2 + Math.cos(parseFloat(loja.lat)*Math.PI/180) * Math.cos(parseFloat(dest.lat)*Math.PI/180) * Math.sin(dLng/2)**2
-                                        return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))).toFixed(1)
-                                      })()
-                                    : null)
-                              return km != null ? ` - ${km} km` : ''
-                            })()}
+                            {dest.cliente || 'Entrega'}{dest.distancia_loja_km != null ? ` - ${dest.distancia_loja_km} km` : ''}
                           </Tooltip>
                           <Popup>
                             <div style={{ fontSize: 12 }}>
