@@ -436,9 +436,16 @@ export function Rastreamento() {
               <Popup position={alvo} autoOpen={true}>
                 <div style={{ minWidth: 180 }}>
                   <strong>{dados.find((d) => d.entregador.id === selecionadoId)?.entregador?.nome}</strong>
+                  <div className="text-sm" style={{ color: statusOnline(dados.find((d) => d.entregador.id === selecionadoId)) ? 'var(--success)' : 'var(--danger)' }}>
+                    {statusOnline(dados.find((d) => d.entregador.id === selecionadoId)) ? '● Online' : '● Offline'}
+                  </div>
                   <div className="text-sm">Telefone: {dados.find((d) => d.entregador.id === selecionadoId)?.entregador?.telefone || '—'}</div>
                   {dados.find((d) => d.entregador.id === selecionadoId)?.localizacao && (
-                    <div className="text-sm">Última posição: {formatDate(dados.find((d) => d.entregador.id === selecionadoId).localizacao.criado_em)}</div>
+                    <>
+                      <div className="text-sm">Última posição: {formatDate(dados.find((d) => d.entregador.id === selecionadoId).localizacao.criado_em)}</div>
+                      <div className="text-sm">Velocidade: {dados.find((d) => d.entregador.id === selecionadoId).localizacao.velocidade != null ? `${Number(dados.find((d) => d.entregador.id === selecionadoId).localizacao.velocidade).toFixed(1)} km/h` : '—'}</div>
+                      <div className="text-sm">Lat: {parseFloat(dados.find((d) => d.entregador.id === selecionadoId).localizacao.lat).toFixed(6)} / Lng: {parseFloat(dados.find((d) => d.entregador.id === selecionadoId).localizacao.lng).toFixed(6)}</div>
+                    </>
                   )}
                 </div>
               </Popup>
