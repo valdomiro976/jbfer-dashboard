@@ -130,12 +130,12 @@ export function Sidebar() {
   }
 
   useEffect(() => {
-    if (!collapsed && entregAberto) {
+    if (!collapsed) {
       loadEntregadores()
       const interval = setInterval(loadEntregadores, 10000)
       return () => clearInterval(interval)
     }
-  }, [collapsed, entregAberto])
+  }, [collapsed])
 
   useEffect(() => {
     if (!collapsed && vendasAberto && !vendasCarregadas) loadVendas()
