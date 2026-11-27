@@ -129,6 +129,7 @@ export function Rastreamento() {
   const [atualizado, setAtualizado] = useState(null)
   const [autoRefresh, setAutoRefresh] = useState(true)
   const intervalRef = useRef(null)
+  const markerRefs = useRef({})
   const [searchParams, setSearchParams] = useSearchParams()
 
   useEffect(() => {
@@ -214,6 +215,15 @@ export function Rastreamento() {
       return () => clearInterval(intervalRef.current)
     }
   }, [autoRefresh])
+
+  // Abre o popup do entregador selecionado no menu
+  useEffect(() => {
+    if (!selecionadoId) return
+    const marker = markerRefs.current[selecionadoId]
+    if (marker) {
+      setTimeout(() => marker.openPopup(), 300)
+    }
+  }, [selecionadoId])
 
   const comLocalizacao = dados.filter((d) => d.localizacao)
 
@@ -485,11 +495,12 @@ export function Rastreamento() {
                     radius={18}
                     pathOptions={{ color: cor, fillColor: cor, fillOpacity: 0.15, weight: 2 }}
                   />
-                  <AutoOpenMarker
-                    key={`ent-${d.entregador.id}-${statusOnline(d)}`}
+                  <Marker
+                    key={`ent-${d.entregador.id}`}
                     position={[lat, lng]}
                     icon={customIcon(cor)}
-                    aberto={selecionadoId === d.entregador.id}
+                    ref={(m) => { if (m) markerRefs.current[d.entregador.id] = m }}
+                    eventHandlers={{ click: () => setSelecionadoId(d.entregador.id) }}
                   >
                     <Tooltip permanent direction="top" offset={[0, -18]}>
                       {d.entregador.nome} {statusOnline(d) ? '●' : '○'}
@@ -505,7 +516,7 @@ export function Rastreamento() {
                         <div className="text-sm">Velocidade: {loc.velocidade != null ? `${Number(loc.velocidade).toFixed(1)} km/h` : '—'}</div>
                       </div>
                     </Popup>
-                  </AutoOpenMarker>
+                  </Marker>
                 </div>
               )
             })}
