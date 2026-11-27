@@ -100,10 +100,14 @@ function FitBounds({ pontos }) {
     const key = pontos.map((p) => p.map((v) => Number(v).toFixed(6)).join(',')).join('|')
     if (lastRef.current === key) return
     lastRef.current = key
-    try {
-      const bounds = L.latLngBounds(pontos.map((p) => [Number(p[0]), Number(p[1])]))
-      map.fitBounds(bounds, { padding: [70, 70], maxZoom: 17, duration: 1 })
-    } catch { /* ignora bounds inválidos */ }
+    const timer = setTimeout(() => {
+      try {
+        map.invalidateSize()
+        const bounds = L.latLngBounds(pontos.map((p) => [Number(p[0]), Number(p[1])]))
+        map.fitBounds(bounds, { padding: [70, 70], maxZoom: 17, duration: 1 })
+      } catch { /* ignora bounds inválidos */ }
+    }, 300)
+    return () => clearTimeout(timer)
   }, [pontos, map])
   return null
 }
