@@ -96,6 +96,7 @@ object SessionManager {
     }
 
     fun save(token: String, nome: String, cnpj: String, telefone: String = "", senha: String = "") {
+        prefs.edit().remove(KEY_LOGGED_OUT).apply()
         Log.d("SessionManager", "Salvando login: cnpj=$cnpj tel=$telefone senhaLen=${senha.length}")
         prefs.edit()
             .putString(KEY_TOKEN, token)
@@ -113,6 +114,13 @@ object SessionManager {
     fun getTelefone(): String? = prefs.getString(KEY_TELEFONE, null)
     fun getSenha(): String? = prefs.getString(KEY_SENHA, null)
     fun isLoggedIn(): Boolean = getToken() != null
+    fun isLoggedOut(): Boolean = prefs.getBoolean(KEY_LOGGED_OUT, false)
+    fun clearLoggedOut() {
+        prefs.edit().remove(KEY_LOGGED_OUT).apply()
+    }
+    fun setLoggedOut(value: Boolean) {
+        prefs.edit().putBoolean(KEY_LOGGED_OUT, value).apply()
+    }
     fun isTokenExpired(): Boolean {
         val token = getToken() ?: return true
         return try {

@@ -54,7 +54,7 @@ class LocationTrackingService : Service() {
         }
         startForeground(NOTIFICATION_ID, buildNotification())
         startTracking()
-        return START_STICKY
+        return START_NOT_STICKY
     }
 
     private fun startTracking() {
@@ -73,7 +73,7 @@ class LocationTrackingService : Service() {
     }
 
     private fun enviarLocalizacao(lat: Double, lng: Double, precisao: Float, velocidade: Float) {
-        if (!SessionManager.isLoggedIn()) {
+        if (SessionManager.isLoggedOut() || !SessionManager.isLoggedIn()) {
             stopSelf()
             return
         }
