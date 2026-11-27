@@ -2,6 +2,7 @@
 
 import json
 import re
+import requests
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -593,6 +594,49 @@ def coordenadas_cliente(
                         f"UPDATE `tb_clientes_{c}` SET lat=%s, lng=%s WHERE whatsapp=%s",
                         (lat, lng, cliente_whatsapp),
                     )
+                    # Reverse geocoding: se o cliente nao tem endereco, preenche via coordenadas
+                    cur.execute(
+                        f"SELECT endereco, cidade, uf, cep FROM `tb_clientes_{c}` WHERE whatsapp=%s",
+                        (cliente_whatsapp,),
+                    )
+                    cli = cur.fetchone()
+                    if cli and not (cli.get("endereco") or "").strip():
+                        try:
+                            r = requests.get(
+                                "https://nominatim.openstreetmap.org/reverse",
+                                params={"lat": lat, "lon": lng, "format": "json", "addressdetails": 1},
+                                headers={"User-Agent": "JBFER-Dashboard/1.0"},
+                                timeout=10,
+                            )
+                            if r.status_code == 200:
+                                data = r.json()
+                                addr = data.get("address", {}) or {}
+                                road = addr.get("road") or addr.get("street") or ""
+                                suburb = addr.get("suburb") or addr.get("neighbourhood") or ""
+                                city = addr.get("city") or addr.get("town") or addr.get("village") or ""
+                                state = addr.get("state") or ""
+                                postcode = addr.get("postcode") or ""
+                                endereco = ", ".join([p for p in [road, suburb] if p]).strip()
+                                uf = ""
+                                # Map state name to UF (simplificado)
+                                uf_map = {
+                                    "São Paulo": "SP", "Rio de Janeiro": "RJ", "Minas Gerais": "MG",
+                                    "Paraná": "PR", "Santa Catarina": "SC", "Rio Grande do Sul": "RS",
+                                    "Bahia": "BA", "Goiás": "GO", "Pernambuco": "PE", "Ceará": "CE",
+                                    "Pará": "PA", "Maranhão": "MA", "Mato Grosso": "MT",
+                                    "Mato Grosso do Sul": "MS", "Espírito Santo": "ES", "Rio Grande do Norte": "RN",
+                                    "Paraíba": "PB", "Alagoas": "AL", "Sergipe": "SE", "Piauí": "PI",
+                                    "Tocantins": "TO", "Rondônia": "RO", "Acre": "AC", "Amazonas": "AM",
+                                    "Roraima": "RR", "Amapá": "AP", "Distrito Federal": "DF",
+                                }
+                                uf = uf_map.get(state, state[:2].upper() if state else "")
+                                if endereco or city:
+                                    cur.execute(
+                                        f"UPDATE `tb_clientes_{c}` SET endereco=%s, cidade=%s, uf=%s, cep=%s WHERE whatsapp=%s",
+                                        (endereco or None, city or None, uf or None, postcode or None, cliente_whatsapp),
+                                    )
+                        except Exception:
+                            pass
                 except Exception:
                     pass
 
