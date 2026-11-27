@@ -673,10 +673,6 @@ def enviar_localizacao(
                 f"INSERT INTO `tb_localizacao_{c}` (entregador_id, lat, lng, precisao, velocidade, criado_em) VALUES (%s, %s, %s, %s, %s, NOW())",
                 (ctx["entregador_id"], float(lat), float(lng), precisao, velocidade),
             )
-            # Mantém apenas os registros da última semana
-            cur.execute(
-                f"DELETE FROM `tb_localizacao_{c}` WHERE criado_em < (NOW() - INTERVAL 7 DAY)"
-            )
             conn.commit()
             return {"sucesso": True, "mensagem": "Localização registrada"}
         finally:

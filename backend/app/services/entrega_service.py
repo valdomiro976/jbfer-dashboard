@@ -297,10 +297,6 @@ def salvar_localizacao(cnpj: str, entregador_id: int, lat: float, lng: float) ->
                 f"INSERT INTO `tb_localizacao_{c}` (entregador_id, lat, lng, precisao, velocidade, criado_em) VALUES (%s, %s, %s, %s, %s, %s)",
                 (entregador_id, lat, lng, None, None, now),
             )
-            # Mantém apenas os registros da última semana
-            cursor.execute(
-                f"DELETE FROM `tb_localizacao_{c}` WHERE criado_em < (NOW() - INTERVAL 7 DAY)"
-            )
             conn.commit()
             return {"entregador_id": entregador_id, "lat": lat, "lng": lng, "criado_em": now.isoformat()}
         finally:
@@ -343,6 +339,17 @@ def listar_localizacoes(cnpj: str) -> list[dict]:
 
     c = _cnpj_limpo(cnpj)
     _garantir_tabelas(cnpj)
+    # Limpeza de registros antigos (ultima semana) - best effort, ignora deadlocks
+    try:
+        with connection() as conn:
+            cur = conn.cursor()
+            try:
+                cur.execute(f"DELETE FROM `tb_localizacao_{c}` WHERE criado_em < (NOW() - INTERVAL 7 DAY)")
+                conn.commit()
+            finally:
+                cur.close()
+    except Exception:
+        pass
     entregadores = listar_entregadores(cnpj)
     result = []
     for e in entregadores:
