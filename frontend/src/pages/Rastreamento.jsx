@@ -77,6 +77,31 @@ function AutoOpenMarker({ position, icon, aberto, children }) {
   )
 }
 
+function OpenPopupOnSelect({ selecionadoId, dados }) {
+  const map = useMap()
+  const lastId = useRef(null)
+  useEffect(() => {
+    if (!selecionadoId || lastId.current === selecionadoId) return
+    lastId.current = selecionadoId
+    const d = dados.find((dd) => dd.entregador.id === selecionadoId && dd.localizacao)
+    if (!d) return
+    const pos = [parseFloat(d.localizacao.lat), parseFloat(d.localizacao.lng)]
+    const nome = d.entregador.nome
+    const tel = d.entregador.telefone || '—'
+    const loc = d.localizacao
+    const status = loc ? (statusOnline(d) ? '● Online' : '● Offline') : ''
+    const ultima = loc ? formatDate(loc.criado_em) : ''
+    const vel = loc && loc.velocidade != null ? `${Number(loc.velocidade).toFixed(1)} km/h` : '—'
+    const html = `<div style="min-width:180px"><strong>${nome}</strong>${status ? `<div style="font-size:12px;margin:2px 0;color:${status.includes('Online') ? '#34d399' : '#f87171'}">${status}</div>` : ''}<div style="font-size:12px">Telefone: ${tel}</div>${ultima ? `<div style="font-size:12px">Última posição: ${ultima}</div>` : ''}<div style="font-size:12px">Velocidade: ${vel}</div></div>`
+    const popup = L.popup({ autoClose: true, closeOnClick: true })
+    popup.setContent(html)
+    setTimeout(() => {
+      try { map.openPopup(popup, pos) } catch (e) { console.error(e) }
+    }, 300)
+  }, [selecionadoId, dados, map])
+  return null
+}
+
 // Centraliza o mapa na posição do entregador selecionado (só quando muda)
 function FlyTo({ pos, selecionadoId }) {
   const map = useMap()
@@ -425,6 +450,7 @@ export function Rastreamento() {
             scrollWheelZoom
             style={{ height: 'calc(100vh - 220px)', minHeight: 520, width: '100%' }}
           >
+            <OpenPopupOnSelect selecionadoId={selecionadoId} dados={dados} />
             <TileLayer
               url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
