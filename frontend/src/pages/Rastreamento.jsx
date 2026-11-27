@@ -424,13 +424,7 @@ export function Rastreamento() {
                 ]}
               />
             ) : (
-              <FitBounds
-                pontos={[
-                  ...comLocalizacao.map((d) => [parseFloat(d.localizacao.lat), parseFloat(d.localizacao.lng)]),
-                  ...vendasComLocalizacao.map((v) => [parseFloat(v.lat), parseFloat(v.lng)]),
-                  ...(loja && loja.lat != null && loja.lng != null ? [[parseFloat(loja.lat), parseFloat(loja.lng)]] : []),
-                ]}
-              />
+              <FlyTo pos={alvo} />
             )}
 
             {/* Marker da loja */}
