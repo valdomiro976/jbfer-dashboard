@@ -220,6 +220,10 @@ export function Rastreamento() {
 
   // Centro do mapa: definido uma vez (na primeira carga), não muda depois
   const centroRef = useRef(null)
+  // Atualiza o centro quando a loja carrega (se ainda não foi definido ou era fallback)
+  if (loja && loja.lat != null && loja.lng != null && (!centroRef.current || centroRef.current[0] === -23.5505)) {
+    centroRef.current = [parseFloat(loja.lat), parseFloat(loja.lng)]
+  }
   if (!centroRef.current) {
     if (comLocalizacao.length > 0) {
       const loc = comLocalizacao[0].localizacao
