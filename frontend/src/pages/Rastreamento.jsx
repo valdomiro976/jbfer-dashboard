@@ -218,17 +218,19 @@ export function Rastreamento() {
 
   const comLocalizacao = dados.filter((d) => d.localizacao)
 
-  // Centro do mapa: prioriza entregadores, senão vendas, senão padrão
-  const centro = (() => {
+  // Centro do mapa: definido uma vez (na primeira carga), não muda depois
+  const centroRef = useRef(null)
+  if (!centroRef.current) {
     if (comLocalizacao.length > 0) {
       const loc = comLocalizacao[0].localizacao
-      return [parseFloat(loc.lat), parseFloat(loc.lng)]
+      centroRef.current = [parseFloat(loc.lat), parseFloat(loc.lng)]
+    } else if (vendas.length > 0) {
+      centroRef.current = [parseFloat(vendas[0].lat), parseFloat(vendas[0].lng)]
+    } else {
+      centroRef.current = [-23.5505, -46.6333]
     }
-    if (vendas.length > 0) {
-      return [parseFloat(vendas[0].lat), parseFloat(vendas[0].lng)]
-    }
-    return [-23.5505, -46.6333] // São Paulo (padrão)
-  })()
+  }
+  const centro = centroRef.current
 
   const statusOnline = (d) => {
     if (!d.localizacao) return false
@@ -403,7 +405,7 @@ export function Rastreamento() {
         <div className="card map-card">
           <MapContainer
             key={`map-r-${rotasVersao}`}
-            center={[-23.5505, -46.6333]}
+            center={centro}
             zoom={14}
             scrollWheelZoom
             style={{ height: 'calc(100vh - 220px)', minHeight: 520, width: '100%' }}
