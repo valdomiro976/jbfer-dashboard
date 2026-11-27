@@ -57,22 +57,27 @@ const destinoIcon = () =>
   })
 
 // Marker que abre o popup automaticamente quando "aberto" é true
-function AutoOpenMarker({ position, icon, aberto, children }) {
+function AutoOpenMarker({ position, icon, aberto, onOpen, children }) {
   const ref = useRef(null)
-  const opened = useRef(false)
   useEffect(() => {
-    if (!aberto) { opened.current = false; return }
-    if (opened.current) return
+    if (!aberto) return
     const tries = setInterval(() => {
       if (ref.current) {
         clearInterval(tries)
-        opened.current = true
         try { ref.current.openPopup() } catch (e) { console.error(e) }
       }
     }, 120)
     const stop = setTimeout(() => clearInterval(tries), 8000)
     return () => { clearInterval(tries); clearTimeout(stop) }
   }, [aberto])
+  // Reset when popup closes
+  useEffect(() => {
+    const marker = ref.current
+    if (!marker) return
+    const handler = () => { if (onOpen) onOpen() }
+    marker.on('popupclose', handler)
+    return () => { marker.off('popupclose', handler) }
+  }, [aberto, onOpen])
   return (
     <Marker ref={ref} position={position} icon={icon}>
       {children}
@@ -135,6 +140,7 @@ export function Rastreamento() {
   const [dashedRota, setDashedRota] = useState(false)
   const [corPorEntregador, setCorPorEntregador] = useState(true)
   const [selecionadoId, setSelecionadoId] = useState(null)
+  const [popupTarget, setPopupTarget] = useState(null)
   const [loading, setLoading] = useState(true)
   const [atualizado, setAtualizado] = useState(null)
   const [autoRefresh, setAutoRefresh] = useState(true)
@@ -144,7 +150,7 @@ export function Rastreamento() {
 
   useEffect(() => {
     const v = searchParams.get('entregador')
-    if (v) setSelecionadoId(Number(v))
+    if (v) { setSelecionadoId(Number(v)); setPopupTarget(Number(v)) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams.toString()])
 
@@ -152,8 +158,7 @@ export function Rastreamento() {
   useEffect(() => {
     const handler = (e) => {
       const id = e.detail
-      console.log('Entregador selecionado:', id)
-      if (id) setSelecionadoId(Number(id))
+      if (id) { setSelecionadoId(Number(id)); setPopupTarget(Number(id)) }
     }
     window.addEventListener('entregador:selecionado', handler)
     return () => window.removeEventListener('entregador:selecionado', handler)
@@ -546,7 +551,8 @@ export function Rastreamento() {
                     key={`ent-${d.entregador.id}`}
                     position={[lat, lng]}
                     icon={customIcon(cor)}
-                    aberto={isSelecionado}
+                    aberto={popupTarget === d.entregador.id}
+                    onOpen={() => setPopupTarget(null)}
                   >
                     <Tooltip permanent direction="top" offset={[0, -18]}>
                       {d.entregador.nome} {statusOnline(d) ? '●' : '○'}
