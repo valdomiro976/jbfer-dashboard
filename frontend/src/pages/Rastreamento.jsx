@@ -213,10 +213,14 @@ export function Rastreamento() {
   })()
 
   const statusOnline = (d) => {
-    if (!d.localizacao) return false
+    if (!d.localizacao || !d.localizacao.criado_em) return false
     try {
-      const criado = new Date(d.localizacao.criado_em)
-      return (Date.now() - criado.getTime()) < 5 * 60 * 1000
+      let s = d.localizacao.criado_em
+      if (typeof s === 'string' && !s.endsWith('Z') && !/[+-]\\d{2}:?\\d{2}$/.test(s)) {
+        s = s.replace(' ', 'T') + 'Z'
+      }
+      const criado = new Date(s)
+      return (Date.now() - criado.getTime()) < 2 * 60 * 1000
     } catch {
       return false
     }

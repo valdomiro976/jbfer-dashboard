@@ -31,10 +31,14 @@ const navItems = [
 ]
 
 const statusOnline = (loc) => {
-  if (!loc) return false
+  if (!loc || !loc.criado_em) return false
   try {
-    const criado = new Date(loc.criado_em)
-    return (Date.now() - criado.getTime()) < 5 * 60 * 1000
+    let s = loc.criado_em
+    if (typeof s === 'string' && !s.endsWith('Z') && !/[+-]\\d{2}:?\\d{2}$/.test(s)) {
+      s = s.replace(' ', 'T') + 'Z'
+    }
+    const criado = new Date(s)
+    return (Date.now() - criado.getTime()) < 2 * 60 * 1000
   } catch {
     return false
   }
