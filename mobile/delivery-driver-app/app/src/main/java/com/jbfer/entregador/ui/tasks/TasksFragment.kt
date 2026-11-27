@@ -80,10 +80,17 @@ class TasksFragment : Fragment() {
                         .setTitle("Sair da conta")
                         .setMessage("Deseja realmente sair? Você precisará fazer login novamente.")
                         .setPositiveButton("Sim, sair") { _, _ ->
-                            LocationTrackingService.stop(requireContext())
-                            SessionManager.clear()
-                            com.jbfer.entregador.utils.openLogin(requireContext())
-                            requireActivity().finish()
+                            lifecycleScope.launch {
+                                try {
+                                    withContext(Dispatchers.IO) {
+                                        ApiClient.api.logout()
+                                    }
+                                } catch (e: Exception) { }
+                                LocationTrackingService.stop(requireContext())
+                                SessionManager.clear()
+                                com.jbfer.entregador.utils.openLogin(requireContext())
+                                requireActivity().finish()
+                            }
                         }
                         .setNegativeButton("Cancelar", null)
                         .show()

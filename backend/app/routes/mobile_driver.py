@@ -679,6 +679,26 @@ def enviar_localizacao(
             cur.close()
 
 
+@router.post("/logout", status_code=200)
+def logout_entregador(creds: HTTPAuthorizationCredentials = Depends(_bearer)):
+    """Marca o entregador como offline ao sair do app."""
+    ctx = _get_driver_ctx(creds)
+    c = _cnpj_limpo(ctx["cnpj"])
+    _garantir(ctx["cnpj"])
+    with connection() as conn:
+        cur = conn.cursor()
+        try:
+            # Remove localizacoes recentes (ultimos 5 min) para aparecer offline imediatamente
+            cur.execute(
+                f"DELETE FROM `tb_localizacao_{c}` WHERE entregador_id=%s AND criado_em >= (NOW() - INTERVAL 5 MINUTE)",
+                (ctx["entregador_id"],),
+            )
+            conn.commit()
+        finally:
+            cur.close()
+    return {"sucesso": True, "mensagem": "Logout registrado"}
+
+
 @router.get("/perfil", status_code=200)
 def perfil(creds: HTTPAuthorizationCredentials = Depends(_bearer)):
     ctx = _get_driver_ctx(creds)

@@ -34,6 +34,9 @@ interface ApiService {
 
     @POST("api/mobile/localizacao")
     suspend fun enviarLocalizacao(@Body request: LocalizacaoRequest): ApiResponse
+
+    @POST("api/mobile/logout")
+    suspend fun logout(): ApiResponse
 }
 
 object ApiClient {
