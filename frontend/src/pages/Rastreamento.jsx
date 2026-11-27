@@ -145,6 +145,16 @@ export function Rastreamento() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams.toString()])
 
+  // Escuta seleção de entregador no menu lateral
+  useEffect(() => {
+    const handler = (e) => {
+      const id = e.detail
+      if (id) setSelecionadoId(Number(id))
+    }
+    window.addEventListener('entregador:selecionado', handler)
+    return () => window.removeEventListener('entregador:selecionado', handler)
+  }, [])
+
   const load = async () => {
     try {
       const { data } = await api.get('/entregas/localizacoes')

@@ -269,6 +269,7 @@ export function Sidebar() {
                       className="nav-sub-item"
                       onClick={() => {
                         window.dispatchEvent(new Event('sidebar:close'))
+                        window.dispatchEvent(new CustomEvent('entregador:selecionado', { detail: d.entregador.id }))
                         navigate(`/rastreamento?entregador=${d.entregador.id}`)
                       }}
                       title="Localizar no mapa"
