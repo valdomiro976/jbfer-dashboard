@@ -448,7 +448,8 @@ def obter_loja(cnpj: str) -> dict | None:
                         f"WHERE rua_loja IS NOT NULL OR cep_loja IS NOT NULL "
                         f"ORDER BY id LIMIT 1")
                     row = cur.fetchone()
-                except Exception:
+                except Exception as e:
+                    print(f"[obter_loja] query1 erro: {e}")
                     row = None
                 if not row:
                     try:
@@ -456,9 +457,11 @@ def obter_loja(cnpj: str) -> dict | None:
                             f"SELECT client_id, rua_loja, numero_loja, cep_loja, cidade_loja, uf_loja, "
                             f"latitude_loja, longitude_loja FROM `{tabela}` ORDER BY id LIMIT 1")
                         row = cur.fetchone()
-                    except Exception:
+                    except Exception as e:
+                        print(f"[obter_loja] query2 erro: {e}")
                         row = None
                 if not row:
+                    print(f"[obter_loja] tabela={tabela} sem dados")
                     return None
                 lat = row.get('latitude_loja')
                 lon = row.get('longitude_loja')
@@ -482,6 +485,7 @@ def obter_loja(cnpj: str) -> dict | None:
                             except Exception:
                                 pass
                 endereco = " ".join([p for p in [row.get('rua_loja'), row.get('numero_loja')] if p]).strip()
+                print(f"[obter_loja] OK: lat={lat} lng={lon} endereco={endereco}")
                 return {
                     "lat": float(lat) if lat is not None else None,
                     "lng": float(lon) if lon is not None else None,
