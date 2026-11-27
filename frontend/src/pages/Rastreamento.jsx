@@ -258,10 +258,6 @@ export function Rastreamento() {
     }
   }, [autoRefresh])
 
-  // Ref para o mapa
-  const mapRef = useRef(null)
-  const MapCapture = () => { const m = useMap(); mapRef.current = m; return null }
-
   // Abre popup do entregador selecionado no menu (uma vez por selecao)
   const lastPopupId = useRef(null)
   useEffect(() => {
@@ -483,7 +479,6 @@ export function Rastreamento() {
             style={{ height: 'calc(100vh - 220px)', minHeight: 520, width: '100%' }}
           >
             <OpenPopupOnSelect selecionadoId={selecionadoId} dados={dados} />
-            <MapCapture />
             <TileLayer
               url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
