@@ -458,7 +458,18 @@ export function Rastreamento() {
                   eventHandlers={{ click: () => setSelecionadoId(null) }}
                 >
                   <Tooltip permanent direction="top" offset={[0, -16]}>
-                    {v.cliente}
+                    {v.cliente}{(() => {
+                      const km = loja && loja.lat != null && loja.lng != null && v.lat != null && v.lng != null
+                        ? (function() {
+                            const R = 6371
+                            const dLat = (parseFloat(v.lat) - parseFloat(loja.lat)) * Math.PI / 180
+                            const dLng = (parseFloat(v.lng) - parseFloat(loja.lng)) * Math.PI / 180
+                            const a = Math.sin(dLat/2)**2 + Math.cos(parseFloat(loja.lat)*Math.PI/180) * Math.cos(parseFloat(v.lat)*Math.PI/180) * Math.sin(dLng/2)**2
+                            return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))).toFixed(1)
+                          })()
+                        : null
+                      return km != null ? ` - ${km} km` : ''
+                    })()}
                   </Tooltip>
                   <Popup>
                     <div style={{ minWidth: 220, maxWidth: 280, fontSize: 12, lineHeight: 1.5 }}>
