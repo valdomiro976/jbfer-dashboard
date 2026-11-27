@@ -37,7 +37,23 @@
             android:backgroundTint="@color/primary" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnSair"
+            android:id="@+id/btnFechar"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            android:layout_weight="1"
+            android:text="Fechar"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="@color/on_primary"
+            app:icon="@android:drawable/ic_menu_close_clear_cancel"
+            app:iconGravity="textStart"
+            app:iconPadding="12dp"
+            app:iconTint="@color/on_primary"
+            app:cornerRadius="0dp"
+            android:backgroundTint="@color/warning" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnLogout"
             android:layout_width="0dp"
             android:layout_height="64dp"
             android:layout_weight="1"

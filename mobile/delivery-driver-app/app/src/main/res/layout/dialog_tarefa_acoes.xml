@@ -138,9 +138,10 @@
                 android:layout_height="52dp"
                 android:text="Navegar até o cliente"
                 android:textStyle="bold"
+                android:textColor="@color/white"
                 android:layout_marginBottom="8dp"
                 app:cornerRadius="14dp"
-                android:backgroundTint="@color/surface_variant" />
+                android:backgroundTint="@color/primary" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSalvarLocal"

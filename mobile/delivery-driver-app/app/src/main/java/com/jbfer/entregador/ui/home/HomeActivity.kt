@@ -76,11 +76,23 @@ class HomeActivity : AppCompatActivity() {
             changeFragment(TasksFragment())
         }
 
-        binding.btnSair.setOnClickListener {
-            LocationTrackingService.stop(this)
-            SessionManager.clear()
-            com.jbfer.entregador.utils.openLogin(this)
-            finish()
+        binding.btnFechar.setOnClickListener {
+            // Apenas minimiza o app (nao desloga)
+            moveTaskToBack(true)
+        }
+
+        binding.btnLogout.setOnClickListener {
+            AlertDialog.Builder(this)
+                .setTitle("Sair da conta")
+                .setMessage("Deseja realmente sair? Você precisará fazer login novamente.")
+                .setPositiveButton("Sim, sair") { _, _ ->
+                    LocationTrackingService.stop(this)
+                    SessionManager.clear()
+                    com.jbfer.entregador.utils.openLogin(this)
+                    finish()
+                }
+                .setNegativeButton("Cancelar", null)
+                .show()
         }
 
         if (savedInstanceState == null) {
