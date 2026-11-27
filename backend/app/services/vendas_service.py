@@ -432,53 +432,64 @@ def geolocalizar_pedido(cnpj: str, pedido_id: int) -> dict | None:
     }
 
 
+
 def obter_loja(cnpj: str) -> dict | None:
-    """Retorna as coordenadas/endereço da loja a partir de tb_config_<cnpj>."""
-    cnpj_limpo = re.sub(r"[^0-9A-Za-z_-]", "", cnpj)
-    tabela = f"tb_config_{cnpj_limpo}"
-    from app.db.database import execute_query
+    """Retorna as coordenadas/endereco da loja (copiado do PDV)."""
+    cnpj = (cnpj or '').strip()
+    tabela = f"tb_config_{cnpj}"
+    from app.db.database import connection
     try:
-        rows = execute_query(
-            f"SHOW COLUMNS FROM `{tabela}` LIKE 'latitude_loja'",
-            dictionary=True,
-        )
-        print(f"[obter_loja] tabela={tabela} tem latitude_loja: {bool(rows)}")
-        rows = execute_query(
-            f"SELECT rua_loja, numero_loja, cep_loja, cidade_loja, uf_loja, "
-            f"latitude_loja, longitude_loja FROM `{tabela}` "
-            f"WHERE rua_loja IS NOT NULL OR cep_loja IS NOT NULL "
-            f"ORDER BY id LIMIT 1",
-            dictionary=True,
-        )
-        print(f"[obter_loja] rows={rows}")
-        if not rows:
-            rows = execute_query(
-                f"SELECT rua_loja, numero_loja, cep_loja, cidade_loja, uf_loja, "
-                f"latitude_loja, longitude_loja FROM `{tabela}` ORDER BY id LIMIT 1",
-                dictionary=True,
-            )
-        if not rows:
-            return None
-        row = rows[0]
-        lat = row.get("latitude_loja")
-        lng = row.get("longitude_loja")
-        if (lat is None or lng is None) and (row.get("rua_loja") or row.get("cep_loja")):
-            geo = geocodificar(_montar_query({
-                "endereco": row.get("rua_loja") or "",
-                "cidade": row.get("cidade_loja") or "",
-                "uf": row.get("uf_loja") or "",
-                "cep": row.get("cep_loja") or "",
-            }))
-            if geo:
-                lat, lng = geo["lat"], geo["lng"]
-        endereco = " ".join([p for p in [row.get("rua_loja"), row.get("numero_loja")] if p]).strip()
-        return {
-            "lat": float(lat) if lat is not None else None,
-            "lng": float(lng) if lng is not None else None,
-            "endereco": endereco,
-            "cidade": row.get("cidade_loja"),
-            "uf": row.get("uf_loja"),
-            "cep": row.get("cep_loja"),
-        }
-    except Exception:
+        with connection() as conn:
+            with conn.cursor(dictionary=True) as cur:
+                try:
+                    cur.execute(
+                        f"SELECT client_id, rua_loja, numero_loja, cep_loja, cidade_loja, uf_loja, "
+                        f"latitude_loja, longitude_loja FROM `{tabela}` "
+                        f"WHERE rua_loja IS NOT NULL OR cep_loja IS NOT NULL "
+                        f"ORDER BY id LIMIT 1")
+                    row = cur.fetchone()
+                except Exception:
+                    row = None
+                if not row:
+                    try:
+                        cur.execute(
+                            f"SELECT client_id, rua_loja, numero_loja, cep_loja, cidade_loja, uf_loja, "
+                            f"latitude_loja, longitude_loja FROM `{tabela}` ORDER BY id LIMIT 1")
+                        row = cur.fetchone()
+                    except Exception:
+                        row = None
+                if not row:
+                    return None
+                lat = row.get('latitude_loja')
+                lon = row.get('longitude_loja')
+                # geocodifica sob demanda se faltar
+                if (lat is None or lon is None) and (row.get('rua_loja') or row.get('cep_loja')):
+                    geo = geocodificar(_montar_query({
+                        "endereco": row.get('rua_loja') or "",
+                        "cidade": row.get('cidade_loja') or "",
+                        "uf": row.get('uf_loja') or "",
+                        "cep": row.get('cep_loja') or "",
+                    }))
+                    if geo:
+                        lat, lon = geo["lat"], geo["lng"]
+                        cid = row.get('client_id')
+                        if cid:
+                            try:
+                                cur.execute(
+                                    f"UPDATE `{tabela}` SET latitude_loja=%s, longitude_loja=%s WHERE client_id=%s",
+                                    (lat, lon, cid))
+                                conn.commit()
+                            except Exception:
+                                pass
+                endereco = " ".join([p for p in [row.get('rua_loja'), row.get('numero_loja')] if p]).strip()
+                return {
+                    "lat": float(lat) if lat is not None else None,
+                    "lng": float(lon) if lon is not None else None,
+                    "endereco": endereco,
+                    "cidade": row.get('cidade_loja'),
+                    "uf": row.get('uf_loja'),
+                    "cep": row.get('cep_loja'),
+                }
+    except Exception as e:
+        print(f"[obter_loja] erro: {e}")
         return None
