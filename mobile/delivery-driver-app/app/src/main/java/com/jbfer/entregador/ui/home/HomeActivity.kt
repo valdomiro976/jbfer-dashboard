@@ -56,6 +56,22 @@ class HomeActivity : AppCompatActivity() {
                 }.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         }
+
+        // Se a permissão de localização em segundo plano não estiver concedida,
+        // abre as configurações do app para o usuário conceder "Permitir o tempo todo"
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                AlertDialog.Builder(this)
+                    .setTitle("Permissão de localização")
+                    .setMessage("Para o rastreamento funcionar em segundo plano, conceda a permissão de localização 'Permitir o tempo todo' nas configurações.")
+                    .setPositiveButton("Abrir configurações") { _, _ ->
+                        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName"))
+                        startActivity(intent)
+                    }
+                    .setNegativeButton("Cancelar", null)
+                    .show()
+            }
+        }
         binding.bottomNav.setOnClickListener {
             changeFragment(TasksFragment())
         }
