@@ -220,21 +220,17 @@ export function Rastreamento() {
 
   // Centro do mapa: definido uma vez (na primeira carga), não muda depois
   const centroRef = useRef(null)
-  // Atualiza o centro quando a loja carrega (se ainda não foi definido ou era fallback)
-  if (loja && loja.lat != null && loja.lng != null && (!centroRef.current || centroRef.current[0] === -23.5505)) {
-    centroRef.current = [parseFloat(loja.lat), parseFloat(loja.lng)]
-  }
-  if (!centroRef.current) {
-    if (comLocalizacao.length > 0) {
+  if (!centroRef.current && (comLocalizacao.length > 0 || vendas.length > 0 || (loja && loja.lat != null))) {
+    if (loja && loja.lat != null && loja.lng != null) {
+      centroRef.current = [parseFloat(loja.lat), parseFloat(loja.lng)]
+    } else if (comLocalizacao.length > 0) {
       const loc = comLocalizacao[0].localizacao
       centroRef.current = [parseFloat(loc.lat), parseFloat(loc.lng)]
     } else if (vendas.length > 0) {
       centroRef.current = [parseFloat(vendas[0].lat), parseFloat(vendas[0].lng)]
-    } else {
-      centroRef.current = [-23.5505, -46.6333]
     }
   }
-  const centro = centroRef.current
+  const centro = centroRef.current || [-23.5505, -46.6333]
 
   const statusOnline = (d) => {
     if (!d.localizacao) return false
