@@ -426,6 +426,8 @@ export function Rastreamento() {
                 pontos={[
                   ...comLocalizacao.map((d) => [parseFloat(d.localizacao.lat), parseFloat(d.localizacao.lng)]),
                   ...vendasComLocalizacao.map((v) => [parseFloat(v.lat), parseFloat(v.lng)]),
+                  ...(loja && loja.lat != null && loja.lng != null ? [[parseFloat(loja.lat), parseFloat(loja.lng)]] : []),
+                  ...rotas.flatMap((r) => (r.destinos || []).filter((d) => d.lat != null && d.lng != null).map((d) => [parseFloat(d.lat), parseFloat(d.lng)])),
                 ]}
               />
             )}
