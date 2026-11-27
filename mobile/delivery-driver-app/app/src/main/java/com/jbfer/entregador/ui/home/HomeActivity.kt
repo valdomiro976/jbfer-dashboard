@@ -45,6 +45,16 @@ class HomeActivity : AppCompatActivity() {
         // Solicita permissões de localização (inclui segundo plano) e inicia o rastreamento
         requestLocationPermission()
 
+        // Solicita permissão de notificação (Android 13+) separadamente
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+                    if (!granted) {
+                        Toast.makeText(this, "Permissão de notificação negada. O rastreamento pode não funcionar.", Toast.LENGTH_LONG).show()
+                    }
+                }.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
         binding.bottomNav.setOnClickListener {
             changeFragment(TasksFragment())
         }
