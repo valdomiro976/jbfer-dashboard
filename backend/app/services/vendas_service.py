@@ -439,6 +439,11 @@ def obter_loja(cnpj: str) -> dict | None:
     from app.db.database import execute_query
     try:
         rows = execute_query(
+            f"SHOW COLUMNS FROM `{tabela}` LIKE 'latitude_loja'",
+            dictionary=True,
+        )
+        print(f"[obter_loja] tabela={tabela} tem latitude_loja: {bool(rows)}")
+        rows = execute_query(
             f"SELECT rua_loja, numero_loja, cep_loja, cidade_loja, uf_loja, "
             f"latitude_loja, longitude_loja FROM `{tabela}` "
             f"WHERE rua_loja IS NOT NULL OR cep_loja IS NOT NULL "
