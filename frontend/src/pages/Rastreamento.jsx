@@ -94,16 +94,19 @@ function FlyTo({ pos }) {
 // Enquadra múltiplos pontos (entregador + vendas) no mapa
 function FitBounds({ pontos }) {
   const map = useMap()
-  const lastRef = useRef(null)
+  const hasFitted = useRef(false)
   useEffect(() => {
     if (!pontos || pontos.length === 0) return
-    const key = pontos.map((p) => p.map((v) => Number(v).toFixed(6)).join(',')).join('|')
-    if (lastRef.current === key) return
-    lastRef.current = key
-    try {
-      const bounds = L.latLngBounds(pontos.map((p) => [Number(p[0]), Number(p[1])]))
-      map.fitBounds(bounds, { padding: [70, 70], maxZoom: 17, duration: 1 })
-    } catch { /* ignora bounds inválidos */ }
+    if (hasFitted.current) return
+    hasFitted.current = true
+    const timer = setTimeout(() => {
+      try {
+        map.invalidateSize()
+        const bounds = L.latLngBounds(pontos.map((p) => [Number(p[0]), Number(p[1])]))
+        map.fitBounds(bounds, { padding: [70, 70], maxZoom: 17, duration: 1 })
+      } catch { /* ignora bounds inválidos */ }
+    }, 500)
+    return () => clearTimeout(timer)
   }, [pontos, map])
   return null
 }
@@ -214,17 +217,24 @@ export function Rastreamento() {
 
   const comLocalizacao = dados.filter((d) => d.localizacao)
 
-  // Centro do mapa: prioriza entregadores, senão vendas, senão padrão
-  const centro = (() => {
-    if (comLocalizacao.length > 0) {
+  // Centro do mapa: definido uma vez (na primeira carga), não muda depois
+  // Centro fixo: definido uma vez na primeira carga, nunca muda
+  const centroRef = useRef(null)
+  if (!centroRef.current) {
+    centroRef.current = [-23.5505, -46.6333]
+  }
+  // Atualiza apenas na primeira carga (quando ainda é o default)
+  if (centroRef.current[0] === -23.5505 && centroRef.current[1] === -46.6333) {
+    if (loja && loja.lat != null && loja.lng != null) {
+      centroRef.current = [parseFloat(loja.lat), parseFloat(loja.lng)]
+    } else if (comLocalizacao.length > 0) {
       const loc = comLocalizacao[0].localizacao
-      return [parseFloat(loc.lat), parseFloat(loc.lng)]
+      centroRef.current = [parseFloat(loc.lat), parseFloat(loc.lng)]
+    } else if (vendas.length > 0) {
+      centroRef.current = [parseFloat(vendas[0].lat), parseFloat(vendas[0].lng)]
     }
-    if (vendas.length > 0) {
-      return [parseFloat(vendas[0].lat), parseFloat(vendas[0].lng)]
-    }
-    return [-23.5505, -46.6333] // São Paulo (padrão)
-  })()
+  }
+  const centro = centroRef.current
 
   const statusOnline = (d) => {
     if (!d.localizacao) return false
@@ -408,26 +418,9 @@ export function Rastreamento() {
               url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             />
-            {alvo && selecionadoId != null ? (
-              <FitBounds
-                pontos={[
-                  alvo,
-                  ...(rotas
-                    .find((r) => r.entregador.id === selecionadoId)
-                    ?.destinos?.filter((d) => d.lat != null && d.lng != null)
-                    .map((d) => [parseFloat(d.lat), parseFloat(d.lng)]) || []),
-                ]}
-              />
-            ) : (
-              <FlyTo pos={alvo} />
-            )}
-
             {/* Marker da loja */}
             {loja && loja.lat != null && loja.lng != null && (
               <Marker position={[parseFloat(loja.lat), parseFloat(loja.lng)]} icon={lojaIcon()}>
-                <Tooltip permanent direction="top" offset={[0, -18]}>
-                  Loja
-                </Tooltip>
                 <Popup>
                   <div style={{ fontSize: 12 }}>
                     <strong>Loja</strong>
@@ -436,6 +429,25 @@ export function Rastreamento() {
                   </div>
                 </Popup>
               </Marker>
+            )}
+
+            {/* Popup do entregador selecionado no menu */}
+            {selecionadoId && alvo && (
+              <Popup position={alvo} autoOpen={true}>
+                <div style={{ minWidth: 180 }}>
+                  <strong>{dados.find((d) => d.entregador.id === selecionadoId)?.entregador?.nome}</strong>
+                  <div className="text-sm" style={{ color: statusOnline(dados.find((d) => d.entregador.id === selecionadoId)) ? 'var(--success)' : 'var(--danger)' }}>
+                    {statusOnline(dados.find((d) => d.entregador.id === selecionadoId)) ? '● Online' : '● Offline'}
+                  </div>
+                  <div className="text-sm">Telefone: {dados.find((d) => d.entregador.id === selecionadoId)?.entregador?.telefone || '—'}</div>
+                  {dados.find((d) => d.entregador.id === selecionadoId)?.localizacao && (
+                    <>
+                      <div className="text-sm">Última posição: {formatDate(dados.find((d) => d.entregador.id === selecionadoId).localizacao.criado_em)}</div>
+                      <div className="text-sm">Velocidade: {dados.find((d) => d.entregador.id === selecionadoId).localizacao.velocidade != null ? `${Number(dados.find((d) => d.entregador.id === selecionadoId).localizacao.velocidade).toFixed(1)} km/h` : '—'}</div>
+                    </>
+                  )}
+                </div>
+              </Popup>
             )}
 
             {/* Marcadores das vendas (clientes) */}
@@ -449,9 +461,6 @@ export function Rastreamento() {
                   icon={vendaIcon()}
                   eventHandlers={{ click: () => setSelecionadoId(null) }}
                 >
-                  <Tooltip permanent direction="top" offset={[0, -16]}>
-                    {v.cliente}
-                  </Tooltip>
                   <Popup>
                     <div style={{ minWidth: 220, maxWidth: 280, fontSize: 12, lineHeight: 1.5 }}>
                       <div className="row space-between" style={{ gap: 10, alignItems: 'baseline' }}>
@@ -495,13 +504,14 @@ export function Rastreamento() {
                     radius={18}
                     pathOptions={{ color: cor, fillColor: cor, fillOpacity: 0.15, weight: 2 }}
                   />
-                  <AutoOpenMarker
+                  <Marker
+                    key={`ent-${d.entregador.id}`}
                     position={[lat, lng]}
                     icon={customIcon(cor)}
-                    aberto={selecionadoId === d.entregador.id}
+                    eventHandlers={{ click: () => setSelecionadoId(d.entregador.id) }}
                   >
                     <Tooltip permanent direction="top" offset={[0, -18]}>
-                      {d.entregador.nome}
+                      {d.entregador.nome} {statusOnline(d) ? '●' : '○'}
                     </Tooltip>
                     <Popup>
                       <div style={{ minWidth: 180 }}>
@@ -511,10 +521,10 @@ export function Rastreamento() {
                         </div>
                         <div className="text-sm">Telefone: {d.entregador.telefone || '—'}</div>
                         <div className="text-sm">Última posição: {formatDate(loc.criado_em)}</div>
-                        <div className="text-sm">Lat: {lat.toFixed(6)} / Lng: {lng.toFixed(6)}</div>
+                        <div className="text-sm">Velocidade: {loc.velocidade != null ? `${Number(loc.velocidade).toFixed(1)} km/h` : '—'}</div>
                       </div>
                     </Popup>
-                  </AutoOpenMarker>
+                  </Marker>
                 </div>
               )
             })}
