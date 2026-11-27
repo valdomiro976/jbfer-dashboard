@@ -523,7 +523,7 @@ export function Rastreamento() {
                     aberto={selecionadoId === d.entregador.id}
                   >
                     <Tooltip permanent direction="top" offset={[0, -18]}>
-                      {d.entregador.nome} {statusOnline(d) ? '●' : '○'}
+                      {d.entregador.nome}
                     </Tooltip>
                     <Popup>
                       <div style={{ minWidth: 180 }}>
