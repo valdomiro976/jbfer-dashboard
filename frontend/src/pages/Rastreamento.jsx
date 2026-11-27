@@ -78,16 +78,16 @@ function AutoOpenMarker({ position, icon, aberto, children }) {
 }
 
 // Centraliza o mapa na posição do entregador selecionado (só quando muda)
-function FlyTo({ pos }) {
+function FlyTo({ pos, selecionadoId }) {
   const map = useMap()
-  const lastKeyRef = useRef(null)
+  const lastSelectedRef = useRef(null)
   useEffect(() => {
-    if (!pos) return
-    const key = pos[0].toFixed(6) + ',' + pos[1].toFixed(6)
-    if (lastKeyRef.current === key) return
-    lastKeyRef.current = key
+    if (!pos || !selecionadoId) return
+    // Só voa quando o entregador selecionado MUDA (não quando a posição muda)
+    if (lastSelectedRef.current === selecionadoId) return
+    lastSelectedRef.current = selecionadoId
     map.flyTo(pos, 15, { duration: 1 })
-  }, [pos, map])
+  }, [selecionadoId, pos, map])
   return null
 }
 
@@ -433,6 +433,9 @@ export function Rastreamento() {
 
             {/* Popup do entregador selecionado no menu */}
             {null}
+
+            {/* Centraliza no entregador selecionado no menu (apenas quando muda) */}
+            <FlyTo pos={alvo} selecionadoId={selecionadoId} />
 
             {/* Marker da loja */}
             {loja && loja.lat != null && loja.lng != null && (
