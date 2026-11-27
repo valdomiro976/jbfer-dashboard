@@ -31,10 +31,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 class LocationTrackingService : Service() {
-    companion object {
-        @Volatile var stopped = false
-    }
-
     private lateinit var fusedClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
     private var wakeLock: PowerManager.WakeLock? = null
@@ -138,6 +134,7 @@ class LocationTrackingService : Service() {
     }
 
     companion object {
+        @Volatile var stopped = false
         const val CHANNEL_ID = "rastreamento_continuo"
         const val NOTIFICATION_ID = 101
 
