@@ -450,6 +450,7 @@ def obter_loja(cnpj: str) -> dict | None:
             f"ORDER BY id LIMIT 1",
             dictionary=True,
         )
+        print(f"[obter_loja] rows={rows}")
         if not rows:
             rows = execute_query(
                 f"SELECT rua_loja, numero_loja, cep_loja, cidade_loja, uf_loja, "
