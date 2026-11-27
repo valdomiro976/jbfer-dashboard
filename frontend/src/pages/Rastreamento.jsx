@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import api from '../api/client'
-import { MapContainer, TileLayer, Marker, Popup, Tooltip, CircleMarker, Polyline, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, CircleMarker, Polyline, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import { Topbar } from '../components/Topbar'
 import { Loader, formatDate, formatBRL } from '../components/utils'
@@ -11,16 +11,6 @@ const customIcon = (color = '#6366f1') =>
   L.divIcon({
     className: 'custom-marker',
     html: `<div style="width:34px;height:34px;border-radius:50%;background:${color};border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;">🚚</div>`,
-    iconSize: [34, 34],
-    iconAnchor: [17, 17],
-    popupAnchor: [0, -18],
-  })
-
-// Marker da loja
-const lojaIcon = () =>
-  L.divIcon({
-    className: 'custom-marker',
-    html: `<div style="width:34px;height:34px;border-radius:50%;background:#f59e0b;border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px;">🏢</div>`,
     iconSize: [34, 34],
     iconAnchor: [17, 17],
     popupAnchor: [0, -18],
@@ -94,49 +84,23 @@ function FlyTo({ pos }) {
 // Enquadra múltiplos pontos (entregador + vendas) no mapa
 function FitBounds({ pontos }) {
   const map = useMap()
-  const hasFitted = useRef(false)
+  const lastRef = useRef(null)
   useEffect(() => {
     if (!pontos || pontos.length === 0) return
-    if (hasFitted.current) return
-    hasFitted.current = true
-    const timer = setTimeout(() => {
-      try {
-        map.invalidateSize()
-        const bounds = L.latLngBounds(pontos.map((p) => [Number(p[0]), Number(p[1])]))
-        map.fitBounds(bounds, { padding: [70, 70], maxZoom: 17, duration: 1 })
-      } catch { /* ignora bounds inválidos */ }
-    }, 500)
-    return () => clearTimeout(timer)
+    const key = pontos.map((p) => p.map((v) => Number(v).toFixed(6)).join(',')).join('|')
+    if (lastRef.current === key) return
+    lastRef.current = key
+    try {
+      const bounds = L.latLngBounds(pontos.map((p) => [Number(p[0]), Number(p[1])]))
+      map.fitBounds(bounds, { padding: [70, 70], maxZoom: 17, duration: 1 })
+    } catch { /* ignora bounds inválidos */ }
   }, [pontos, map])
-  return null
-}
-
-function PopupOpener({ position, entregador, onClose }) {
-  const map = useMap()
-  const opened = useRef(false)
-  useEffect(() => {
-    if (opened.current) return
-    opened.current = true
-    const nome = entregador?.entregador?.nome || 'Entregador'
-    const tel = entregador?.entregador?.telefone || '—'
-    const loc = entregador?.localizacao
-    const status = loc ? (statusOnline(entregador) ? '● Online' : '● Offline') : ''
-    const ultima = loc ? formatDate(loc.criado_em) : ''
-    const vel = loc && loc.velocidade != null ? `${Number(loc.velocidade).toFixed(1)} km/h` : '—'
-    const html = `<div style="min-width:180px"><strong>${nome}</strong>${status ? `<div style="font-size:12px;margin:2px 0">${status}</div>` : ''}<div style="font-size:12px">Telefone: ${tel}</div>${ultima ? `<div style="font-size:12px">Última posição: ${ultima}</div>` : ''}<div style="font-size:12px">Velocidade: ${vel}</div></div>`
-    const popup = L.popup({ autoClose: true, closeOnClick: true })
-    popup.setContent(html)
-    map.openPopup(popup, position)
-    popup.on('remove', () => { if (onClose) onClose() })
-  }, [map, position])
   return null
 }
 
 export function Rastreamento() {
   const [dados, setDados] = useState([])
   const [vendas, setVendas] = useState([])
-  const [loja, setLoja] = useState(null)
-  const [popupEntregador, setPopupEntregador] = useState(null)
   const [rotas, setRotas] = useState([])
   const [rotasVersao, setRotasVersao] = useState(0)
   const [otimizada, setOtimizada] = useState(null)
@@ -155,7 +119,7 @@ export function Rastreamento() {
 
   useEffect(() => {
     const v = searchParams.get('entregador')
-    if (v) { setSelecionadoId(Number(v)); setPopupEntregador(Number(v)) }
+    if (v) setSelecionadoId(Number(v))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
 
@@ -225,9 +189,6 @@ export function Rastreamento() {
     load()
     loadVendas()
     loadRotas()
-    api.get('/vendas/loja').then(({ data }) => {
-      if (data.dados && data.dados.lat != null && data.dados.lng != null) setLoja(data.dados)
-    }).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -239,24 +200,17 @@ export function Rastreamento() {
 
   const comLocalizacao = dados.filter((d) => d.localizacao)
 
-  // Centro do mapa: definido uma vez (na primeira carga), não muda depois
-  // Centro fixo: definido uma vez na primeira carga, nunca muda
-  const centroRef = useRef(null)
-  if (!centroRef.current) {
-    centroRef.current = [-23.5505, -46.6333]
-  }
-  // Atualiza apenas na primeira carga (quando ainda é o default)
-  if (centroRef.current[0] === -23.5505 && centroRef.current[1] === -46.6333) {
-    if (loja && loja.lat != null && loja.lng != null) {
-      centroRef.current = [parseFloat(loja.lat), parseFloat(loja.lng)]
-    } else if (comLocalizacao.length > 0) {
+  // Centro do mapa: prioriza entregadores, senão vendas, senão padrão
+  const centro = (() => {
+    if (comLocalizacao.length > 0) {
       const loc = comLocalizacao[0].localizacao
-      centroRef.current = [parseFloat(loc.lat), parseFloat(loc.lng)]
-    } else if (vendas.length > 0) {
-      centroRef.current = [parseFloat(vendas[0].lat), parseFloat(vendas[0].lng)]
+      return [parseFloat(loc.lat), parseFloat(loc.lng)]
     }
-  }
-  const centro = centroRef.current
+    if (vendas.length > 0) {
+      return [parseFloat(vendas[0].lat), parseFloat(vendas[0].lng)]
+    }
+    return [-23.5505, -46.6333] // São Paulo (padrão)
+  })()
 
   const statusOnline = (d) => {
     if (!d.localizacao) return false
@@ -440,33 +394,18 @@ export function Rastreamento() {
               url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             />
-            <FitBounds
-              pontos={[
-                ...comLocalizacao.map((d) => [parseFloat(d.localizacao.lat), parseFloat(d.localizacao.lng)]),
-                ...vendasComLocalizacao.map((v) => [parseFloat(v.lat), parseFloat(v.lng)]),
-                ...(loja && loja.lat != null && loja.lng != null ? [[parseFloat(loja.lat), parseFloat(loja.lng)]] : []),
-              ]}
-            />
-            {/* Marker da loja */}
-            {loja && loja.lat != null && loja.lng != null && (
-              <Marker position={[parseFloat(loja.lat), parseFloat(loja.lng)]} icon={lojaIcon()}>
-                <Popup>
-                  <div style={{ fontSize: 12 }}>
-                    <strong>Loja</strong>
-                    {loja.endereco ? <div>{loja.endereco}</div> : null}
-                    {loja.cidade ? <div>{loja.cidade}{loja.uf ? `/${loja.uf}` : ''}</div> : null}
-                  </div>
-                </Popup>
-              </Marker>
-            )}
-
-            {/* Popup do entregador selecionado no menu */}
-            {popupEntregador && alvo && (
-              <PopupOpener
-                position={alvo}
-                entregador={dados.find((d) => d.entregador.id === popupEntregador)}
-                onClose={() => setPopupEntregador(null)}
+            {alvo && selecionadoId != null ? (
+              <FitBounds
+                pontos={[
+                  alvo,
+                  ...(rotas
+                    .find((r) => r.entregador.id === selecionadoId)
+                    ?.destinos?.filter((d) => d.lat != null && d.lng != null)
+                    .map((d) => [parseFloat(d.lat), parseFloat(d.lng)]) || []),
+                ]}
               />
+            ) : (
+              <FlyTo pos={alvo} />
             )}
 
             {/* Marcadores das vendas (clientes) */}
@@ -523,15 +462,11 @@ export function Rastreamento() {
                     radius={18}
                     pathOptions={{ color: cor, fillColor: cor, fillOpacity: 0.15, weight: 2 }}
                   />
-                  <Marker
-                    key={`ent-${d.entregador.id}`}
+                  <AutoOpenMarker
                     position={[lat, lng]}
                     icon={customIcon(cor)}
-                    eventHandlers={{ click: () => setSelecionadoId(d.entregador.id) }}
+                    aberto={selecionadoId === d.entregador.id}
                   >
-                    <Tooltip permanent direction="top" offset={[0, -18]}>
-                      {d.entregador.nome} {statusOnline(d) ? '●' : '○'}
-                    </Tooltip>
                     <Popup>
                       <div style={{ minWidth: 180 }}>
                         <strong>{d.entregador.nome}</strong>
@@ -540,10 +475,10 @@ export function Rastreamento() {
                         </div>
                         <div className="text-sm">Telefone: {d.entregador.telefone || '—'}</div>
                         <div className="text-sm">Última posição: {formatDate(loc.criado_em)}</div>
-                        <div className="text-sm">Velocidade: {loc.velocidade != null ? `${Number(loc.velocidade).toFixed(1)} km/h` : '—'}</div>
+                        <div className="text-sm">Lat: {lat.toFixed(6)} / Lng: {lng.toFixed(6)}</div>
                       </div>
                     </Popup>
-                  </Marker>
+                  </AutoOpenMarker>
                 </div>
               )
             })}
