@@ -91,6 +91,13 @@ function FlyTo({ pos }) {
   return null
 }
 
+// Captura a instancia do mapa para uso fora de componentes filho
+function MapCapture({ mapRef }) {
+  const m = useMap()
+  useEffect(() => { mapRef.current = m }, [m, mapRef])
+  return null
+}
+
 // Enquadra múltiplos pontos (entregador + vendas) no mapa
 function FitBounds({ pontos }) {
   const map = useMap()
@@ -129,6 +136,7 @@ export function Rastreamento() {
   const [atualizado, setAtualizado] = useState(null)
   const [autoRefresh, setAutoRefresh] = useState(true)
   const intervalRef = useRef(null)
+  const mapRef = useRef(null)
   const [searchParams, setSearchParams] = useSearchParams()
 
   useEffect(() => {
@@ -214,6 +222,34 @@ export function Rastreamento() {
       return () => clearInterval(intervalRef.current)
     }
   }, [autoRefresh])
+
+  // Abre popup do entregador selecionado no menu (uma vez por selecao)
+  const lastPopupId = useRef(null)
+  useEffect(() => {
+    if (!selecionadoId) { lastPopupId.current = null; return }
+    if (lastPopupId.current === selecionadoId) return
+    const d = dados.find((dd) => dd && dd.entregador && dd.entregador.id === selecionadoId && dd.localizacao)
+    if (!d || !d.localizacao) return
+    lastPopupId.current = selecionadoId
+    const pos = [parseFloat(d.localizacao.lat), parseFloat(d.localizacao.lng)]
+    const nome = d.entregador.nome || 'Entregador'
+    const tel = d.entregador.telefone || '—'
+    const loc = d.localizacao
+    const status = loc ? (statusOnline(d) ? '● Online' : '● Offline') : ''
+    const ultima = loc ? formatDate(loc.criado_em) : ''
+    const vel = loc && loc.velocidade != null ? `${Number(loc.velocidade).toFixed(1)} km/h` : '—'
+    const html = `<div style="min-width:180px"><strong>${nome}</strong>${status ? `<div style="font-size:12px;margin:2px 0;color:${status.includes('Online') ? '#34d399' : '#f87171'}">${status}</div>` : ''}<div style="font-size:12px">Telefone: ${tel}</div>${ultima ? `<div style="font-size:12px">Ultima posicao: ${ultima}</div>` : ''}<div style="font-size:12px">Velocidade: ${vel}</div></div>`
+    const timer = setTimeout(() => {
+      try {
+        if (mapRef.current) {
+          const popup = L.popup({ autoClose: true, closeOnClick: true })
+          popup.setContent(html)
+          mapRef.current.openPopup(popup, pos)
+        }
+      } catch (e) { console.error(e) }
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [selecionadoId, dados])
 
   const comLocalizacao = dados.filter((d) => d.localizacao)
 
@@ -414,6 +450,7 @@ export function Rastreamento() {
             scrollWheelZoom
             style={{ height: 'calc(100vh - 220px)', minHeight: 520, width: '100%' }}
           >
+            <MapCapture mapRef={mapRef} />
             <TileLayer
               url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -432,25 +469,7 @@ export function Rastreamento() {
             )}
 
             {/* Popup do entregador selecionado no menu */}
-            {selecionadoId && alvo && (
-              <Popup position={alvo} autoOpen={false} ref={(r) => {
-                if (r) setTimeout(() => { try { r.open() } catch (e) {} }, 200)
-              }}>
-                <div style={{ minWidth: 180 }}>
-                  <strong>{dados.find((d) => d.entregador.id === selecionadoId)?.entregador?.nome}</strong>
-                  <div className="text-sm" style={{ color: statusOnline(dados.find((d) => d.entregador.id === selecionadoId)) ? 'var(--success)' : 'var(--danger)' }}>
-                    {statusOnline(dados.find((d) => d.entregador.id === selecionadoId)) ? '● Online' : '● Offline'}
-                  </div>
-                  <div className="text-sm">Telefone: {dados.find((d) => d.entregador.id === selecionadoId)?.entregador?.telefone || '—'}</div>
-                  {dados.find((d) => d.entregador.id === selecionadoId)?.localizacao && (
-                    <>
-                      <div className="text-sm">Última posição: {formatDate(dados.find((d) => d.entregador.id === selecionadoId).localizacao.criado_em)}</div>
-                      <div className="text-sm">Velocidade: {dados.find((d) => d.entregador.id === selecionadoId).localizacao.velocidade != null ? `${Number(dados.find((d) => d.entregador.id === selecionadoId).localizacao.velocidade).toFixed(1)} km/h` : '—'}</div>
-                    </>
-                  )}
-                </div>
-              </Popup>
-            )}
+            {null}
 
             {/* Marcadores das vendas (clientes) */}
             {vendasComLocalizacao.map((v) => {
