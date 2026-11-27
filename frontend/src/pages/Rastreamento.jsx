@@ -203,6 +203,9 @@ export function Rastreamento() {
     api.get('/vendas/loja').then(({ data }) => {
       if (data.dados && data.dados.lat != null && data.dados.lng != null) setLoja(data.dados)
     }).catch(() => {})
+    // Polling (10s) para atualizar status online/offline
+    const interval = setInterval(load, 10000)
+    return () => clearInterval(interval)
   }, [])
 
   useEffect(() => {
