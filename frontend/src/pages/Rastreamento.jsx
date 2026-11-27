@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import api from '../api/client'
-import { MapContainer, TileLayer, Marker, Popup, Tooltip, CircleMarker, Polyline, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, CircleMarker, Polyline, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import { Topbar } from '../components/Topbar'
 import { Loader, formatDate, formatBRL } from '../components/utils'
@@ -11,16 +11,6 @@ const customIcon = (color = '#6366f1') =>
   L.divIcon({
     className: 'custom-marker',
     html: `<div style="width:34px;height:34px;border-radius:50%;background:${color};border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;">🚚</div>`,
-    iconSize: [34, 34],
-    iconAnchor: [17, 17],
-    popupAnchor: [0, -18],
-  })
-
-// Marker da loja
-const lojaIcon = () =>
-  L.divIcon({
-    className: 'custom-marker',
-    html: `<div style="width:34px;height:34px;border-radius:50%;background:#f59e0b;border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px;">🏢</div>`,
     iconSize: [34, 34],
     iconAnchor: [17, 17],
     popupAnchor: [0, -18],
@@ -100,14 +90,10 @@ function FitBounds({ pontos }) {
     const key = pontos.map((p) => p.map((v) => Number(v).toFixed(6)).join(',')).join('|')
     if (lastRef.current === key) return
     lastRef.current = key
-    const timer = setTimeout(() => {
-      try {
-        map.invalidateSize()
-        const bounds = L.latLngBounds(pontos.map((p) => [Number(p[0]), Number(p[1])]))
-        map.fitBounds(bounds, { padding: [70, 70], maxZoom: 17, duration: 1 })
-      } catch { /* ignora bounds inválidos */ }
-    }, 300)
-    return () => clearTimeout(timer)
+    try {
+      const bounds = L.latLngBounds(pontos.map((p) => [Number(p[0]), Number(p[1])]))
+      map.fitBounds(bounds, { padding: [70, 70], maxZoom: 17, duration: 1 })
+    } catch { /* ignora bounds inválidos */ }
   }, [pontos, map])
   return null
 }
@@ -115,7 +101,6 @@ function FitBounds({ pontos }) {
 export function Rastreamento() {
   const [dados, setDados] = useState([])
   const [vendas, setVendas] = useState([])
-  const [loja, setLoja] = useState(null)
   const [rotas, setRotas] = useState([])
   const [rotasVersao, setRotasVersao] = useState(0)
   const [otimizada, setOtimizada] = useState(null)
@@ -204,12 +189,6 @@ export function Rastreamento() {
     load()
     loadVendas()
     loadRotas()
-    api.get('/vendas/loja').then(({ data }) => {
-      if (data.dados && data.dados.lat != null && data.dados.lng != null) setLoja(data.dados)
-    }).catch(() => {})
-    // Polling (10s) para atualizar status online/offline
-    const interval = setInterval(load, 10000)
-    return () => clearInterval(interval)
   }, [])
 
   useEffect(() => {
@@ -237,7 +216,7 @@ export function Rastreamento() {
     if (!d.localizacao) return false
     try {
       const criado = new Date(d.localizacao.criado_em)
-      return (Date.now() - criado.getTime()) < 2 * 60 * 1000
+      return (Date.now() - criado.getTime()) < 5 * 60 * 1000
     } catch {
       return false
     }
@@ -426,30 +405,7 @@ export function Rastreamento() {
                 ]}
               />
             ) : (
-              <FitBounds
-                pontos={[
-                  ...comLocalizacao.map((d) => [parseFloat(d.localizacao.lat), parseFloat(d.localizacao.lng)]),
-                  ...vendasComLocalizacao.map((v) => [parseFloat(v.lat), parseFloat(v.lng)]),
-                  ...(loja && loja.lat != null && loja.lng != null ? [[parseFloat(loja.lat), parseFloat(loja.lng)]] : []),
-                  ...rotas.flatMap((r) => (r.destinos || []).filter((d) => d.lat != null && d.lng != null).map((d) => [parseFloat(d.lat), parseFloat(d.lng)])),
-                ]}
-              />
-            )}
-
-            {/* Marker da loja */}
-            {loja && loja.lat != null && loja.lng != null && (
-              <Marker position={[parseFloat(loja.lat), parseFloat(loja.lng)]} icon={lojaIcon()}>
-                <Tooltip permanent direction="top" offset={[0, -18]}>
-                  Loja
-                </Tooltip>
-                <Popup>
-                  <div style={{ fontSize: 12 }}>
-                    <strong>Loja</strong>
-                    {loja.endereco ? <div>{loja.endereco}</div> : null}
-                    {loja.cidade ? <div>{loja.cidade}{loja.uf ? `/${loja.uf}` : ''}</div> : null}
-                  </div>
-                </Popup>
-              </Marker>
+              <FlyTo pos={alvo} />
             )}
 
             {/* Marcadores das vendas (clientes) */}
@@ -463,20 +419,6 @@ export function Rastreamento() {
                   icon={vendaIcon()}
                   eventHandlers={{ click: () => setSelecionadoId(null) }}
                 >
-                  <Tooltip permanent direction="top" offset={[0, -16]}>
-                    {v.cliente}{(() => {
-                      const km = loja && loja.lat != null && loja.lng != null && v.lat != null && v.lng != null
-                        ? (function() {
-                            const R = 6371
-                            const dLat = (parseFloat(v.lat) - parseFloat(loja.lat)) * Math.PI / 180
-                            const dLng = (parseFloat(v.lng) - parseFloat(loja.lng)) * Math.PI / 180
-                            const a = Math.sin(dLat/2)**2 + Math.cos(parseFloat(loja.lat)*Math.PI/180) * Math.cos(parseFloat(v.lat)*Math.PI/180) * Math.sin(dLng/2)**2
-                            return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))).toFixed(1)
-                          })()
-                        : null
-                      return km != null ? ` - ${km} km` : ''
-                    })()}
-                  </Tooltip>
                   <Popup>
                     <div style={{ minWidth: 220, maxWidth: 280, fontSize: 12, lineHeight: 1.5 }}>
                       <div className="row space-between" style={{ gap: 10, alignItems: 'baseline' }}>
@@ -521,17 +463,16 @@ export function Rastreamento() {
                     pathOptions={{ color: cor, fillColor: cor, fillOpacity: 0.15, weight: 2 }}
                   />
                   <AutoOpenMarker
-                    key={`ent-${d.entregador.id}-${statusOnline(d)}`}
                     position={[lat, lng]}
                     icon={customIcon(cor)}
                     aberto={selecionadoId === d.entregador.id}
                   >
-                    <Tooltip permanent direction="top" offset={[0, -18]}>
-                      {d.entregador.nome} {statusOnline(d) ? '●' : '○'}
-                    </Tooltip>
                     <Popup>
                       <div style={{ minWidth: 180 }}>
                         <strong>{d.entregador.nome}</strong>
+                        <div className="text-sm" style={{ color: online ? 'var(--success)' : 'var(--danger)' }}>
+                          {online ? '● Online' : '● Offline'}
+                        </div>
                         <div className="text-sm">Telefone: {d.entregador.telefone || '—'}</div>
                         <div className="text-sm">Última posição: {formatDate(loc.criado_em)}</div>
                         <div className="text-sm">Lat: {lat.toFixed(6)} / Lng: {lng.toFixed(6)}</div>
@@ -571,9 +512,6 @@ export function Rastreamento() {
                           pathOptions={{ color: rotaCor, weight: 3, opacity: 0.8, dashArray: dashedRota ? '6 8' : undefined }}
                         />
                         <Marker position={[dlat, dlng]} icon={destinoIcon()}>
-                          <Tooltip permanent direction="top" offset={[0, -15]}>
-                            {dest.cliente || 'Entrega'}{dest.distancia_loja_km != null ? ` - ${dest.distancia_loja_km} km` : ''}
-                          </Tooltip>
                           <Popup>
                             <div style={{ fontSize: 12 }}>
                               <strong>{dest.cliente || 'Entrega'}</strong>
