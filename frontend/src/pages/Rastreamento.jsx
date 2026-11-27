@@ -444,11 +444,7 @@ export function Rastreamento() {
             )}
 
             {/* Popup do entregador selecionado no menu */}
-            {popupEntregador && (() => {
-              const d = dados.find((dd) => dd.entregador.id === popupEntregador)
-              if (!d || !d.localizacao) return null
-              return <PopupOpener position={[parseFloat(d.localizacao.lat), parseFloat(d.localizacao.lng)]} entregador={d} />
-            })()}
+            {null}
 
             {/* Marker da loja */}
             {loja && loja.lat != null && loja.lng != null && (
