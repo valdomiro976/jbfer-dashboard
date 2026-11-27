@@ -100,10 +100,14 @@ function FitBounds({ pontos }) {
     const key = pontos.map((p) => p.map((v) => Number(v).toFixed(6)).join(',')).join('|')
     if (lastRef.current === key) return
     lastRef.current = key
-    try {
-      const bounds = L.latLngBounds(pontos.map((p) => [Number(p[0]), Number(p[1])]))
-      map.fitBounds(bounds, { padding: [70, 70], maxZoom: 17, duration: 1 })
-    } catch { /* ignora bounds inválidos */ }
+    const timer = setTimeout(() => {
+      try {
+        map.invalidateSize()
+        const bounds = L.latLngBounds(pontos.map((p) => [Number(p[0]), Number(p[1])]))
+        map.fitBounds(bounds, { padding: [70, 70], maxZoom: 17, duration: 1 })
+      } catch { /* ignora bounds inválidos */ }
+    }, 500)
+    return () => clearTimeout(timer)
   }, [pontos, map])
   return null
 }
@@ -419,7 +423,13 @@ export function Rastreamento() {
                 ]}
               />
             ) : (
-              <FlyTo pos={alvo} />
+              <FitBounds
+                pontos={[
+                  ...comLocalizacao.map((d) => [parseFloat(d.localizacao.lat), parseFloat(d.localizacao.lng)]),
+                  ...vendasComLocalizacao.map((v) => [parseFloat(v.lat), parseFloat(v.lng)]),
+                  ...(loja && loja.lat != null && loja.lng != null ? [[parseFloat(loja.lat), parseFloat(loja.lng)]] : []),
+                ]}
+              />
             )}
 
             {/* Marker da loja */}
