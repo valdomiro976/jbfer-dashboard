@@ -94,12 +94,12 @@ function FlyTo({ pos }) {
 // Enquadra múltiplos pontos (entregador + vendas) no mapa
 function FitBounds({ pontos }) {
   const map = useMap()
-  const lastRef = useRef(null)
+  const lastCountRef = useRef(0)
   useEffect(() => {
     if (!pontos || pontos.length === 0) return
-    const key = pontos.map((p) => p.map((v) => Number(v).toFixed(6)).join(',')).join('|')
-    if (lastRef.current === key) return
-    lastRef.current = key
+    // Só ajusta zoom quando o número de pontos muda (não quando a posição muda)
+    if (lastCountRef.current === pontos.length) return
+    lastCountRef.current = pontos.length
     const timer = setTimeout(() => {
       try {
         map.invalidateSize()
@@ -108,7 +108,7 @@ function FitBounds({ pontos }) {
       } catch { /* ignora bounds inválidos */ }
     }, 500)
     return () => clearTimeout(timer)
-  }, [pontos, map])
+  }, [pontos?.length, map])
   return null
 }
 
