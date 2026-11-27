@@ -97,13 +97,17 @@ function FitBounds({ pontos }) {
   const lastCountRef = useRef(0)
   useEffect(() => {
     if (!pontos || pontos.length === 0) return
-    // Só re-ajusta se o número de pontos mudou (evita re-fit em cada render)
     if (lastCountRef.current === pontos.length) return
     lastCountRef.current = pontos.length
-    try {
-      const bounds = L.latLngBounds(pontos.map((p) => [Number(p[0]), Number(p[1])]))
-      map.fitBounds(bounds, { padding: [70, 70], maxZoom: 17, duration: 1 })
-    } catch { /* ignora bounds inválidos */ }
+    // Delay para garantir que os marcadores já foram renderizados (como no PDV)
+    const timer = setTimeout(() => {
+      try {
+        const bounds = L.latLngBounds(pontos.map((p) => [Number(p[0]), Number(p[1])]))
+        map.invalidateSize()
+        map.fitBounds(bounds, { padding: [70, 70], maxZoom: 17, duration: 1 })
+      } catch { /* ignora bounds inválidos */ }
+    }, 300)
+    return () => clearTimeout(timer)
   }, [pontos?.length, map])
   return null
 }
