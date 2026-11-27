@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -61,6 +61,46 @@ def root():
 @app.get("/api/health")
 def health():
     return {"status": "ok", "app": settings.app_name}
+
+
+
+# ---------------------------------------------------------------
+# WebSocket: atualizações em tempo real de entregadores/localização
+# ---------------------------------------------------------------
+import asyncio
+import json as _json
+
+
+@app.websocket("/ws/entregadores")
+async def ws_entregadores(websocket: WebSocket, token: str = ""):
+    from app.auth.security import decode_token
+    from app.services import entrega_service
+
+    payload = decode_token(token) if token else None
+    if not payload:
+        await websocket.close(code=4001)
+        return
+    cnpj = payload.get("cnpj")
+    if not cnpj:
+        await websocket.close(code=4001)
+        return
+
+    await websocket.accept()
+    try:
+        while True:
+            try:
+                dados = entrega_service.listar_localizacoes(cnpj)
+                await websocket.send_text(_json.dumps({"tipo": "localizacoes", "dados": dados}, default=str))
+            except Exception:
+                pass
+            await asyncio.sleep(5)
+    except WebSocketDisconnect:
+        pass
+    except Exception:
+        try:
+            await websocket.close()
+        except Exception:
+            pass
 
 
 # ---------------------------------------------------------------

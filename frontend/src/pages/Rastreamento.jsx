@@ -191,12 +191,28 @@ export function Rastreamento() {
     loadRotas()
   }, [])
 
+  // WebSocket para atualizações em tempo real (substitui polling)
   useEffect(() => {
-    if (autoRefresh) {
-      intervalRef.current = setInterval(load, 15000)
-      return () => clearInterval(intervalRef.current)
+    const token = localStorage.getItem('dashboard_token')
+    if (!token) return
+    const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+    const host = window.location.host
+    const ws = new WebSocket(`${proto}//${host}/ws/entregadores?token=${encodeURIComponent(token)}`)
+    ws.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data)
+        if (msg.tipo === 'localizacoes' && Array.isArray(msg.dados)) {
+          setDados(msg.dados)
+          setAtualizado(new Date())
+        }
+      } catch (e) {
+        console.error('Erro ao processar WebSocket:', e)
+      }
     }
-  }, [autoRefresh])
+    ws.onerror = (e) => console.error('WebSocket erro:', e)
+    ws.onclose = () => console.log('WebSocket fechado')
+    return () => ws.close()
+  }, [])
 
   const comLocalizacao = dados.filter((d) => d.localizacao)
 
