@@ -90,6 +90,7 @@ object SessionManager {
     private const val KEY_CNPJ = "saved_cnpj"
     private const val KEY_TELEFONE = "saved_telefone"
     private const val KEY_SENHA = "saved_senha"
+    private const val KEY_LOGGED_OUT = "logged_out"
 
     private val prefs by lazy {
         com.jbfer.entregador.App.instance.getSharedPreferences(PREFS_NAME, android.content.Context.MODE_PRIVATE)
