@@ -59,12 +59,15 @@ const destinoIcon = () =>
 // Marker que abre o popup automaticamente quando "aberto" é true
 function AutoOpenMarker({ position, icon, aberto, children }) {
   const ref = useRef(null)
+  const opened = useRef(false)
   useEffect(() => {
-    if (!aberto) return
+    if (!aberto) { opened.current = false; return }
+    if (opened.current) return
     const tries = setInterval(() => {
       if (ref.current) {
         clearInterval(tries)
-        ref.current.openPopup()
+        opened.current = true
+        try { ref.current.openPopup() } catch (e) { console.error(e) }
       }
     }, 120)
     const stop = setTimeout(() => clearInterval(tries), 8000)
@@ -531,6 +534,7 @@ export function Rastreamento() {
               const cores = ['#6366f1', '#8b5cf6', '#22d3ee', '#34d399', '#fbbf24', '#f87171']
               const cor = cores[i % cores.length]
 
+              const isSelecionado = selecionadoId === d.entregador.id
               return (
                 <div key={d.entregador.id}>
                   <CircleMarker
@@ -538,11 +542,11 @@ export function Rastreamento() {
                     radius={18}
                     pathOptions={{ color: cor, fillColor: cor, fillOpacity: 0.15, weight: 2 }}
                   />
-                  <Marker
+                  <AutoOpenMarker
                     key={`ent-${d.entregador.id}`}
                     position={[lat, lng]}
                     icon={customIcon(cor)}
-                    eventHandlers={{ click: () => setSelecionadoId(d.entregador.id) }}
+                    aberto={isSelecionado}
                   >
                     <Tooltip permanent direction="top" offset={[0, -18]}>
                       {d.entregador.nome} {statusOnline(d) ? '●' : '○'}
@@ -558,7 +562,7 @@ export function Rastreamento() {
                         <div className="text-sm">Velocidade: {loc.velocidade != null ? `${Number(loc.velocidade).toFixed(1)} km/h` : '—'}</div>
                       </div>
                     </Popup>
-                  </Marker>
+                  </AutoOpenMarker>
                 </div>
               )
             })}
