@@ -129,7 +129,6 @@ export function Rastreamento() {
   const [atualizado, setAtualizado] = useState(null)
   const [autoRefresh, setAutoRefresh] = useState(true)
   const intervalRef = useRef(null)
-  const markerRefs = useRef({})
   const [searchParams, setSearchParams] = useSearchParams()
 
   useEffect(() => {
@@ -215,20 +214,6 @@ export function Rastreamento() {
       return () => clearInterval(intervalRef.current)
     }
   }, [autoRefresh])
-
-  // Abre o popup do entregador selecionado no menu
-  useEffect(() => {
-    if (!selecionadoId) return
-    const marker = markerRefs.current[selecionadoId]
-    if (marker) {
-      setTimeout(() => {
-        try {
-          if (marker.marker) marker.marker.openPopup()
-          else if (marker.openPopup) marker.openPopup()
-        } catch (e) { console.error('Erro ao abrir popup:', e) }
-      }, 300)
-    }
-  }, [selecionadoId])
 
   const comLocalizacao = dados.filter((d) => d.localizacao)
 
@@ -446,6 +431,19 @@ export function Rastreamento() {
               </Marker>
             )}
 
+            {/* Popup do entregador selecionado no menu */}
+            {selecionadoId && alvo && (
+              <Popup position={alvo} autoOpen={true}>
+                <div style={{ minWidth: 180 }}>
+                  <strong>{dados.find((d) => d.entregador.id === selecionadoId)?.entregador?.nome}</strong>
+                  <div className="text-sm">Telefone: {dados.find((d) => d.entregador.id === selecionadoId)?.entregador?.telefone || '—'}</div>
+                  {dados.find((d) => d.entregador.id === selecionadoId)?.localizacao && (
+                    <div className="text-sm">Última posição: {formatDate(dados.find((d) => d.entregador.id === selecionadoId).localizacao.criado_em)}</div>
+                  )}
+                </div>
+              </Popup>
+            )}
+
             {/* Marcadores das vendas (clientes) */}
             {vendasComLocalizacao.map((v) => {
               const lat = parseFloat(v.lat)
@@ -504,7 +502,6 @@ export function Rastreamento() {
                     key={`ent-${d.entregador.id}`}
                     position={[lat, lng]}
                     icon={customIcon(cor)}
-                    ref={(m) => { if (m) markerRefs.current[d.entregador.id] = m }}
                     eventHandlers={{ click: () => setSelecionadoId(d.entregador.id) }}
                   >
                     <Tooltip permanent direction="top" offset={[0, -18]}>
