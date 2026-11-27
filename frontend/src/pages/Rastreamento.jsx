@@ -440,6 +440,13 @@ export function Rastreamento() {
               url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             />
+            <FitBounds
+              pontos={[
+                ...comLocalizacao.map((d) => [parseFloat(d.localizacao.lat), parseFloat(d.localizacao.lng)]),
+                ...vendasComLocalizacao.map((v) => [parseFloat(v.lat), parseFloat(v.lng)]),
+                ...(loja && loja.lat != null && loja.lng != null ? [[parseFloat(loja.lat), parseFloat(loja.lng)]] : []),
+              ]}
+            />
             {/* Marker da loja */}
             {loja && loja.lat != null && loja.lng != null && (
               <Marker position={[parseFloat(loja.lat), parseFloat(loja.lng)]} icon={lojaIcon()}>
