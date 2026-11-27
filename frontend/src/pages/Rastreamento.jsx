@@ -92,20 +92,13 @@ function FlyTo({ pos }) {
 }
 
 // Enquadra múltiplos pontos (entregador + vendas) no mapa
-function FitBounds({ pontos, force = false, forceKey = null }) {
+function FitBounds({ pontos }) {
   const map = useMap()
-  const lastForceKey = useRef(null)
   const hasFitted = useRef(false)
   useEffect(() => {
     if (!pontos || pontos.length === 0) return
-    if (force) {
-      // Só executa se forceKey mudou (novo entregador selecionado)
-      if (lastForceKey.current === forceKey) return
-      lastForceKey.current = forceKey
-    } else {
-      if (hasFitted.current) return
-      hasFitted.current = true
-    }
+    if (hasFitted.current) return
+    hasFitted.current = true
     const timer = setTimeout(() => {
       try {
         map.invalidateSize()
@@ -114,7 +107,7 @@ function FitBounds({ pontos, force = false, forceKey = null }) {
       } catch { /* ignora bounds inválidos */ }
     }, 500)
     return () => clearTimeout(timer)
-  }, [pontos, map, force, forceKey])
+  }, [pontos, map])
   return null
 }
 
@@ -225,8 +218,13 @@ export function Rastreamento() {
   const comLocalizacao = dados.filter((d) => d.localizacao)
 
   // Centro do mapa: definido uma vez (na primeira carga), não muda depois
+  // Centro fixo: definido uma vez na primeira carga, nunca muda
   const centroRef = useRef(null)
-  if (!centroRef.current && (comLocalizacao.length > 0 || vendas.length > 0 || (loja && loja.lat != null))) {
+  if (!centroRef.current) {
+    centroRef.current = [-23.5505, -46.6333]
+  }
+  // Atualiza apenas na primeira carga (quando ainda é o default)
+  if (centroRef.current[0] === -23.5505 && centroRef.current[1] === -46.6333) {
     if (loja && loja.lat != null && loja.lng != null) {
       centroRef.current = [parseFloat(loja.lat), parseFloat(loja.lng)]
     } else if (comLocalizacao.length > 0) {
@@ -236,7 +234,7 @@ export function Rastreamento() {
       centroRef.current = [parseFloat(vendas[0].lat), parseFloat(vendas[0].lng)]
     }
   }
-  const centro = centroRef.current || [-23.5505, -46.6333]
+  const centro = centroRef.current
 
   const statusOnline = (d) => {
     if (!d.localizacao) return false
@@ -422,8 +420,7 @@ export function Rastreamento() {
             />
             {alvo && selecionadoId != null ? (
               <FitBounds
-                force={true}
-                forceKey={selecionadoId}
+                key={`fit-${selecionadoId}`}
                 pontos={[
                   alvo,
                   ...(rotas
