@@ -20,12 +20,7 @@ export function formatBRL(v) {
 export function formatDate(v) {
   if (!v) return '—'
   try {
-    let s = v
-    if (typeof s === 'string' && !s.endsWith('Z') && !/[+-]\d{2}:?\d{2}$/.test(s)) {
-      // Trata como UTC se não houver informação de fuso
-      s = s.replace(' ', 'T') + 'Z'
-    }
-    const d = new Date(s)
+    const d = new Date(v)
     return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
   } catch {
     return v

@@ -233,7 +233,7 @@ export function Rastreamento() {
     if (!d.localizacao) return false
     try {
       const criado = new Date(d.localizacao.criado_em)
-      return (Date.now() - criado.getTime()) < 5 * 60 * 1000
+      return (Date.now() - criado.getTime()) < 2 * 60 * 1000
     } catch {
       return false
     }
