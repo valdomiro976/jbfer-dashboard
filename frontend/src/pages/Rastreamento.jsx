@@ -115,6 +115,7 @@ export function Rastreamento() {
   const [dados, setDados] = useState([])
   const [vendas, setVendas] = useState([])
   const [loja, setLoja] = useState(null)
+  const [popupEntregador, setPopupEntregador] = useState(null)
   const [rotas, setRotas] = useState([])
   const [rotasVersao, setRotasVersao] = useState(0)
   const [otimizada, setOtimizada] = useState(null)
@@ -133,7 +134,7 @@ export function Rastreamento() {
 
   useEffect(() => {
     const v = searchParams.get('entregador')
-    if (v) setSelecionadoId(Number(v))
+    if (v) { setSelecionadoId(Number(v)); setPopupEntregador(Number(v)) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
 
@@ -432,18 +433,21 @@ export function Rastreamento() {
             )}
 
             {/* Popup do entregador selecionado no menu */}
-            {selecionadoId && alvo && (
-              <Popup position={alvo} autoOpen={true}>
+            {popupEntregador && alvo && (
+              <Popup
+                position={alvo}
+                eventHandlers={{ popupclose: () => setPopupEntregador(null) }}
+              >
                 <div style={{ minWidth: 180 }}>
-                  <strong>{dados.find((d) => d.entregador.id === selecionadoId)?.entregador?.nome}</strong>
-                  <div className="text-sm" style={{ color: statusOnline(dados.find((d) => d.entregador.id === selecionadoId)) ? 'var(--success)' : 'var(--danger)' }}>
-                    {statusOnline(dados.find((d) => d.entregador.id === selecionadoId)) ? '● Online' : '● Offline'}
+                  <strong>{dados.find((d) => d.entregador.id === popupEntregador)?.entregador?.nome}</strong>
+                  <div className="text-sm" style={{ color: statusOnline(dados.find((d) => d.entregador.id === popupEntregador)) ? 'var(--success)' : 'var(--danger)' }}>
+                    {statusOnline(dados.find((d) => d.entregador.id === popupEntregador)) ? '● Online' : '● Offline'}
                   </div>
-                  <div className="text-sm">Telefone: {dados.find((d) => d.entregador.id === selecionadoId)?.entregador?.telefone || '—'}</div>
-                  {dados.find((d) => d.entregador.id === selecionadoId)?.localizacao && (
+                  <div className="text-sm">Telefone: {dados.find((d) => d.entregador.id === popupEntregador)?.entregador?.telefone || '—'}</div>
+                  {dados.find((d) => d.entregador.id === popupEntregador)?.localizacao && (
                     <>
-                      <div className="text-sm">Última posição: {formatDate(dados.find((d) => d.entregador.id === selecionadoId).localizacao.criado_em)}</div>
-                      <div className="text-sm">Velocidade: {dados.find((d) => d.entregador.id === selecionadoId).localizacao.velocidade != null ? `${Number(dados.find((d) => d.entregador.id === selecionadoId).localizacao.velocidade).toFixed(1)} km/h` : '—'}</div>
+                      <div className="text-sm">Última posição: {formatDate(dados.find((d) => d.entregador.id === popupEntregador).localizacao.criado_em)}</div>
+                      <div className="text-sm">Velocidade: {dados.find((d) => d.entregador.id === popupEntregador).localizacao.velocidade != null ? `${Number(dados.find((d) => d.entregador.id === popupEntregador).localizacao.velocidade).toFixed(1)} km/h` : '—'}</div>
                     </>
                   )}
                 </div>
