@@ -406,6 +406,7 @@ export function Rastreamento() {
             key={`map-r-${rotasVersao}`}
             center={centro}
             zoom={14}
+            zoomControl={true}
             scrollWheelZoom
             style={{ height: 'calc(100vh - 220px)', minHeight: 520, width: '100%' }}
           >
