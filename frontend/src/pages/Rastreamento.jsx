@@ -91,6 +91,26 @@ function FlyTo({ pos }) {
   return null
 }
 
+function PopupOpener({ position, entregador }) {
+  const map = useMap()
+  const opened = useRef(false)
+  useEffect(() => {
+    if (opened.current) return
+    opened.current = true
+    const nome = entregador?.entregador?.nome || 'Entregador'
+    const tel = entregador?.entregador?.telefone || '—'
+    const loc = entregador?.localizacao
+    const status = loc ? (statusOnline(entregador) ? '● Online' : '● Offline') : ''
+    const ultima = loc ? formatDate(loc.criado_em) : ''
+    const vel = loc && loc.velocidade != null ? `${Number(loc.velocidade).toFixed(1)} km/h` : '—'
+    const html = `<div style="min-width:180px"><strong>${nome}</strong>${status ? `<div style="font-size:12px;margin:2px 0;color:${status.includes('Online') ? '#34d399' : '#f87171'}">${status}</div>` : ''}<div style="font-size:12px">Telefone: ${tel}</div>${ultima ? `<div style="font-size:12px">Última posição: ${ultima}</div>` : ''}<div style="font-size:12px">Velocidade: ${vel}</div></div>`
+    const popup = L.popup({ autoClose: true, closeOnClick: true })
+    popup.setContent(html)
+    map.openPopup(popup, position)
+  }, [map, position])
+  return null
+}
+
 // Enquadra múltiplos pontos (entregador + vendas) no mapa
 function FitBounds({ pontos }) {
   const map = useMap()
@@ -112,6 +132,7 @@ export function Rastreamento() {
   const [dados, setDados] = useState([])
   const [vendas, setVendas] = useState([])
   const [loja, setLoja] = useState(null)
+  const [popupEntregador, setPopupEntregador] = useState(null)
   const [rotas, setRotas] = useState([])
   const [rotasVersao, setRotasVersao] = useState(0)
   const [otimizada, setOtimizada] = useState(null)
@@ -130,7 +151,7 @@ export function Rastreamento() {
 
   useEffect(() => {
     const v = searchParams.get('entregador')
-    if (v) setSelecionadoId(Number(v))
+    if (v) { setSelecionadoId(Number(v)); setPopupEntregador(Number(v)) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
 
@@ -421,6 +442,13 @@ export function Rastreamento() {
             ) : (
               <FlyTo pos={alvo} />
             )}
+
+            {/* Popup do entregador selecionado no menu */}
+            {popupEntregador && (() => {
+              const d = dados.find((dd) => dd.entregador.id === popupEntregador)
+              if (!d || !d.localizacao) return null
+              return <PopupOpener position={[parseFloat(d.localizacao.lat), parseFloat(d.localizacao.lng)]} entregador={d} />
+            })()}
 
             {/* Marker da loja */}
             {loja && loja.lat != null && loja.lng != null && (
