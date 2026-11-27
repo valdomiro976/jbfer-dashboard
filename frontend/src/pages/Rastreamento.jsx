@@ -92,14 +92,14 @@ function FlyTo({ pos }) {
 }
 
 // Enquadra múltiplos pontos (entregador + vendas) no mapa
-function FitBounds({ pontos }) {
+function FitBounds({ pontos, force = false }) {
   const map = useMap()
-  const lastCountRef = useRef(0)
+  const hasFitted = useRef(false)
   useEffect(() => {
     if (!pontos || pontos.length === 0) return
-    // Só ajusta zoom quando o número de pontos muda (não quando a posição muda)
-    if (lastCountRef.current === pontos.length) return
-    lastCountRef.current = pontos.length
+    // Auto-fit apenas uma vez (na carga inicial) ou quando forçado (clique no menu)
+    if (!force && hasFitted.current) return
+    hasFitted.current = true
     const timer = setTimeout(() => {
       try {
         map.invalidateSize()
@@ -108,7 +108,7 @@ function FitBounds({ pontos }) {
       } catch { /* ignora bounds inválidos */ }
     }, 500)
     return () => clearTimeout(timer)
-  }, [pontos?.length, map])
+  }, [pontos, map, force])
   return null
 }
 
@@ -414,6 +414,7 @@ export function Rastreamento() {
             />
             {alvo && selecionadoId != null ? (
               <FitBounds
+                force={true}
                 pontos={[
                   alvo,
                   ...(rotas
