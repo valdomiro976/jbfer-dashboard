@@ -144,3 +144,13 @@ def update_pedido_status(pedido_id: int, status_pedido: str, user: dict = Depend
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao atualizar status: {str(e)}")
+
+
+@router.get("/loja", status_code=status.HTTP_200_OK)
+def get_loja(user: dict = Depends(get_current_cnpj)):
+    cnpj = user["cnpj"]
+    try:
+        from app.services import vendas_service
+        return {"sucesso": True, "cnpj": cnpj, "dados": vendas_service.obter_loja(cnpj)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao obter loja: {str(e)}")

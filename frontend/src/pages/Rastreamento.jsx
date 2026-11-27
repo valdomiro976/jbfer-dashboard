@@ -16,6 +16,16 @@ const customIcon = (color = '#6366f1') =>
     popupAnchor: [0, -18],
   })
 
+// Marker da loja
+const lojaIcon = () =>
+  L.divIcon({
+    className: 'custom-marker',
+    html: `<div style="width:34px;height:34px;border-radius:50%;background:#f59e0b;border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px;">🏪</div>`,
+    iconSize: [34, 34],
+    iconAnchor: [17, 17],
+    popupAnchor: [0, -18],
+  })
+
 // Marker para as vendas (clientes) — diferente do entregador
 const vendaIcon = () =>
   L.divIcon({
@@ -101,6 +111,7 @@ function FitBounds({ pontos }) {
 export function Rastreamento() {
   const [dados, setDados] = useState([])
   const [vendas, setVendas] = useState([])
+  const [loja, setLoja] = useState(null)
   const [rotas, setRotas] = useState([])
   const [rotasVersao, setRotasVersao] = useState(0)
   const [otimizada, setOtimizada] = useState(null)
@@ -189,6 +200,10 @@ export function Rastreamento() {
     load()
     loadVendas()
     loadRotas()
+    // Carrega coordenadas da loja
+    api.get("/vendas/loja").then(({ data }) => {
+      if (data.dados && data.dados.lat != null && data.dados.lng != null) setLoja(data.dados)
+    }).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -410,6 +425,19 @@ export function Rastreamento() {
               />
             ) : (
               <FlyTo pos={alvo} />
+            )}
+
+            {/* Marker da loja */}
+            {loja && loja.lat != null && loja.lng != null && (
+              <Marker position={[parseFloat(loja.lat), parseFloat(loja.lng)]} icon={lojaIcon()}>
+                <Popup>
+                  <div style={{ fontSize: 12 }}>
+                    <strong>Loja</strong>
+                    {loja.endereco ? <div>{loja.endereco}</div> : null}
+                    {loja.cidade ? <div>{loja.cidade}{loja.uf ? `/${loja.uf}` : ''}</div> : null}
+                  </div>
+                </Popup>
+              </Marker>
             )}
 
             {/* Marcadores das vendas (clientes) */}

@@ -430,3 +430,49 @@ def geolocalizar_pedido(cnpj: str, pedido_id: int) -> dict | None:
         "lng": geo["lng"] if geo else None,
         "endereco_geo": geo["display_name"] if geo else None,
     }
+
+
+def obter_loja(cnpj: str) -> dict | None:
+    """Retorna as coordenadas/endereço da loja a partir de tb_config_<cnpj>."""
+    cnpj_limpo = re.sub(r"[^0-9A-Za-z_-]", "", cnpj)
+    tabela = f"tb_config_{cnpj_limpo}"
+    from app.db.database import execute_query
+    try:
+        rows = execute_query(
+            f"SELECT rua_loja, numero_loja, cep_loja, cidade_loja, uf_loja, "
+            f"latitude_loja, longitude_loja FROM `{tabela}` "
+            f"WHERE rua_loja IS NOT NULL OR cep_loja IS NOT NULL "
+            f"ORDER BY id LIMIT 1",
+            dictionary=True,
+        )
+        if not rows:
+            rows = execute_query(
+                f"SELECT rua_loja, numero_loja, cep_loja, cidade_loja, uf_loja, "
+                f"latitude_loja, longitude_loja FROM `{tabela}` ORDER BY id LIMIT 1",
+                dictionary=True,
+            )
+        if not rows:
+            return None
+        row = rows[0]
+        lat = row.get("latitude_loja")
+        lng = row.get("longitude_loja")
+        if (lat is None or lng is None) and (row.get("rua_loja") or row.get("cep_loja")):
+            geo = geocodificar(_montar_query({
+                "endereco": row.get("rua_loja") or "",
+                "cidade": row.get("cidade_loja") or "",
+                "uf": row.get("uf_loja") or "",
+                "cep": row.get("cep_loja") or "",
+            }))
+            if geo:
+                lat, lng = geo["lat"], geo["lng"]
+        endereco = " ".join([p for p in [row.get("rua_loja"), row.get("numero_loja")] if p]).strip()
+        return {
+            "lat": float(lat) if lat is not None else None,
+            "lng": float(lng) if lng is not None else None,
+            "endereco": endereco,
+            "cidade": row.get("cidade_loja"),
+            "uf": row.get("uf_loja"),
+            "cep": row.get("cep_loja"),
+        }
+    except Exception:
+        return None
