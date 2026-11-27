@@ -418,19 +418,6 @@ export function Rastreamento() {
               url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             />
-            {alvo && selecionadoId != null ? (
-              <FitBounds
-                key={`fit-${selecionadoId}`}
-                pontos={[
-                  alvo,
-                  ...(rotas
-                    .find((r) => r.entregador.id === selecionadoId)
-                    ?.destinos?.filter((d) => d.lat != null && d.lng != null)
-                    .map((d) => [parseFloat(d.lat), parseFloat(d.lng)]) || []),
-                ]}
-              />
-            ) : null}
-
             {/* Marker da loja */}
             {loja && loja.lat != null && loja.lng != null && (
               <Marker position={[parseFloat(loja.lat), parseFloat(loja.lng)]} icon={lojaIcon()}>
