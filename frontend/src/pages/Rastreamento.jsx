@@ -433,7 +433,9 @@ export function Rastreamento() {
 
             {/* Popup do entregador selecionado no menu */}
             {selecionadoId && alvo && (
-              <Popup position={alvo} autoOpen={true}>
+              <Popup position={alvo} autoOpen={false} ref={(r) => {
+                if (r) setTimeout(() => { try { r.open() } catch (e) {} }, 200)
+              }}>
                 <div style={{ minWidth: 180 }}>
                   <strong>{dados.find((d) => d.entregador.id === selecionadoId)?.entregador?.nome}</strong>
                   <div className="text-sm" style={{ color: statusOnline(dados.find((d) => d.entregador.id === selecionadoId)) ? 'var(--success)' : 'var(--danger)' }}>
