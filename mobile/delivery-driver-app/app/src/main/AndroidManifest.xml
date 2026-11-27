@@ -28,6 +28,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Entregador"
         android:usesCleartextTraffic="true"
+        android:enableOnBackInvokedCallback="true"
         tools:targetApi="36">
 
         <activity
