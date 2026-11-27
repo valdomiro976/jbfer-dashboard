@@ -8,9 +8,8 @@ import { Truck, Radio, Store, MapPin, Route } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
 
 const customIcon = (color = '#6366f1') =>
-  L.divIcon({
-    className: 'custom-marker',
-    html: `<div style="width:34px;height:34px;border-radius:50%;background:${color};border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;">🚚</div>`,
+  L.icon({
+    iconUrl: '/markers/entregador.jpg',
     iconSize: [34, 34],
     iconAnchor: [17, 17],
     popupAnchor: [0, -18],
@@ -18,9 +17,8 @@ const customIcon = (color = '#6366f1') =>
 
 // Marker da loja
 const lojaIcon = () =>
-  L.divIcon({
-    className: 'custom-marker',
-    html: `<div style="width:34px;height:34px;border-radius:50%;background:#f59e0b;border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px;">🏢</div>`,
+  L.icon({
+    iconUrl: '/markers/loja.jpg',
     iconSize: [34, 34],
     iconAnchor: [17, 17],
     popupAnchor: [0, -18],
@@ -28,9 +26,8 @@ const lojaIcon = () =>
 
 // Marker para as vendas (clientes) — diferente do entregador
 const vendaIcon = () =>
-  L.divIcon({
-    className: 'custom-marker',
-    html: `<div style="width:28px;height:28px;border-radius:50%;background:#10b981;border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;">🏪</div>`,
+  L.icon({
+    iconUrl: '/markers/venda.jpg',
     iconSize: [28, 28],
     iconAnchor: [14, 14],
     popupAnchor: [0, -16],
@@ -48,9 +45,8 @@ const numeroIcon = (n) =>
 
 // Marker para os destinos das rotas (entregas) — diferente das vendas
 const destinoIcon = () =>
-  L.divIcon({
-    className: 'custom-marker',
-    html: `<div style="width:26px;height:26px;border-radius:50%;background:#0d9488;border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;">📦</div>`,
+  L.icon({
+    iconUrl: '/markers/entrega.jpg',
     iconSize: [26, 26],
     iconAnchor: [13, 13],
     popupAnchor: [0, -15],
