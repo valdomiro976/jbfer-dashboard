@@ -225,10 +225,12 @@ export function Rastreamento() {
 
   // Abre popup do entregador selecionado no menu (uma vez por selecao)
   const lastPopupId = useRef(null)
+  const dadosRef = useRef(dados)
+  dadosRef.current = dados
   useEffect(() => {
     if (!selecionadoId) { lastPopupId.current = null; return }
     if (lastPopupId.current === selecionadoId) return
-    const d = dados.find((dd) => dd && dd.entregador && dd.entregador.id === selecionadoId && dd.localizacao)
+    const d = dadosRef.current.find((dd) => dd && dd.entregador && dd.entregador.id === selecionadoId && dd.localizacao)
     if (!d || !d.localizacao) return
     lastPopupId.current = selecionadoId
     const pos = [parseFloat(d.localizacao.lat), parseFloat(d.localizacao.lng)]
@@ -249,7 +251,7 @@ export function Rastreamento() {
       } catch (e) { console.error(e) }
     }, 500)
     return () => clearTimeout(timer)
-  }, [selecionadoId, dados])
+  }, [selecionadoId])
 
   const comLocalizacao = dados.filter((d) => d.localizacao)
 
