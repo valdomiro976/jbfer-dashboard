@@ -79,16 +79,17 @@ class TasksFragment : Fragment() {
                         .setTitle("Sair da conta")
                         .setMessage("Deseja realmente sair? Você precisará fazer login novamente.")
                         .setPositiveButton("Sim, sair") { _, _ ->
-                            // Para o servico de GPS PRIMEIRO
-                            LocationTrackingService.stop(requireContext())
-                            // Limpa a sessao de forma sincrona
-                            SessionManager.clear()
                             lifecycleScope.launch {
+                                // Chama logout no backend ANTES de limpar a sessao
                                 try {
                                     withContext(Dispatchers.IO) {
                                         ApiClient.api.logout()
                                     }
                                 } catch (e: Exception) { }
+                                // Para o servico de GPS
+                                LocationTrackingService.stop(requireContext())
+                                // Limpa a sessao de forma sincrona
+                                SessionManager.clear()
                                 com.jbfer.entregador.utils.openLogin(requireContext())
                                 requireActivity().finish()
                             }
