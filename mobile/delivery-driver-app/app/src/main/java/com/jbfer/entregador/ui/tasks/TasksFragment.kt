@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.PopupMenu
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
@@ -26,6 +27,8 @@ import com.jbfer.entregador.R
 import com.jbfer.entregador.helpers.showToast
 import com.jbfer.entregador.helpers.statusColor
 import com.jbfer.entregador.data.api.ApiClient
+import com.jbfer.entregador.data.api.SessionManager
+import com.jbfer.entregador.services.LocationTrackingService
 import com.jbfer.entregador.data.model.AtualizarRequest
 import com.jbfer.entregador.data.model.CoordenadasClienteRequest
 import com.jbfer.entregador.data.model.Tarefa
@@ -68,6 +71,27 @@ class TasksFragment : Fragment() {
         binding.recyclerTasks.adapter = adapter
 
         binding.btnRefresh.setOnClickListener { loadTasks() }
+        binding.btnMenu.setOnClickListener { view ->
+            val popup = PopupMenu(requireContext(), view)
+            popup.menu.add("Sair da conta")
+            popup.setOnMenuItemClickListener { item ->
+                if (item.title == "Sair da conta") {
+                    AlertDialog.Builder(requireContext())
+                        .setTitle("Sair da conta")
+                        .setMessage("Deseja realmente sair? Você precisará fazer login novamente.")
+                        .setPositiveButton("Sim, sair") { _, _ ->
+                            LocationTrackingService.stop(requireContext())
+                            SessionManager.clear()
+                            com.jbfer.entregador.utils.openLogin(requireContext())
+                            requireActivity().finish()
+                        }
+                        .setNegativeButton("Cancelar", null)
+                        .show()
+                    true
+                } else false
+            }
+            popup.show()
+        }
         loadTasks()
     }
 

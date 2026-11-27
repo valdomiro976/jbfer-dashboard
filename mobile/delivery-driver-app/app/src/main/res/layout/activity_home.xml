@@ -52,22 +52,6 @@
             app:cornerRadius="0dp"
             android:backgroundTint="@color/warning" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnLogout"
-            android:layout_width="0dp"
-            android:layout_height="64dp"
-            android:layout_weight="1"
-            android:text="Sair"
-            android:textStyle="bold"
-            android:textSize="16sp"
-            android:textColor="@color/on_primary"
-            app:icon="@android:drawable/ic_lock_power_off"
-            app:iconGravity="textStart"
-            app:iconPadding="12dp"
-            app:iconTint="@color/on_primary"
-            app:cornerRadius="0dp"
-            android:backgroundTint="@color/danger" />
-
     </LinearLayout>
 
 </LinearLayout>
