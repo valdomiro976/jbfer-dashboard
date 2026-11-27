@@ -49,6 +49,13 @@ class HomeActivity : AppCompatActivity() {
             changeFragment(TasksFragment())
         }
 
+        binding.btnSair.setOnClickListener {
+            LocationTrackingService.stop(this)
+            SessionManager.clear()
+            com.jbfer.entregador.utils.openLogin(this)
+            finish()
+        }
+
         if (savedInstanceState == null) {
             changeFragment(TasksFragment())
         }
