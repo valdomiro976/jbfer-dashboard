@@ -126,7 +126,11 @@ export function Sidebar() {
   }
 
   useEffect(() => {
-    if (!collapsed && entregAberto) loadEntregadores()
+    if (!collapsed && entregAberto) {
+      loadEntregadores()
+      const interval = setInterval(loadEntregadores, 10000)
+      return () => clearInterval(interval)
+    }
   }, [collapsed, entregAberto])
 
   useEffect(() => {
