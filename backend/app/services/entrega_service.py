@@ -297,6 +297,10 @@ def salvar_localizacao(cnpj: str, entregador_id: int, lat: float, lng: float) ->
                 f"INSERT INTO `tb_localizacao_{c}` (entregador_id, lat, lng, precisao, velocidade, criado_em) VALUES (%s, %s, %s, %s, %s, %s)",
                 (entregador_id, lat, lng, None, None, now),
             )
+            # Mantém apenas os registros da última semana
+            cursor.execute(
+                f"DELETE FROM `tb_localizacao_{c}` WHERE criado_em < (NOW() - INTERVAL 7 DAY)"
+            )
             conn.commit()
             return {"entregador_id": entregador_id, "lat": lat, "lng": lng, "criado_em": now.isoformat()}
         finally:
