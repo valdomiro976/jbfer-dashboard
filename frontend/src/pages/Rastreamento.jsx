@@ -143,7 +143,7 @@ export function Rastreamento() {
     const v = searchParams.get('entregador')
     if (v) setSelecionadoId(Number(v))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams])
+  }, [searchParams.toString()])
 
   const load = async () => {
     try {
