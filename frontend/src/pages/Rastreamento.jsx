@@ -438,7 +438,7 @@ export function Rastreamento() {
               <strong>Rota otimizada — {otimizada.distancia_km} km{otimizada.km_roteada === false ? ' (linha reta)' : ''}</strong>
               <button
                 onClick={() => setOtimizada(null)}
-                style={{ padding: '4px 10px', borderRadius: 8, border: '1px solid var(--border, #ccc)', background: 'transparent', cursor: 'pointer' }}
+                style={{ padding: '4px 10px', borderRadius: 8, border: '1px solid var(--border, #ccc)', background: 'rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer' }}
               >
                 Limpar
               </button>
