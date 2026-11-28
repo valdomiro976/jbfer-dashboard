@@ -20,7 +20,11 @@ export function formatBRL(v) {
 export function formatDate(v) {
   if (!v) return '—'
   try {
-    const d = new Date(v)
+    let s = v
+    if (typeof s === 'string' && !s.endsWith('Z') && !/[+-]\\d{2}:?\\d{2}$/.test(s)) {
+      s = s.replace(' ', 'T') + 'Z'
+    }
+    const d = new Date(s)
     return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
   } catch {
     return v
