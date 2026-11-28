@@ -443,13 +443,13 @@ export function Rastreamento() {
                 Limpar
               </button>
             </div>
-            <ol style={{ margin: '8px 0 0', paddingLeft: 22 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginTop: 8 }}>
               {(otimizada.ordem || []).map((p, i) => (
-                <li key={p.entrega_id} style={{ marginBottom: 4, fontSize: 13 }}>
-                  <strong>{p.cliente}</strong>{p.endereco ? ` — ${p.endereco}` : ''} <span className="text-muted">(+{p.km_etapa} km {i === 0 ? 'do ponto inicial' : 'da anterior'})</span>
-                </li>
+                <div key={p.entrega_id} style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.04)', borderRadius: 8, fontSize: 13 }}>
+                  <strong>{p.n}. {p.cliente}</strong>{p.endereco ? ` — ${p.endereco}` : ''} <span className="text-muted">(+{p.km_etapa} km {i === 0 ? 'do ponto inicial' : 'da anterior'})</span>
+                </div>
               ))}
-            </ol>
+            </div>
             {(otimizada.nao_geolocalizadas || []).length > 0 && (
               <div className="text-sm" style={{ color: 'var(--warning)', marginTop: 6 }}>
                 Sem localização (fora da rota): entregas {otimizada.nao_geolocalizadas.join(', ')}
