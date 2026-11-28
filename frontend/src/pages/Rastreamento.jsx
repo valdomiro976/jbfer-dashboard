@@ -519,6 +519,17 @@ export function Rastreamento() {
                         <Truck size={11} color="var(--primary)" style={{ verticalAlign: 'middle', marginRight: 3 }} />
                         → {entregadorPorPedido[v.id] || 'Sem entregador'}
                       </div>
+                      {!entregadorPorPedido[v.id] && (
+                        <div style={{ marginTop: 6 }}>
+                          <button
+                            className="btn btn-primary"
+                            style={{ padding: '4px 10px', fontSize: 11, borderRadius: 6 }}
+                            onClick={() => { window.location.href = `/vendas?venda=${v.id}` }}
+                          >
+                            Atribuir entregador
+                          </button>
+                        </div>
+                      )}
                       <div className="row space-between" style={{ marginTop: 3 }}>
                         {v.valor != null ? (
                           <span className="fw-700" style={{ color: 'var(--success)' }}>{formatBRL(v.valor)}</span>
