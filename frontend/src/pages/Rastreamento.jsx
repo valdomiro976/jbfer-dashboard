@@ -444,9 +444,9 @@ export function Rastreamento() {
               </button>
             </div>
             <ol style={{ margin: '8px 0 0', paddingLeft: 22 }}>
-              {(otimizada.ordem || []).map((p) => (
+              {(otimizada.ordem || []).map((p, i) => (
                 <li key={p.entrega_id} style={{ marginBottom: 4, fontSize: 13 }}>
-                  <strong>{p.cliente}</strong>{p.endereco ? ` — ${p.endereco}` : ''} <span className="text-muted">(+{p.km_etapa} km da anterior)</span>
+                  <strong>{p.cliente}</strong>{p.endereco ? ` — ${p.endereco}` : ''} <span className="text-muted">(+{p.km_etapa} km {i === 0 ? 'do ponto inicial' : 'da anterior'})</span>
                 </li>
               ))}
             </ol>
